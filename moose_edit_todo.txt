@@ -1,0 +1,32 @@
+todo:
+allow resizing of window and change default size to be smaller (keep max size)
+add more tooltip stuff
+figure out armor calculation
+add shield tooltips
+add critical chance / critical damage
+add stats dir if item template changes to include stats
+
+---
+maybe:
+handle character names better (character tab)?
+fix mem leaks?
+add conversion of all types to Dev tab?
+add PAK tab?
+support for string datatypes in PermBoost?
+
+---
+done:
+allow changing of existing PermBoost data
+fix character picture (background PNG)
+prevent resize of main window
+add additional tooltip info (at least conforming to axe screenshot + WeaponRange) / add armor+shield tooltips
+fix durability tooltip
+change save game location
+create save game .bak (do not overwrite if exists)
+game data path
+game save path
+load button
+exit menu
+general item tab
+
+188EDE stats

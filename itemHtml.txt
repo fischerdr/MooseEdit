@@ -1,0 +1,42 @@
+<font size="15" color="#DBDBDB">
+Item Level 44726<br>
+</font>
+<font size="24" color="#DBDBDB">
+Piercing: 125955-251910<br>
+</font>
+<font size="24" color="#DBDBDB">
+Earth: 18893-37787<br>
+</font>
+<font size="14" color="#CD0000">
+Attack: 44714 Action Point(s)<br>
+</font>
+<font size="14" color="#CD0000">
+(+44712 due to level difference)<br>
+</font>
+<font size="14" color="#DBDBDB">
+Critical Damage: x2.0<br>
+</font>
+<font size="14" color="#DBDBDB">
+Critical Chance: +22362%<br>
+</font>
+<font size="14" color="#DBDBDB">
+Movement: +1788.94<br>
+</font>
+<font size="14" color="#188EDE">
+Perception: +1<br>
+</font>
+<font size="14" color="#188EDE">
+HP: +26<br>
+</font>
+<font size="14" color="#C7A758">
+15% chance to set Poisoned status</font>
+<br>
+<font size="14" color="#DBDBDB">
+Durability 50/50<br>
+</font>
+<font size="16" color="#CD0000">
+<font size="15" color="#707070">
+Requires Dexterity  5<br>
+</font>
+<br>
+</font>
