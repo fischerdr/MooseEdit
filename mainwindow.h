@@ -11,7 +11,7 @@
 #include "TextureAtlas.h"
 #include "GenStatsReader.h"
 
-#define PRG_VERSION	"alpha7"
+#define PRG_VERSION	"alpha8"
 
 namespace Ui {
 class MainWindow;
