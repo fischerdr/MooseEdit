@@ -75,15 +75,37 @@ long ItemLabel::getSummedStat(std::string statName) {
 }
 
 void ItemLabel::displayItemStats(std::ostringstream &contentHtml) {
-	long critChance = -1 + 2*getSummedItemStat("CriticalChance") + (ceil(item->getItemLevel()/2.0f)) + getPermBoostStatValue("CriticalChance");
-	if (critChance > 1) {
-		if (getSummedItemStat("CriticalChance") != 0) {
-			if (getSummedStat("CriticalChance") > getItemStatValue("CriticalChance")) {
-				contentHtml<<"<font color=#188EDE size=2>Critical Chance: +"<<critChance<<"%</font><br/>";
-			}
-			else {
-				contentHtml<<"<font color=#DBDBDB size=2>Critical Chance: +"<<critChance<<"%</font><br/>";
-			}
+	long baseCritChance = 0;
+	if (getSummedItemStat("CriticalChance") != 0) {
+		baseCritChance = -1 + 2*getSummedItemStat("CriticalChance") + ceil(item->getItemLevel()/2.0f);
+	}
+	long critChance = baseCritChance + getPermBoostStatValue("CriticalChance");
+	if (getSummedStat("CriticalChance") != 0) {
+		if (getSummedStat("CriticalChance") > getItemStatValue("CriticalChance")) {
+			contentHtml<<"<font color=#188EDE size=2>Critical Chance: +"<<critChance<<"%</font><br/>";
+		}
+		else {
+			contentHtml<<"<font color=#DBDBDB size=2>Critical Chance: +"<<critChance<<"%</font><br/>";
+		}
+	}
+	
+	long range = getSummedStat("WeaponRange");
+	if (range > 1) {
+		contentHtml<<"<font color=#188EDE size=2>Range: +"<<range<<"</font><br/>";
+	}
+	
+	long movementBonus = getSummedStat("Movement") - getItemStatValue("Movement");
+	float movementF = (movementBonus)/100.0f + 0.04f*getItemStatValue("Movement")*item->getItemLevel() + 0.1f;
+	if (movementBonus > 0 || movementF > 0.1f) {
+		contentHtml<<"<font color=#188EDE size=2>Movement: +"<<boost::format("%.2f") % movementF<<"</font><br/>";
+	}
+	long initiative = getSummedStat("Initiative");
+	if (initiative != 0) {
+		if (getSummedStat("Initiative") > getItemStatValue("Initiative")) {
+			contentHtml<<"<font color=#188EDE size=2>Initiative: +"<<initiative<<"</font><br/>";
+		}
+		else {
+			contentHtml<<"<font color=#DBDBDB size=2>Initiative: +"<<initiative<<"</font><br/>";
 		}
 	}
 	long strength = getSummedItemStat("StrengthBoost") + getSummedStat("Strength");
@@ -102,7 +124,7 @@ void ItemLabel::displayItemStats(std::ostringstream &contentHtml) {
 	if (cons != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Constitution: +"<<cons<<"</font><br/>";
 	}
-	long speed = getSummedItemStat("SpeedBoost") + getSummedStat("Speed");
+	long speed = ceil(item->getItemLevel()*getSummedItemStat("SpeedBoost")/10.0f) + getSummedStat("Speed");
 	if (speed != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Speed: +"<<speed<<"</font><br/>";
 	}
@@ -110,11 +132,15 @@ void ItemLabel::displayItemStats(std::ostringstream &contentHtml) {
 	if (perception != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Perception: +"<<perception<<"</font><br/>";
 	}
-	long vitality = getSummedItemStat("VitalityBoost") + getSummedStat("Vitality");
-	if (vitality != 0) {
-		contentHtml<<"<font color=#188EDE size=2>HP: +"<<vitality<<"</font><br/>";
-	}
 	
+	long singleHanded = getSummedItemStat("SingleHanded");
+	if (singleHanded != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Single-handed: +"<<singleHanded<<"</font><br/>";
+	}
+	long shield = getSummedItemStat("Shield");
+	if (shield != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Shield Specialist: +"<<shield<<"</font><br/>";
+	}
 	
 	long sight = getSummedItemStat("SightBoost") + getSummedStat("Sight");
 	float sightF = sight / 100.0f;
@@ -126,42 +152,36 @@ void ItemLabel::displayItemStats(std::ostringstream &contentHtml) {
 	if (hearing != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Hearing: +"<<boost::format("%.2f") % hearingF<<"</font><br/>";
 	}
-	long movementBonus = getSummedStat("Movement") - getItemStatValue("Movement");
-	float movementF = (movementBonus)/100.0f + 0.04f*getItemStatValue("Movement")*item->getItemLevel() + 0.1f;
-	if (movementBonus > 0 || movementF > 0.1f) {
-		contentHtml<<"<font color=#188EDE size=2>Movement: +"<<boost::format("%.2f") % movementF<<"</font><br/>";
-	}
-	long range = getSummedStat("WeaponRange");
-	if (range > 1) {
-		contentHtml<<"<font color=#188EDE size=2>Range: +"<<range<<"</font><br/>";
-	}
-	long singleHanded = getSummedStat("SingleHanded");
-	if (singleHanded != 0) {
-		contentHtml<<"<font color=#188EDE size=2>Single-handed: +"<<singleHanded<<"</font><br/>";
-	}
-	long crafting = getSummedStat("Crafting");
+	
+	long crafting = getSummedItemStat("Crafting");
 	if (crafting != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Crafting: +"<<crafting<<"</font><br/>";
 	}
-	long shield = getSummedItemStat("Shield");
-	if (shield != 0) {
-		contentHtml<<"<font color=#188EDE size=2>Shield Specialist: +"<<shield<<"</font><br/>";
-	}
-	long fire = getSummedStat("Fire") * 5;
+	
+	long fire = getSummedItemStat("Fire") * 5;
 	if (fire != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Fire resistance: +"<<fire<<"%</font><br/>";
 	}
-	long air = getSummedStat("Air") * 5;
+	long air = getSummedItemStat("Air") * 5;
 	if (air != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Air resistance: +"<<air<<"%</font><br/>";
 	}
-	long water = getSummedStat("Water") * 5;
+	long water = getSummedItemStat("Water") * 5;
 	if (water != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Water resistance: +"<<water<<"%</font><br/>";
 	}
-	long earth = getSummedStat("Earth") * 5;
+	long earth = getSummedItemStat("Earth") * 5;
 	if (earth != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Earth resistance: +"<<earth<<"%</font><br/>";
+	}
+	
+	long vitBoost = 0;
+	if (getSummedItemStat("VitalityBoost") != 0) {
+		vitBoost = 10 + item->getItemLevel()*getSummedItemStat("VitalityBoost")/2;
+	}
+	long vitality = vitBoost + getSummedStat("Vitality");
+	if ((getSummedItemStat("VitalityBoost") + getSummedStat("Vitality")) != 0) {
+		contentHtml<<"<font color=#188EDE size=2>HP: +"<<vitality<<"</font><br/>";
 	}
 }
 
@@ -314,6 +334,17 @@ void ItemLabel::setupTooltip()
 				bool isUnbreakable = false;
 				if (itemStats->getData("Flags") == "Unbreakable") {
 					isUnbreakable = true;
+				}
+				
+				{
+					std::string extraProp = itemStats->getData("ExtraProperties");
+					if (extraProp.size() != 0) {
+						std::vector<std::string> properties;
+						boost::split(properties, extraProp, boost::is_any_of(","));
+						if (properties.size() == 3) {
+							contentHtml<<"<font color=#C7A758 size=2>"<<properties[1]<<"% chance to set "<<properties[0]<<" Status</font><br/>";
+						}
+					}
 				}
 				
 				//proc effects
