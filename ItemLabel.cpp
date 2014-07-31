@@ -75,13 +75,15 @@ long ItemLabel::getSummedStat(std::string statName) {
 }
 
 void ItemLabel::displayItemStats(std::ostringstream &contentHtml) {
-	long critChance = 1 + (ceil(item->getItemLevel()*getItemStatValue("CriticalChance")/2.0f)) + (getSummedStat("CriticalChance") - getItemStatValue("CriticalChance"));
+	long critChance = -1 + 2*getSummedItemStat("CriticalChance") + (ceil(item->getItemLevel()/2.0f)) + getPermBoostStatValue("CriticalChance");
 	if (critChance > 1) {
-		if (getSummedStat("CriticalChance") > getItemStatValue("CriticalChance")) {
-			contentHtml<<"<font color=#188EDE size=2>Critical Chance: +"<<critChance<<"%</font><br/>";
-		}
-		else {
-			contentHtml<<"<font color=#DBDBDB size=2>Critical Chance: +"<<critChance<<"%</font><br/>";
+		if (getSummedItemStat("CriticalChance") != 0) {
+			if (getSummedStat("CriticalChance") > getItemStatValue("CriticalChance")) {
+				contentHtml<<"<font color=#188EDE size=2>Critical Chance: +"<<critChance<<"%</font><br/>";
+			}
+			else {
+				contentHtml<<"<font color=#DBDBDB size=2>Critical Chance: +"<<critChance<<"%</font><br/>";
+			}
 		}
 	}
 	long strength = getSummedItemStat("StrengthBoost") + getSummedStat("Strength");
@@ -297,7 +299,7 @@ void ItemLabel::setupTooltip()
 				headerLabel->setText(newHeader.c_str());
 
 				contentHtml<<"<font color=#008000 size=2>Attack: "<<getSummedStat("AttackAPCost")<<" Action Point(s)</font><br/>";
-				float critDamage = (1 + getItemStatValue("CriticalDamage")/2.0f + (getSummedStat("CriticalDamage") - getItemStatValue("CriticalDamage"))/10.0f);
+				float critDamage = (1 + getSummedItemStat("CriticalDamage")/2.0f + getPermBoostStatValue("CriticalDamage")/10.0f);
 				if (critDamage > 1) {
 					if (getSummedStat("CriticalDamage") > getItemStatValue("CriticalDamage")) {
 						contentHtml<<"<font color=#188EDE size=2>Critical Damage: x"<<critDamage<<"</font><br/>";

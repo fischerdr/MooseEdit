@@ -55,7 +55,13 @@ ItemGeneral::~ItemGeneral()
 void ItemGeneral::on_amountEdit_textEdited(const QString &text)
 {
     LsbObject *amountObject = LsbReader::lookupByUniquePathEntity(item->getObject(), "Amount");
-	long value = boost::lexical_cast<long>(text.toStdString());
+	long value = 0;
+	try {
+		value = boost::lexical_cast<long>(text.toStdString());
+	} catch (const boost::bad_lexical_cast &e) {
+		;
+	}
+
 	amountObject->setData((char *)&value, sizeof(long));
 	
 	if (generalEditCallback != 0) {
@@ -66,7 +72,12 @@ void ItemGeneral::on_amountEdit_textEdited(const QString &text)
 void ItemGeneral::on_scaleEdit_textEdited(const QString &text)
 {
 	LsbObject *scaleObject = LsbReader::lookupByUniquePathEntity(item->getObject(), "Scale");
-	float value = boost::lexical_cast<float>(text.toStdString());
+	float value = 0;
+	try {
+		value = boost::lexical_cast<float>(text.toStdString());
+	} catch (const boost::bad_lexical_cast &e) {
+		;
+	}
 	scaleObject->setData((char *)&value, sizeof(float));
 	
 	if (generalEditCallback != 0) {
@@ -145,15 +156,19 @@ void ItemGeneral::on_levelEdit_textEdited(const QString &text)
 	if (statsDirectory == 0) {
 		statsDirectory = createStatsDirectory();
 	}
+	long value = 0;
+	try {
+		value = boost::lexical_cast<long>(text.toStdString());
+	} catch (const boost::bad_lexical_cast &e) {
+		;
+	}
 	if (statsDirectory != 0) {
 		LsbObject *levelObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "Level");
-		long value = boost::lexical_cast<long>(text.toStdString());
 		levelObject->setData((char *)&value, sizeof(long));
 	}
 	LsbObject *generationObject = LsbReader::lookupByUniquePathEntity(item->getObject(), "Generation");
 	if (generationObject != 0) {
 		LsbObject *generationLevelObject = LsbReader::lookupByUniquePathEntity(generationObject, "Level");
-		long value = boost::lexical_cast<long>(text.toStdString());
 		generationLevelObject->setData((char *)&value, sizeof(long));
 	}
 	
@@ -172,7 +187,12 @@ void ItemGeneral::on_duraEdit_textEdited(const QString &text)
 	}
 	if (statsDirectory != 0) {
 		LsbObject *durabilityObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "Durability");
-		long value = boost::lexical_cast<long>(text.toStdString());
+		long value = 0;
+		try {
+			value = boost::lexical_cast<long>(text.toStdString());
+		} catch (const boost::bad_lexical_cast &e) {
+			;
+		}
 		durabilityObject->setData((char *)&value, sizeof(long));
 	}
 	
@@ -189,15 +209,14 @@ void ItemGeneral::on_itemTypeCombo_currentIndexChanged(const QString &text)
 	if (statsDirectory == 0) {
 		statsDirectory = createStatsDirectory();
 	}
+	std::string value = text.toStdString();
 	if (statsDirectory != 0) {
 		LsbObject *itemTypeObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "ItemType");
-		std::string value = text.toStdString();
 		itemTypeObject->setData(value.c_str(), value.length() + 1);
 	}
 	LsbObject *generationObject = LsbReader::lookupByUniquePathEntity(item->getObject(), "Generation");
 	if (generationObject != 0) {
 		LsbObject *generationItemTypeObject = LsbReader::lookupByUniquePathEntity(generationObject, "ItemType");
-		std::string value = text.toStdString();
 		generationItemTypeObject->setData(value.c_str(), value.length() + 1);
 	}
 	
@@ -216,7 +235,12 @@ void ItemGeneral::on_repairDuraEdit_textEdited(const QString &text)
 	}
 	if (statsDirectory != 0) {
 		LsbObject *repairDuraObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "RepairDurabilityPenalty");
-		long value = boost::lexical_cast<long>(text.toStdString());
+		long value = 0;
+		try {
+			value = boost::lexical_cast<long>(text.toStdString());
+		} catch (const boost::bad_lexical_cast &e) {
+			;
+		}
 		repairDuraObject->setData((char *)&value, sizeof(long));
 	}
 	
