@@ -1,9 +1,7 @@
 todo:
-allow resizing of window and change default size to be smaller (keep max size)
 add more tooltip stuff
 figure out armor calculation
 add shield tooltips
-add critical chance / critical damage
 add stats dir if item template changes to include stats
 
 ---

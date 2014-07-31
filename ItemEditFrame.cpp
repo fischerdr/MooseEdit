@@ -249,7 +249,6 @@ public:
 		std::vector<StatsContainer *> containers;
 		containers.push_back(container);
 		itemEditFrame->modsView->addToTree(containers);
-		//itemEditFrame->item->addBoost(container);
 		LsbObject *itemObject = itemEditFrame->item->getObject();
 		LsbObject *generationObject = LsbReader::lookupByUniquePathEntity(itemObject, "Generation");
 		if (generationObject != 0) {

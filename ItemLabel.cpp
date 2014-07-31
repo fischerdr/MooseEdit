@@ -94,9 +94,8 @@ void ItemLabel::displayItemStats(std::ostringstream &contentHtml) {
 		contentHtml<<"<font color=#188EDE size=2>Range: +"<<range<<"</font><br/>";
 	}
 	
-	long movementBonus = getSummedStat("Movement") - getItemStatValue("Movement");
-	float movementF = (movementBonus)/100.0f + 0.04f*getItemStatValue("Movement")*item->getItemLevel() + 0.1f;
-	if (movementBonus > 0 || movementF > 0.1f) {
+	float movementF = getPermBoostStatValue("Movement")/100.0f + 0.04f*getSummedItemStat("Movement")*item->getItemLevel() + 0.1f;
+	if (getSummedStat("Movement") != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Movement: +"<<boost::format("%.2f") % movementF<<"</font><br/>";
 	}
 	long initiative = getSummedStat("Initiative");
@@ -141,6 +140,14 @@ void ItemLabel::displayItemStats(std::ostringstream &contentHtml) {
 	if (shield != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Shield Specialist: +"<<shield<<"</font><br/>";
 	}
+	long crafting = getSummedItemStat("Crafting");
+	if (crafting != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Crafting: +"<<crafting<<"</font><br/>";
+	}
+	long bodybuilding = getSummedItemStat("BodyBuilding");
+	if (bodybuilding != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Bodybuilding: +"<<bodybuilding<<"</font><br/>";
+	}
 	
 	long sight = getSummedItemStat("SightBoost") + getSummedStat("Sight");
 	float sightF = sight / 100.0f;
@@ -151,11 +158,6 @@ void ItemLabel::displayItemStats(std::ostringstream &contentHtml) {
 	float hearingF = hearing / 100.0f;
 	if (hearing != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Hearing: +"<<boost::format("%.2f") % hearingF<<"</font><br/>";
-	}
-	
-	long crafting = getSummedItemStat("Crafting");
-	if (crafting != 0) {
-		contentHtml<<"<font color=#188EDE size=2>Crafting: +"<<crafting<<"</font><br/>";
 	}
 	
 	long fire = getSummedItemStat("Fire") * 5;
