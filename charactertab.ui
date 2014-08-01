@@ -13,6 +13,16 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QToolTip {
+     border: 2px rgb(85, 85, 0);
+     padding: 5px;
+     border-radius: 3px;
+     opacity: 200;
+	background-color: rgb(0, 0, 0);
+	color: rgb(255, 255, 255);
+ }</string>
+  </property>
   <widget class="QFrame" name="frame">
    <property name="geometry">
     <rect>
@@ -102,6 +112,9 @@
       <bold>true</bold>
      </font>
     </property>
+    <property name="toolTip">
+     <string>Speed</string>
+    </property>
     <property name="styleSheet">
      <string notr="true">background: transparent;
 </string>
@@ -127,6 +140,9 @@
       <weight>75</weight>
       <bold>true</bold>
      </font>
+    </property>
+    <property name="toolTip">
+     <string>Constitution</string>
     </property>
     <property name="styleSheet">
      <string notr="true">background: transparent;
@@ -154,6 +170,9 @@
       <bold>true</bold>
      </font>
     </property>
+    <property name="toolTip">
+     <string>Intelligence</string>
+    </property>
     <property name="styleSheet">
      <string notr="true">background: transparent;
 </string>
@@ -179,6 +198,9 @@
       <weight>75</weight>
       <bold>true</bold>
      </font>
+    </property>
+    <property name="toolTip">
+     <string>Dexterity</string>
     </property>
     <property name="styleSheet">
      <string notr="true">background: transparent;
@@ -207,6 +229,9 @@
       <bold>true</bold>
      </font>
     </property>
+    <property name="toolTip">
+     <string>Strength</string>
+    </property>
     <property name="styleSheet">
      <string notr="true">background: transparent;
 </string>
@@ -232,6 +257,9 @@
       <weight>75</weight>
       <bold>true</bold>
      </font>
+    </property>
+    <property name="toolTip">
+     <string>Perception</string>
     </property>
     <property name="styleSheet">
      <string notr="true">background: transparent;
@@ -321,8 +349,625 @@ QScrollBar::down-arrow:vertical {
      </property>
     </widget>
    </widget>
+   <widget class="QTabWidget" name="tabWidget">
+    <property name="geometry">
+     <rect>
+      <x>360</x>
+      <y>80</y>
+      <width>221</width>
+      <height>431</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="cursor">
+     <cursorShape>ArrowCursor</cursorShape>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QTabWidget::pane {
+	border:0px solid black;
+}
+
+ QTabWidget::tab-bar {
+    alignment: center;
+ }
+
+ QTabBar::tab {
+	margin: 0px;
+     width: 41px;
+	height: 38px;
+ }
+
+ QTabBar::tab::hover {
+	border-top: 2px solid black;
+ }
+
+ QTabBar::tab::selected {
+	margin: 0px;
+	border-color: 0px solid black;
+ }
+</string>
+    </property>
+    <property name="tabPosition">
+     <enum>QTabWidget::North</enum>
+    </property>
+    <property name="tabShape">
+     <enum>QTabWidget::Rounded</enum>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>41</width>
+      <height>38</height>
+     </size>
+    </property>
+    <property name="usesScrollButtons">
+     <bool>true</bool>
+    </property>
+    <widget class="QWidget" name="tab">
+     <attribute name="icon">
+      <iconset resource="resources.qrc">
+       <normaloff>:/inventoryButton.png</normaloff>
+       <normalon>:/sel_inventoryButton.png</normalon>:/inventoryButton.png</iconset>
+     </attribute>
+     <attribute name="title">
+      <string/>
+     </attribute>
+     <attribute name="toolTip">
+      <string>Equipment</string>
+     </attribute>
+     <layout class="QGridLayout" name="gridLayout">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="pixmap">
+         <pixmap resource="resources.qrc">:/inventory_empty.png</pixmap>
+        </property>
+        <property name="scaledContents">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="icon">
+      <iconset resource="resources.qrc">
+       <normaloff>:/abilitiesButton.png</normaloff>
+       <normalon>:/sel_abilitiesButton.png</normalon>:/abilitiesButton.png</iconset>
+     </attribute>
+     <attribute name="title">
+      <string/>
+     </attribute>
+     <attribute name="toolTip">
+      <string>Abilities</string>
+     </attribute>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QWidget" name="widget" native="true">
+        <property name="styleSheet">
+         <string notr="true">QWidget {
+	background-image: url(:/game_parchment.png);
+}</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_5">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="QFrame" name="frame_5">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QFrame  {
+	background-image: url(:/game_parchment.png);
+}</string>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Raised</enum>
+           </property>
+           <widget class="QLabel" name="label_5">
+            <property name="geometry">
+             <rect>
+              <x>50</x>
+              <y>0</y>
+              <width>51</width>
+              <height>16</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Available: </string>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="lineEdit_4">
+            <property name="geometry">
+             <rect>
+              <x>100</x>
+              <y>0</y>
+              <width>41</width>
+              <height>20</height>
+             </rect>
+            </property>
+           </widget>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QToolBox" name="toolBox_3">
+           <property name="styleSheet">
+            <string notr="true">QToolBox {
+	background-image: url(:/game_parchment.png);
+}
+
+QToolBox::tab {
+	border-image: url(:/tooltipPanelBorder.png);
+	color: rgb(255, 255, 255);
+ }
+</string>
+           </property>
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="page_15">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>221</width>
+              <height>184</height>
+             </rect>
+            </property>
+            <attribute name="label">
+             <string>Weapons</string>
+            </attribute>
+           </widget>
+           <widget class="QWidget" name="page_16">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>203</width>
+              <height>160</height>
+             </rect>
+            </property>
+            <attribute name="label">
+             <string>Defence</string>
+            </attribute>
+           </widget>
+           <widget class="QWidget" name="page_17">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>100</width>
+              <height>30</height>
+             </rect>
+            </property>
+            <attribute name="label">
+             <string>Skills</string>
+            </attribute>
+           </widget>
+           <widget class="QWidget" name="page_18">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>100</width>
+              <height>30</height>
+             </rect>
+            </property>
+            <attribute name="label">
+             <string>Personality</string>
+            </attribute>
+           </widget>
+           <widget class="QWidget" name="page_19">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>100</width>
+              <height>30</height>
+             </rect>
+            </property>
+            <attribute name="label">
+             <string>Craftsmanship</string>
+            </attribute>
+           </widget>
+           <widget class="QWidget" name="page_20">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>100</width>
+              <height>30</height>
+             </rect>
+            </property>
+            <attribute name="label">
+             <string>Nasty Deeds</string>
+            </attribute>
+           </widget>
+           <widget class="QWidget" name="page_21">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>100</width>
+              <height>30</height>
+             </rect>
+            </property>
+            <attribute name="label">
+             <string>Other</string>
+            </attribute>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="tab_3">
+     <attribute name="icon">
+      <iconset resource="resources.qrc">
+       <normaloff>:/talentsButton.png</normaloff>
+       <normalon>:/sel_talentsButton.png</normalon>:/talentsButton.png</iconset>
+     </attribute>
+     <attribute name="title">
+      <string/>
+     </attribute>
+     <attribute name="toolTip">
+      <string>Talents</string>
+     </attribute>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <item row="1" column="0">
+       <widget class="QWidget" name="widget_2" native="true">
+        <property name="styleSheet">
+         <string notr="true">QWidget {
+	background-image: url(:/game_parchment.png);
+}</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_6">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="QFrame" name="frame_4">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Raised</enum>
+           </property>
+           <widget class="QLabel" name="label_4">
+            <property name="geometry">
+             <rect>
+              <x>50</x>
+              <y>0</y>
+              <width>51</width>
+              <height>16</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Available: </string>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="lineEdit_3">
+            <property name="geometry">
+             <rect>
+              <x>100</x>
+              <y>0</y>
+              <width>41</width>
+              <height>20</height>
+             </rect>
+            </property>
+           </widget>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QListWidget" name="listWidget">
+           <property name="styleSheet">
+            <string notr="true">QListWidget  {
+    show-decoration-selected: 1;
+	background-image: url(:/game_parchment.png);
+}
+ 
+QListWidget::item:hover  {
+    background: #ABABAB;
+}
+
+QListWidget::indicator:!checked  {
+	color: rgb(63, 50, 34);
+	image: none;
+}
+
+QListWidget::indicator:checked  {
+	color: rgb(0, 0, 0);
+	image: url(:/selected_diamond.png);
+}</string>
+           </property>
+           <item>
+            <property name="text">
+             <string>Test1</string>
+            </property>
+            <property name="checkState">
+             <enum>Unchecked</enum>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Test2</string>
+            </property>
+            <property name="checkState">
+             <enum>Unchecked</enum>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="tab_4">
+     <property name="styleSheet">
+      <string notr="true">tab_4 {
+	background-image: url(:/game_parchment.png);
+}</string>
+     </property>
+     <attribute name="icon">
+      <iconset resource="resources.qrc">
+       <normaloff>:/traitsButton.png</normaloff>
+       <normalon>:/sel_traitsButton.png</normalon>:/traitsButton.png</iconset>
+     </attribute>
+     <attribute name="title">
+      <string/>
+     </attribute>
+     <attribute name="toolTip">
+      <string>Traits</string>
+     </attribute>
+     <layout class="QGridLayout" name="gridLayout_4">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QFrame" name="frame_2">
+        <property name="styleSheet">
+         <string notr="true">QFrame {
+	background-image: url(:/game_parchment.png);
+}</string>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QFrame" name="frame_3">
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Raised</enum>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="label_2">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                  <horstretch>30</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Altruistic</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_3">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                  <horstretch>30</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Egotistical</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QLineEdit" name="lineEdit_2">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>3</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QScrollBar" name="horizontalScrollBar">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>55</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximum">
+                 <number>100</number>
+                </property>
+                <property name="sliderPosition">
+                 <number>50</number>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="lineEdit">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>3</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>520</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Skills</string>
+    </property>
+   </widget>
+   <zorder>prevCharButton</zorder>
+   <zorder>nextCharButton</zorder>
+   <zorder>spdEdit</zorder>
+   <zorder>consEdit</zorder>
+   <zorder>intEdit</zorder>
+   <zorder>dexEdit</zorder>
+   <zorder>strEdit</zorder>
+   <zorder>perEdit</zorder>
+   <zorder>nameEdit</zorder>
+   <zorder>inventoryScrollArea</zorder>
+   <zorder>tabWidget</zorder>
+   <zorder>pushButton</zorder>
+   <zorder>frame_2</zorder>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -214,3 +214,13 @@ void characterTab::showEvent(QShowEvent *)
 	}
 	QTimer::singleShot(0, this, SLOT(redraw_inventory()));
 }
+
+void characterTab::on_listWidget_itemClicked(QListWidgetItem *item)
+{
+	if (item->checkState() == Qt::Checked) {
+		item->setCheckState(Qt::Unchecked);
+	}
+	else {
+		item->setCheckState(Qt::Checked);
+	}
+}

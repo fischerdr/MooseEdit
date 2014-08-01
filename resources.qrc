@@ -17,5 +17,17 @@
         <file>folder.png</file>
         <file>folder-open.png</file>
         <file>seamless-castle-wall.jpg</file>
+        <file>inventory_empty.png</file>
+        <file>toolbar-button.png</file>
+        <file>game_parchment.png</file>
+        <file>abilitiesButton.png</file>
+        <file>inventoryButton.png</file>
+        <file>sel_abilitiesButton.png</file>
+        <file>sel_inventoryButton.png</file>
+        <file>sel_talentsButton.png</file>
+        <file>sel_traitsButton.png</file>
+        <file>talentsButton.png</file>
+        <file>traitsButton.png</file>
+        <file>selected_diamond.png</file>
     </qresource>
 </RCC>

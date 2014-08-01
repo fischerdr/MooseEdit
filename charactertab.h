@@ -59,6 +59,8 @@ private slots:
 	void on_inventoryScrollArea_customContextMenuRequested(const QPoint &pos);
 	
 	void redraw_inventory();
+
+	void on_listWidget_itemClicked(QListWidgetItem *item);
 	
 protected:
 	void showEvent(QShowEvent *);
