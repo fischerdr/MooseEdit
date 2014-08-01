@@ -148,6 +148,10 @@ void ItemLabel::displayItemStats(std::ostringstream &contentHtml) {
 	if (bodybuilding != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Bodybuilding: +"<<bodybuilding<<"</font><br/>";
 	}
+	long lockpicking = getSummedItemStat("LockPicking");
+	if (lockpicking != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Lock-picking: +"<<lockpicking<<"</font><br/>";
+	}
 	
 	long sight = getSummedItemStat("SightBoost") + getSummedStat("Sight");
 	float sightF = sight / 100.0f;
