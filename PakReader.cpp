@@ -48,10 +48,10 @@ bool PakReader::loadFile(std::string fileName) {
 	HEADER_PAK pakHeader;
 	if (input) {
 		input.read((char *)&pakHeader, sizeof(HEADER_PAK));
-		if (pakHeader.version != this->expectedVersion) {
-			input.close();
-			return false;
-		}
+//		if (pakHeader.version > this->expectedVersion) {
+//			input.close();
+//			return false;
+//		}
 		long dataHeaderSize = sizeof(HEADER_PAK_FILEINFO) * pakHeader.fileCount;
 		long headerEnd = sizeof(HEADER_PAK) + dataHeaderSize;
 		dataStart = getNextBlock(headerEnd);
@@ -66,6 +66,8 @@ bool PakReader::loadFile(std::string fileName) {
 				return false;
 			}
 		}
+	} else {
+		return false;
 	}
 	input.close();
 	return true;
