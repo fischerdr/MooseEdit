@@ -77,7 +77,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	QDesktopWidget widget;
 	QRect mainScreenSize = widget.availableGeometry(widget.primaryScreen());
 	if (mainScreenSize.height() <= 800) {
-		this->resize(this->width(), this->height() * 0.85f);
+		this->resize(this->width(), this->height() * 0.78f);
 	}
 	
 	QPushButton *openFileButton = this->findChild<QPushButton *>("devOpenFileButton");
