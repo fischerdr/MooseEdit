@@ -424,6 +424,54 @@ void ItemLabel::setupTooltip()
 				}
 			}
 			
+			if (itemStats->getType() == "Shield") {
+				if (getSummedItemStat("Armor Defense Value") != 0) {
+					contentHtml<<"<font color=#DBDBDB size=5>Armour rating: "<<getSummedItemStat("Armor Defense Value")<<"</font><br/>";
+				}
+				if (getSummedItemStat("Blocking") != 0) {
+					long block = 6 + item->getItemLevel() * 0.184962f * getSummedItemStat("Blocking");
+					contentHtml<<"<font color=#DBDBDB size=5>Blocking: "<<block<<"%</font><br/>";
+				}
+				
+				std::string prefix = "";
+				std::string suffix = "";
+				for (int i=0; i<boosts.size(); ++i) {
+					StatsContainer *boostStats = boosts[i];
+					
+					StatsContainer *itemBoost = 0;
+					if (boostStats != 0) {
+						long itemRandom = item->getGenerationRandom();
+						if (boostStats->getPrefixList().size() > 0 && prefix.size() == 0) {
+							prefix = boostStats->getPrefixList()[itemRandom % boostStats->getPrefixList().size()];
+						}
+						else if (boostStats->getSuffixList().size() > 0 && suffix.size() == 0) {
+							suffix = boostStats->getSuffixList()[itemRandom % boostStats->getSuffixList().size()];
+						}
+						itemBoost = GenStatsReader::getContainer(allItemStats, boostStats->getBoostName());
+					}
+				}
+				std::string newHeader = "";
+				if (prefix.size() > 0) {
+					newHeader += prefix;
+					newHeader += " ";
+				}
+				newHeader += item->getItemName();
+				if (suffix.size() > 0) {
+					newHeader += " ";
+					newHeader += suffix;
+				}
+				headerLabel->setText(newHeader.c_str());
+				
+				//bonus stats
+				displayItemStats(contentHtml);
+				
+				contentHtml<<"<font color=#DBDBDB size=2>Durability "<<item->getDurability()<<"/"<<getSummedStat("Durability")<<"0</font><br/>";
+				std::string requirementsText = itemStats->getData("Requirements");
+				if (requirementsText.size() > 0) {
+					contentHtml<<"<font color=#707070 size=2>Requires "<<itemStats->getData("Requirements")<<"</font><br/>";
+				}
+			}
+			
 		}
 	}
 	
