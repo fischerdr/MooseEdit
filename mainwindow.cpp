@@ -33,6 +33,7 @@
 #include <Shlobj.h>
 #include <QResizeEvent>
 #include <QDesktopWidget>
+#include <QProgressDialog>
 
 #define realpath(N,R) _fullpath((R),(N),_MAX_PATH)
 
@@ -94,6 +95,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	findShortcut->setContext(Qt::ApplicationShortcut);
 	treeWidget->connect(findShortcut, SIGNAL(activated()), this, SLOT(treeFindAction()));
 	//this->connect(loadFileWidget, SIGNAL(itemChanged(QListWidgetItem*)), SLOT(on_loadFileWidget_itemChanged(QListWidgetItem*)));
+	QListWidget *pakListWidget = this->findChild<QListWidget *>("pakListWidget");
+	pakListWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 	
 	QStatusBar *statusBar = this->findChild<QStatusBar *>("statusBar");
 	std::string versionString = "Version ";
@@ -751,13 +754,12 @@ void MainWindow::handleLoadButton() {
 
 void MainWindow::handleOpenFileButton() {
 	std::ostringstream stream;
-	//stream<<"C:\\Users\\"<<username<<"\\Documents\\Larian Studios\\Divinity Original Sin\\PlayerProfiles\\";
 	stream<<this->getSaveLocation();
 	QString result = QFileDialog::getOpenFileName(this,
-	     QString("Open LSB"), stream.str().c_str(), QString("LSB Files (*.lsb)"));
+												  QString("Open LSB"), stream.str().c_str(), QString("LSB Files (*.lsb)"));
 	if (result.size() != 0) {
 		std::ifstream fin(result.toStdString().c_str(),
-			std::ios_base::binary);
+						  std::ios_base::binary);
 		LsbReader reader;
 		std::vector<LsbObject *> directoryList = reader.loadFile(fin);
 		fin.close();
@@ -771,7 +773,7 @@ void MainWindow::handleOpenFileButton() {
 			msgBox.setText("Bad data");
 			msgBox.exec();
 		}
-}
+	}
 }
 
 MainWindow::~MainWindow()
@@ -1163,4 +1165,67 @@ void MainWindow::on_savesFolderEdit_textChanged(const QString &text)
 		}
 	}
 	fin.close();
+}
+
+void MainWindow::on_pakOpenButton_released()
+{
+	std::ostringstream stream;
+	stream<<this->getGameDataLocation();
+	QString result = QFileDialog::getOpenFileName(this,
+												  QString("Open PAK"), stream.str().c_str(), QString("PAK Files (*.pak)"));
+	if (result.size() != 0) {
+		userPakFileName = result.toStdString();
+		userPakReader.loadFile(userPakFileName);
+		std::vector<std::string> fileList = userPakReader.getFileList();
+		QListWidget *pakListWidget = this->findChild<QListWidget *>("pakListWidget");
+		pakListWidget->clear();
+		if (fileList.size() != 0) {
+			for (int i=0; i<fileList.size(); ++i) {
+				pakListWidget->addItem(fileList[i].c_str());
+			}
+		}
+		else {
+			QMessageBox msgBox;
+			msgBox.setText("Bad data");
+			msgBox.exec();
+		}
+	}
+}
+
+void MainWindow::on_pakListWidget_customContextMenuRequested(const QPoint &pos)
+{
+	QListWidget *pakListWidget = this->findChild<QListWidget *>("pakListWidget");
+	
+    QMenu menu;
+	menu.addAction("&Extract to...");
+	QAction *result = menu.exec(pakListWidget->mapToGlobal(pos));
+	if (result != 0) {
+		if (result->text() == "&Extract to...") {
+			QFileDialog fileDialog;
+			fileDialog.setFileMode(QFileDialog::Directory);
+			fileDialog.setOption(QFileDialog::ShowDirsOnly, true);
+			if (fileDialog.exec()) {
+				if (fileDialog.selectedFiles().size() == 1) {
+					std::string folderName = fileDialog.selectedFiles()[0].toStdString();
+					QProgressDialog progress("Extracting...", "Cancel", 0, pakListWidget->selectedItems().size(), this);
+					progress.setWindowModality(Qt::WindowModal);
+					for (int i=0; i<pakListWidget->selectedItems().size(); ++i) {
+						if (progress.wasCanceled()) {
+							progress.close();
+							break;
+						}
+						QListWidgetItem *item = pakListWidget->selectedItems()[i];
+						std::string text = item->text().toStdString();
+						userPakReader.extractFile(userPakFileName, text, folderName, true);
+						progress.setValue(i + 1);
+					}
+					if (!progress.wasCanceled()) {
+						QMessageBox qmsg;
+						qmsg.setText("Done");
+						qmsg.exec();
+					}
+				}
+			}
+		}
+	}
 }

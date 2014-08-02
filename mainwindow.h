@@ -10,6 +10,7 @@
 #include "ItemGroup.h"
 #include "TextureAtlas.h"
 #include "GenStatsReader.h"
+#include "PakReader.h"
 
 #define PRG_VERSION	"alpha8"
 
@@ -76,6 +77,10 @@ private slots:
 	
 	void on_savesFolderEdit_textChanged(const QString &arg1);
 	
+	void on_pakOpenButton_released();
+	
+	void on_pakListWidget_customContextMenuRequested(const QPoint &pos);
+	
 private:
 	float aspect;
 	QTreeWidgetItem *findInTreeHelper(QTreeWidgetItem *item, QString text, int column, QTreeWidgetItem *position, bool& valid, QTreeWidgetItem *& firstItem);
@@ -96,6 +101,8 @@ private:
 	std::string getSteamPathFromRegistry();
 	std::string getSaveLocation();
 	std::string getGameDataLocation();
+	PakReader userPakReader;
+	std::string userPakFileName;
 };
 
 #endif // MAINWINDOW_H

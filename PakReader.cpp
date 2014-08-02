@@ -1,6 +1,9 @@
 #include "PakReader.h"
 #include <fstream>
 #include <sstream>
+#include <boost/tokenizer.hpp>
+#include <sys/stat.h>
+#include <unistd.h>
 
 long PakReader::getNextBlock(long offset) {
 	return offset - (offset % BLOCK_SIZE) + BLOCK_SIZE;
@@ -81,7 +84,6 @@ std::vector<std::string> PakReader::getFileList() {
 	return fileList;
 }
 
-//TODO: implement preservePath
 bool PakReader::extractFile(std::string fileName, std::string& filePath, std::string& destination, bool preservePath) {
 	HEADER_PAK_FILEINFO *info = getHeaderForFile(filePath);
 	if (info != 0) {
@@ -95,6 +97,8 @@ bool PakReader::extractFile(std::string fileName, std::string& filePath, std::st
 			input.close();
 			return false;
 		}
+		char cwd[1024];
+		getcwd(cwd, sizeof(cwd));
 		std::ostringstream ss;
 		if (!preservePath) {
 			std::string extractFileName = info->fileName;
@@ -105,6 +109,24 @@ bool PakReader::extractFile(std::string fileName, std::string& filePath, std::st
 			else {
 				ss<<destination<<(destination[destination.size() - 1] == '/' ? "" : "/")<<extractFileName.substr(lastPathDelimiter + 1);
 			}
+		} else {
+			boost::char_separator<char> sep("\\/");
+			typedef boost::tokenizer<boost::char_separator<char> > PathTokenizer;
+			std::string name = info->fileName;
+			PathTokenizer tok(name, sep);
+			std::string lastToken = "";
+			chdir(destination.c_str());
+			ss<<destination<<(destination[destination.size() - 1] == '/' ? "" : "/");
+			for (PathTokenizer::iterator it = tok.begin(); it != tok.end(); ++it) {
+				std::string token = *it;
+				if (lastToken.length() != 0) {
+					mkdir(lastToken.c_str());
+					chdir(lastToken.c_str());
+					ss<<lastToken<<"/";
+				}
+				lastToken = token;
+			}
+			ss<<lastToken;
 		}
 		std::ofstream outFile(ss.str().c_str(), std::ios_base::binary);
 		outFile.write(alloc, info->fileSize);
@@ -116,6 +138,7 @@ bool PakReader::extractFile(std::string fileName, std::string& filePath, std::st
 		}
 		outFile.close();
 		input.close();
+		chdir(cwd);
 		return true;
 	}
 	return false;

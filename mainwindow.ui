@@ -270,22 +270,6 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_7">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <attribute name="title">
-        <string>Waypoints</string>
-       </attribute>
-      </widget>
-      <widget class="QWidget" name="tab_8">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <attribute name="title">
-        <string>Quests</string>
-       </attribute>
-      </widget>
       <widget class="QWidget" name="tab_3">
        <attribute name="title">
         <string>Dev</string>
@@ -356,7 +340,25 @@
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3">
         <item row="0" column="0">
-         <widget class="QListWidget" name="pakListWidget"/>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QPushButton" name="pakOpenButton">
+            <property name="text">
+             <string>Open File</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="4" column="0">
+         <widget class="QListWidget" name="pakListWidget">
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::ExtendedSelection</enum>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
