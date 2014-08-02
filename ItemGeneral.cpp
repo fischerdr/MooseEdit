@@ -166,11 +166,12 @@ void ItemGeneral::on_levelEdit_textEdited(const QString &text)
 		LsbObject *levelObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "Level");
 		levelObject->setData((char *)&value, sizeof(long));
 	}
-	LsbObject *generationObject = LsbReader::lookupByUniquePathEntity(item->getObject(), "Generation");
-	if (generationObject != 0) {
-		LsbObject *generationLevelObject = LsbReader::lookupByUniquePathEntity(generationObject, "Level");
-		generationLevelObject->setData((char *)&value, sizeof(long));
-	}
+//	LsbObject *generationObject = LsbReader::lookupByUniquePathEntity(item->getObject(), "Generation");
+//	if (generationObject != 0) {
+//		LsbObject *generationLevelObject = LsbReader::lookupByUniquePathEntity(generationObject, "Level");
+//		//WARNING: level is short here
+//		generationLevelObject->setData((char *)&value, sizeof(long));
+//	}
 	
 	refreshGeneralData();
 	
