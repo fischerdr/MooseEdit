@@ -417,17 +417,17 @@ bool LsbReader::readTagData(std::istream& input, long readSize, std::stack<LsbOb
 					input.read(readBuf, dataSize);
 					////std::cout<<":BLa:"<<bytesLeft<<":";
 					bytesLeft -= dataSize;
-					std::string textOut;
-					if (type == 4 || type == 1 || type == 0 || currentNodeIsDirectory) {
-						long value;
-						*(&value) = *((long*)readBuf);
-						std::ostringstream ss;
-						ss<<value;
-						textOut = ss.str();
-					}
-					else {
-						textOut = readBuf;
-					}
+//					std::string textOut;
+//					if (type == 4 || type == 1 || type == 0 || currentNodeIsDirectory) {
+//						long value;
+//						*(&value) = *((long*)readBuf);
+//						std::ostringstream ss;
+//						ss<<value;
+//						textOut = ss.str();
+//					}
+//					else {
+//						textOut = readBuf;
+//					}
 					//std::cout<<"type = "<<(void*)type<<", "<<"buffer = '"<<textOut<<"' ["<<(currentNodeIsDirectory ? "dir" : "item")<<"]"<<((void*)(long)input.tellg())<<"\n";
 					
 					long value = *((long*)readBuf);
