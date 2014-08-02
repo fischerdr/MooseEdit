@@ -159,12 +159,12 @@ std::string MainWindow::getSteamPathFromRegistry() {
 			text = buf;
 		}
 		else {
-			MessageBoxA(0, (boost::format("Failed to read registry key: %s") % returnVal).str().c_str(), 0, 0);
+			//MessageBoxA(0, (boost::format("Failed to read registry key: %s") % returnVal).str().c_str(), 0, 0);
 		}
 		RegCloseKey(hKey);
 	}
 	else {
-		MessageBoxA(0, (boost::format("Failed to open registry key: %s") % returnVal).str().c_str(), 0, 0);
+		//MessageBoxA(0, (boost::format("Failed to open registry key: %s") % returnVal).str().c_str(), 0, 0);
 	}
 	#endif
 	return text;
@@ -1052,10 +1052,23 @@ void MainWindow::on_treeWidget_itemChanged(QTreeWidgetItem *item, int column)
 		if (type >= 0x14 && type <= 0x19) {
 			editable->object->setData(text.c_str(), text.length() + 1);
 		} else if (type == 0x04) {
-			long value = boost::lexical_cast<long>(text);
+			long value = 0;
+			try {
+				value = boost::lexical_cast<long>(text);
+			} catch (const boost::bad_lexical_cast& e) {
+				
+			}
+
 			editable->object->setData((char *)&value, sizeof(long));
 		} else if (type == 0x05) {
-			unsigned long value = boost::lexical_cast<unsigned long>(text);
+			unsigned long value = 0;
+			try {
+				value = boost::lexical_cast<unsigned long>(text);
+			}
+			catch (const boost::bad_lexical_cast& e) {
+				;
+			}
+
 			editable->object->setData((char *)&value, sizeof(unsigned long));
 		}
 	}
