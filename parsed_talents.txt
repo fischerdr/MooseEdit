@@ -235,11 +235,11 @@ data "id" "59"
 data "tip" "A character with Lone Wolf can no longer have a companion but receives a [2]% bonus to base vitality, [3] bonus to Recovery and maximum Action Points and an extra ability point on level up."
 
 new entry "Zombie"
-data "id" "60"
+data "id" "61"
 data "tip" "Zombie lets you heal from poison but causes damage from regular healing."
 
 new entry "Demon"
-data "id" "61"
+data "id" "62"
 data "tip" "A character with Demon has a chance to burn an opponent who strikes with a melee weapon, but takes a [2]% penalty to [3]."
 
 new entry "Ice King"
