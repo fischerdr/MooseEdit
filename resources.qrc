@@ -29,5 +29,6 @@
         <file>talentsButton.png</file>
         <file>traitsButton.png</file>
         <file>selected_diamond.png</file>
+        <file>parsed_talents.txt</file>
     </qresource>
 </RCC>

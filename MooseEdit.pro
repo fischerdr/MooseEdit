@@ -39,7 +39,8 @@ SOURCES += main.cpp\
     ItemEditFrame.cpp \
     StatsView.cpp \
     ItemGeneral.cpp \
-    RelativePositionLayout.cpp
+    RelativePositionLayout.cpp \
+    CheckboxListItem.cpp
 
 HEADERS  += mainwindow.h \
     LsbReader.h \
@@ -62,7 +63,8 @@ HEADERS  += mainwindow.h \
     ItemEditFrame.h \
     StatsView.h \
     ItemGeneral.h \
-    RelativePositionLayout.h
+    RelativePositionLayout.h \
+    CheckboxListItem.h
 
 FORMS    += mainwindow.ui \
     charactertab.ui \

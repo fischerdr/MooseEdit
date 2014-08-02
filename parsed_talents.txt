@@ -1,0 +1,315 @@
+new entry "Spook"
+data "id" "0"
+data "tip" "Spook improves your telekinetic abilities."
+
+new entry "Tinkerer"
+data "id" "1"
+data "tip" "Tinkerer improves your ability to brew potions, prepare food, write scrolls..."
+
+new entry "Sidewinder"
+data "id" "2"
+data "tip" "Sidewinder removes your defence penalty when flanked."
+
+new entry "Opportunist"
+data "id" "3"
+data "tip" "Opportunist gives you the ability to perform attacks of opportunity."
+
+new entry "Assassin"
+data "id" "4"
+data "tip" "Assassin allows you to backstab enemies with weapons other than a knife."
+
+new entry "Trader's Tongue"
+data "id" "5"
+data "tip" "Trader's Tongue improves your bartering techniques."
+
+new entry "Cat Burglar"
+data "id" "6"
+data "tip" "Cat Burglar improves your aptitude at picking locks."
+
+new entry "Marksman"
+data "id" "7"
+data "tip" "Marksman improves your chances to hit an opponent with ranged weapons in battle."
+
+new entry "Gladiator"
+data "id" "8"
+data "tip" "Gladiator improves your chances of hitting an opponent with melee weapons in battle."
+
+new entry "Warlord"
+data "id" "9"
+data "tip" "Warlord increases overall damage by [2]%."
+
+new entry "Fleetfooted"
+data "id" "10"
+data "tip" "Fleetfooted increases your maximum Action Points by [2]."
+
+new entry "Rosy-Cheeked"
+data "id" "11"
+data "tip" "Rosy-Cheeked increases your maximum Action Points by [2]."
+
+new entry "Killer Instinct"
+data "id" "12"
+data "tip" "Killer Instinct improves your chance to land critical hits by [2]%."
+
+new entry "Indestructible"
+data "id" "13"
+data "tip" "Indestructible improves your armour rating."
+
+new entry "Eagle Eyes"
+data "id" "14"
+data "tip" "Eagle Eyes improves the impact of Perception on your line of sight by [2]%."
+
+new entry "Braveheart"
+data "id" "15"
+data "tip" "Braveheart increases your ability to resist fear by [2]%."
+
+new entry "Stand Your Ground2"
+data "id" "16"
+data "tip" "Stand Your Ground increases your ability to resist knockdown attacks by [2]%."
+
+new entry "Lightning Rod"
+data "id" "17"
+data "tip" "Lightning Rod increases your ability to resist stun attacks by [2]%."
+
+new entry "Mithridates"
+data "id" "18"
+data "tip" "Mithridates increases your ability to resist poison by [2]%."
+
+new entry "Silver-tongued"
+data "id" "19"
+data "tip" "Silver-tongued increases your ability to resist being silenced by [2]%. (When silenced you can no longer cast spells until the effect wears off.)"
+
+new entry "Comeback Kid"
+data "id" "20"
+data "tip" "When an opponent lands the blow that should kill you, Comeback Kid will leave you with 1 health as long as you had more than 1 left."
+
+new entry "Packmule"
+data "id" "21"
+data "tip" "Packmule increases the amount of weight you can carry."
+
+new entry "Catapult"
+data "id" "22"
+data "tip" "Catapult increases the max weight of objects you can throw and increases how far you can toss them."
+
+new entry "Grease Monkey"
+data "id" "23"
+data "tip" "Grease Monkey improves your ability to repair damaged items."
+
+new entry "Quick-Witted"
+data "id" "24"
+data "tip" "Quick-Witted increases the rate at which you gain experience by [2]%."
+
+new entry "Bigger and Better"
+data "id" "25"
+data "tip" "Bigger and Better gives you [2] extra Attribute Point(s) to spend."
+
+new entry "All Skilled Up"
+data "id" "26"
+data "tip" "All Skilled Up gives you [2] extra Ability Points to spend."
+
+new entry "My Precious"
+data "id" "27"
+data "tip" "With My Precious, every time you hit or get hit, your gear has a [2]% chance of not losing durability."
+
+new entry "Sixth Sense"
+data "id" "28"
+data "tip" "Sixth Sense increases your ability to hear and spot (hidden) things in and out of combat."
+
+new entry "Picture of Health"
+data "id" "29"
+data "tip" "Picture of Health increases your total hitpoints by [2]%."
+
+new entry "Pyromaniac"
+data "id" "30"
+data "tip" "Pyromaniac improves your casting ability for fire-based spells."
+
+new entry "Rainman"
+data "id" "32"
+data "tip" "Rainman improves your casting ability for water-based spells.
+
+new entry "Tempest"
+data "id" "33"
+data "tip" "Tempest improves your casting ability for air-based spells."
+
+new entry "Prince Charming"
+data "id" "34"
+data "tip" "Prince Charming improves your ability to Charm people during dialogs."
+
+new entry "Intimidator"
+data "id" "35"
+data "tip" "Intimidator improves your ability to Intimidate people during dialogues."
+
+new entry "Rhetorician"
+data "id" "36"
+data "tip" "Rhetorician improves your ability to Reason with people during dialogues."
+
+new entry "Fortune's Favourite"
+data "id" "37"
+data "tip" "Fortune's Favourite increases your overall luck."
+
+new entry "Leader of the Pack"
+data "id" "38"
+data "tip" "Leader of the Pack increases your initiative by [2] at the onset of combat."
+
+new entry "Dress Rehearsal"
+data "id" "39"
+data "tip" "Dress Rehearsal decreases the number of Action Points it takes to equip different items during combat."
+
+new entry "Pussyfooter"
+data "id" "40"
+data "tip" "Pussyfooter makes you less prone to be detected while performing suspicious acts."
+
+new entry "Pet Pal"
+data "id" "41"
+data "tip" "Pet Pal enables you to talk to animals."
+
+new entry "Escapist"
+data "id" "42"
+data "tip" "Escapist allows you to flee combat even when enemies are right next to you."
+
+new entry "Stand Your Ground"
+data "id" "43"
+data "tip" "A character with Stand Your Ground cannot be knocked down."
+
+new entry "Guerrilla"
+data "id" "44"
+data "tip" "Guerrilla doubles your attack damage while sneaking."
+
+new entry "Light Stepper"
+data "id" "45"
+data "tip" "1
+
+new entry "Morning Person"
+data "id" "46"
+data "tip" "When resurrected, you revive to full health."
+
+new entry "Scientist"
+data "id" "47"
+data "tip" "Scientist gives you a bonus point in [2] and one in [3]."
+
+new entry "Glass Cannon"
+data "id" "48"
+data "tip" "Glass Cannon doubles your recovery AP, but your total vitality is decreased by [2]% (including the bonus from [3])."
+
+new entry "Know-it-All"
+data "id" "49"
+data "tip" "Know-it-All decreases everyone's attitude towards you by [2] but gives you [3] extra point in [4]."
+
+new entry "What a Rush"
+data "id" "50"
+data "tip" "What a Rush increases your recovery and maximum Action Points by [2] when your health is below [3]%."
+
+new entry "Far Out Man"
+data "id" "51"
+data "tip" "Far Out Man increases the range of spells and scrolls by [2]m."
+
+new entry "Leech"
+data "id" "52"
+data "tip" "Leech heals you when standing in blood."
+
+new entry "Elemental Affinity"
+data "id" "53"
+data "tip" "Elemental Affinity lowers the Action Point cost of spells by [2] when standing in a surface of the same element."
+
+new entry "Five-Star Diner"
+data "id" "54"
+data "tip" "Five-Star Diner doubles the effects of food."
+
+new entry "Bully"
+data "id" "55"
+data "tip" "Bully gives you [2]% extra damage against opponents that are slowed, crippled or knocked down."
+
+new entry "Elemental Ranger"
+data "id" "56"
+data "tip" "Arrows may inflict bonus elemental damage depending on the surface on which your target is standing."
+
+new entry "Politician"
+data "id" "57"
+data "tip" "Politician gives you 2 bonus points in [2], but you lose a point in Intelligence."
+
+new entry "Weatherproof"
+data "id" "58"
+data "tip" "Weatherproof makes you immune to environmental effects."
+
+new entry "Lone Wolf"
+data "id" "59"
+data "tip" "A character with Lone Wolf can no longer have a companion but receives a [2]% bonus to base vitality, [3] bonus to Recovery and maximum Action Points and an extra ability point on level up."
+
+new entry "Zombie"
+data "id" "60"
+data "tip" "Zombie lets you heal from poison but causes damage from regular healing."
+
+new entry "Demon"
+data "id" "61"
+data "tip" "A character with Demon has a chance to burn an opponent who strikes with a melee weapon, but takes a [2]% penalty to [3]."
+
+new entry "Ice King"
+data "id" "63"
+data "tip" "A character with Ice King has a chance to chill an opponent who strikes with a melee weapon, but takes a [2]% penalty to [3]."
+
+new entry "Courageous"
+data "id" "64"
+data "tip" "Courageous grants you immunity to [2], but you can no longer flee from combat."
+
+new entry "Voluble Mage"
+data "id" "65"
+data "tip" "Voluble Mage grants you immunity to [2]."
+
+new entry "Walk it Off"
+data "id" "66"
+data "tip" "Walk it Off reduces all status durations by 1 turn. This also affects positive statuses."
+
+new entry "Speedcreeper"
+data "id" "67"
+data "tip" "A character with Speedcreeper moves at normal speed while sneaking."
+
+new entry "Anaconda"
+data "id" "68"
+data "tip" "Anaconda increases your damage with crushing weapons by [2]%."
+
+new entry "Stench"
+data "id" "69"
+data "tip" "Stench decreases everyone's attitude toward you by [2], but melee opponents will find you less attractive in combat."
+
+new entry "Kickstarter"
+data "id" "70"
+data "tip" "A character with Kickstarter will find certain secrets throughout the game."
+
+new entry "Thick Skin"
+data "id" "71"
+data "tip" "Thick Skin gives you [2] extra base armour + Man-at-Arms x 2."
+
+new entry "Picture of Health2"
+data "id" "72"
+data "tip" "Picture of Health2 gives you [2]% x Man-at-Arms extra Vitality."
+
+new entry "Weather the Storm"
+data "id" "73"
+data "tip" "Weather the Storm gives you [2]% x Man-at-Arms extra Magic Resistance."
+
+new entry "Arrow Recovery"
+data "id" "74"
+data "tip" "Arrow Recovery gives you [2]% chance to recover a special arrow after shooting it."
+
+new entry "Sidestep"
+data "id" "75"
+data "tip" "Sidestep gives you [2]% extra chance to evade hits."
+
+new entry "Quickdraw"
+data "id" "76"
+data "tip" "Quickdraw reduces [2]AP from the cost of using ranged weapons."
+
+new entry "Mack the Knife"
+data "id" "77"
+data "tip" "Mack the Knife reduces [2]AP from the cost of using daggers and knives."
+
+new entry "Back-Stabber"
+data "id" "78"
+data "tip" "Back-Stabber allows a character to backstab with daggers and knives."
+
+new entry "Swift Footed"
+data "id" "79"
+data "tip" "Swift Footed gives you a [2]% movement bonus."
+
+new entry "Headstrong"
+data "id" "80"
+data "tip" "Headstrong gives you [2]% extra damage against opponents that are slowed, crippled or knocked down."

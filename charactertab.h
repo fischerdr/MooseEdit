@@ -60,7 +60,13 @@ private slots:
 	
 	void redraw_inventory();
 
-	void on_listWidget_itemClicked(QListWidgetItem *item);
+	void on_talentList_itemClicked(QListWidgetItem *item);
+	
+	void on_talentsAvailableEdit_textEdited(const QString &arg1);
+	
+	void on_talentList_itemChanged(QListWidgetItem *item);
+	
+	void on_talentList_customContextMenuRequested(const QPoint &pos);
 	
 protected:
 	void showEvent(QShowEvent *);
@@ -74,10 +80,12 @@ private:
 	std::vector<StatsContainer *> allItemStats;
 	std::vector<StatsContainer *> itemLinks;
 	std::vector<TAG_LSB *> *tagList;
+	std::vector<StatsContainer *> talents;
 	std::map<std::string, std::string> *nameMappings = 0;
 	RelativePositionLayout *relPosLayout = 0;
 	int lastWidth = 0;
 	void addWidgetsToLayout(QWidget *widget, QLayout *layout);
+	bool populateTalentsView();
 };
 
 #endif // CHARACTERTAB_H

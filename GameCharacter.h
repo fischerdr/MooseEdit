@@ -54,6 +54,8 @@ public:
 	void setInventoryHandler(InventoryHandler *value) {
 		this->inventoryHandler = value;
 	}
+	bool hasTalent(long talentId);
+	void setTalent(long talentId, bool enabled);
 };
 
 #endif // GAMECHARACTER_H
