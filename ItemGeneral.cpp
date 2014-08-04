@@ -25,7 +25,7 @@ void ItemGeneral::refreshGeneralData()
 	QLineEdit *scaleEdit = this->findChild<QLineEdit *>("scaleEdit");
 	scaleEdit->setText(LsbReader::lookupByUniquePathEntity(item->getObject(), "Scale")->toString().c_str());
 	
-	LsbObject *statsDirectory = getStatsDirectory();
+	LsbObject *statsDirectory = item->getStatsDirectory();
 	
 	//stats
 	if (statsDirectory != 0) {
@@ -85,76 +85,11 @@ void ItemGeneral::on_scaleEdit_textEdited(const QString &text)
 	}
 }
 
-LsbObject *ItemGeneral::getStatsDirectory() {
-	LsbObject *statsDirectory = 0;
-	std::vector<LsbObject *> statsObjects = LsbReader::lookupAllEntitiesWithName(item->getObject(), "Stats");
-	for (int i=0; i<statsObjects.size(); ++i) {
-		LsbObject *object = statsObjects[i];
-		if (object->isDirectory()) {
-			statsDirectory = object;
-			break;
-		}
-	}
-	
-	return statsDirectory;
-}
-
-LsbObject *ItemGeneral::createStatsDirectory() {
-	TAG_LSB *statsTag = LsbReader::getTagByName("Stats", tagList);
-	LsbObject *newStatsDir = new LsbObject(true, statsTag->index, statsTag->tag, 0, item->getObject(), tagList);
-	
-	TAG_LSB *customRequirementsTag = LsbReader::getTagByName("CustomRequirements", tagList);
-	LsbObject *newCustomRequirements = new LsbObject(false, customRequirementsTag->index, customRequirementsTag->tag, 0x13, newStatsDir, tagList);
-	bool custRequirements = false;
-	newCustomRequirements->setData((char *)&custRequirements, sizeof(bool));
-	
-	TAG_LSB *durabilityTag = LsbReader::getTagByName("Durability", tagList);
-	LsbObject *newDurability = new LsbObject(false, durabilityTag->index, durabilityTag->tag, 0x04, newStatsDir, tagList);
-	long durability = 100;
-	newDurability->setData((char *)&durability, sizeof(long));
-	
-	TAG_LSB *durabilityCounterTag = LsbReader::getTagByName("DurabilityCounter", tagList);
-	LsbObject *newDurabilityCounter = new LsbObject(false, durabilityCounterTag->index, durabilityCounterTag->tag, 0x04, newStatsDir, tagList);
-	long durabilityCounter = 8;
-	newDurabilityCounter->setData((char *)&durabilityCounter, sizeof(long));
-	
-	TAG_LSB *isIdentifiedTag = LsbReader::getTagByName("IsIdentified", tagList);
-	LsbObject *newIsIdentified = new LsbObject(false, isIdentifiedTag->index, isIdentifiedTag->tag, 0x04, newStatsDir, tagList);
-	long isIdentified = 1;
-	newIsIdentified->setData((char *)&isIdentified, sizeof(long));
-	
-	TAG_LSB *itemTypeTag = LsbReader::getTagByName("ItemType", tagList);
-	LsbObject *newItemType = new LsbObject(false, itemTypeTag->index, itemTypeTag->tag, 0x16, newStatsDir, tagList);
-	std::string itemType = "Magic";
-	newItemType->setData(itemType.c_str(), itemType.length() + 1);
-	
-	TAG_LSB *levelTag = LsbReader::getTagByName("Level", tagList);
-	LsbObject *newLevel = new LsbObject(false, levelTag->index, levelTag->tag, 0x04, newStatsDir, tagList);
-	long level = 1;
-	newLevel->setData((char *)&level, sizeof(long));
-	
-	TAG_LSB *repairDurabilityPenaltyTag = LsbReader::getTagByName("RepairDurabilityPenalty", tagList);
-	LsbObject *newRepairDurabilityPenalty = new LsbObject(false, repairDurabilityPenaltyTag->index, repairDurabilityPenaltyTag->tag, 0x04, newStatsDir, tagList);
-	long repairDurabilityPenalty = 0;
-	newRepairDurabilityPenalty->setData((char *)&repairDurabilityPenalty, sizeof(long));
-	
-	newStatsDir->addChild(newCustomRequirements);
-	newStatsDir->addChild(newDurability);
-	newStatsDir->addChild(newDurabilityCounter);
-	newStatsDir->addChild(newIsIdentified);
-	newStatsDir->addChild(newItemType);
-	newStatsDir->addChild(newLevel);
-	newStatsDir->addChild(newRepairDurabilityPenalty);
-	
-	item->getObject()->addChild(newStatsDir);
-	return newStatsDir;
-}
-
 void ItemGeneral::on_levelEdit_textEdited(const QString &text)
 {
-	LsbObject *statsDirectory = getStatsDirectory();
+	LsbObject *statsDirectory = item->getStatsDirectory();
 	if (statsDirectory == 0) {
-		statsDirectory = createStatsDirectory();
+		statsDirectory = item->createStatsDirectory();
 	}
 	long value = 0;
 	try {
@@ -182,9 +117,9 @@ void ItemGeneral::on_levelEdit_textEdited(const QString &text)
 
 void ItemGeneral::on_duraEdit_textEdited(const QString &text)
 {
-	LsbObject *statsDirectory = getStatsDirectory();
+	LsbObject *statsDirectory = item->getStatsDirectory();
 	if (statsDirectory == 0) {
-		statsDirectory = createStatsDirectory();
+		statsDirectory = item->createStatsDirectory();
 	}
 	if (statsDirectory != 0) {
 		LsbObject *durabilityObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "Durability");
@@ -206,9 +141,9 @@ void ItemGeneral::on_duraEdit_textEdited(const QString &text)
 
 void ItemGeneral::on_itemTypeCombo_currentIndexChanged(const QString &text)
 {
-	LsbObject *statsDirectory = getStatsDirectory();
+	LsbObject *statsDirectory = item->getStatsDirectory();
 	if (statsDirectory == 0) {
-		statsDirectory = createStatsDirectory();
+		statsDirectory = item->createStatsDirectory();
 	}
 	std::string value = text.toStdString();
 	if (statsDirectory != 0) {
@@ -230,9 +165,9 @@ void ItemGeneral::on_itemTypeCombo_currentIndexChanged(const QString &text)
 
 void ItemGeneral::on_repairDuraEdit_textEdited(const QString &text)
 {
-	LsbObject *statsDirectory = getStatsDirectory();
+	LsbObject *statsDirectory = item->getStatsDirectory();
 	if (statsDirectory == 0) {
-		statsDirectory = createStatsDirectory();
+		statsDirectory = item->createStatsDirectory();
 	}
 	if (statsDirectory != 0) {
 		LsbObject *repairDuraObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "RepairDurabilityPenalty");
@@ -254,9 +189,9 @@ void ItemGeneral::on_repairDuraEdit_textEdited(const QString &text)
 
 void ItemGeneral::on_identCheck_toggled(bool checked)
 {
-	LsbObject *statsDirectory = getStatsDirectory();
+	LsbObject *statsDirectory = item->getStatsDirectory();
 	if (statsDirectory == 0) {
-		statsDirectory = createStatsDirectory();
+		statsDirectory = item->createStatsDirectory();
 	}
 	if (statsDirectory != 0) {
 		LsbObject *levelObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "IsIdentified");

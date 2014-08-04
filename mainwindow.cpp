@@ -408,7 +408,7 @@ void MainWindow::handleLoadButton() {
 									if (itemCreatorMatches.size() == 1) {
 										LsbObject *itemCreator = itemCreatorMatches[0];
 										LsbObject *item = LsbReader::getObjectFromCreator(itemCreator, "Items");
-										GameItem *newItem = new GameItem();
+										GameItem *newItem = new GameItem(&globalTagList);
 										newItem->setObject(item);
 										newItem->setSlot(slot);
 										this->getCharacterGroup().getCharacters()[i]->getInventory().addItem(newItem);

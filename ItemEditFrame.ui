@@ -18,7 +18,7 @@
     <normaloff>:/cogMoose.png</normaloff>:/cogMoose.png</iconset>
   </property>
   <property name="styleSheet">
-   <string notr="true">#menuGroupBox { background-image: url(:/seamless-castle-wall.jpg); }
+   <string notr="true">#menuGroupBox { background-image: url(:/seamless-castle-wall.png); }
 </string>
   </property>
   <property name="frameShape">
@@ -40,7 +40,6 @@
       <string>Data</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2"/>
-     <zorder>menuGroupBox</zorder>
     </widget>
    </item>
    <item row="0" column="0">

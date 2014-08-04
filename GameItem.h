@@ -4,6 +4,7 @@
 #include "LsbObject.h"
 #include "GenStatsReader.h"
 #include <string>
+#include <vector>
 
 #define SLOT_INVALID 0xFFFF
 
@@ -22,9 +23,10 @@ class GameItem
 	std::string statsText;
 	bool statsDirectory = false;
 	long generationRandom;
+	std::vector<TAG_LSB*> *tagList;
 public:
-	GameItem();
-	GameItem(const GameItem &other) {
+	GameItem(std::vector<TAG_LSB*> *tagList);
+	GameItem(const GameItem &other) : tagList(other.tagList) {
 		this->object = new LsbObject(*other.object);
 		this->slot = other.slot;
 		this->itemName = other.itemName;
@@ -37,6 +39,9 @@ public:
 		this->statsDirectory = other.statsDirectory;
 		this->generationRandom = other.generationRandom;
 	}
+	LsbObject *createStatsDirectory();
+	bool removeStatsDirectory();
+	LsbObject *getStatsDirectory();
 	void setHasStatsDirectory(bool statsDirectory) {
 		this->statsDirectory = statsDirectory;
 	}

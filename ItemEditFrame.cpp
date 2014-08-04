@@ -25,6 +25,19 @@ public:
 			std::string statsText = current->getData();
 			statsObject->setData(statsText.c_str(), statsText.length() + 1);
 			
+			StatsContainer *container = GenStatsReader::getContainer(itemEditFrame->allItemStats, statsText);
+			if (container != 0) {
+				if (container->getData("InventoryTab") == "Equipment") {
+					if (itemEditFrame->item->getStatsDirectory() == 0) {
+						itemEditFrame->item->createStatsDirectory();
+					}
+				} else {
+					if (itemEditFrame->item->getStatsDirectory() != 0) {
+						itemEditFrame->item->removeStatsDirectory();
+					}
+				}
+			}
+			
 			LsbObject *currentTemplateObject = LsbReader::lookupByUniquePathEntity(itemEditFrame->item->getObject(), "CurrentTemplate");
 			StatsContainer *linkContainer = GenStatsReader::getContainer(itemEditFrame->itemLinks, statsText);
 			if (linkContainer != 0) {
