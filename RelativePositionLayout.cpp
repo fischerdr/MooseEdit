@@ -24,7 +24,7 @@ QSize RelativePositionLayout::sizeHint() const
     QSize s(0,0);
     int n = list.count();
     if (n > 0)
-        s = QSize(100,70); //start with a nice default size
+        s = QSize(100,70);
     int i = 0;
     while (i < n) {
         QLayoutItem *o = list.at(i).item;
@@ -72,8 +72,6 @@ QLayoutItem *RelativePositionLayout::takeAt(int index)
 
 void RelativePositionLayout::setGeometry(const QRect &rect)
 {
-	//std::cout<<"rw = "<<rect.width()<<" rh = "<<rect.height()<<'\n';
-	//std::cout<<"ow = "<<originalW<<" oh = "<<originalH<<'\n';
 	float wIncrease = (float)rect.width() / originalW;
 	float hIncrease = (float)rect.height() / originalH;
 	for (int i=0; i<list.size(); ++i) {
@@ -83,14 +81,6 @@ void RelativePositionLayout::setGeometry(const QRect &rect)
 		int w = list[i].w * wIncrease;
 		int h = list[i].h * hIncrease;
 		QRect newGeom(x, y, w, h);
-		//std::cout<<"name = "<<item->widget()->objectName().toStdString()<<'\n';
-//		std::cout<<"results: "<<
-//				   "x"<<x<<" "<<
-//				   "y"<<y<<" "<<
-//				   "w"<<w<<" "<<
-//				   "h"<<h<<" "<<
-//				   "oh"<<list[i].h<<" "<<
-//				   '\n';
 		item->setGeometry(newGeom);
 	}
 }
