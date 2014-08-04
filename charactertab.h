@@ -68,6 +68,8 @@ private slots:
 	
 	void on_talentList_customContextMenuRequested(const QPoint &pos);
 	
+	void on_abilitiesAvailableEdit_textEdited(const QString &arg1);
+	
 protected:
 	void showEvent(QShowEvent *);
 
@@ -81,11 +83,13 @@ private:
 	std::vector<StatsContainer *> itemLinks;
 	std::vector<TAG_LSB *> *tagList;
 	std::vector<StatsContainer *> talents;
+	std::vector<StatsContainer *> abilities;
 	std::map<std::string, std::string> *nameMappings = 0;
 	RelativePositionLayout *relPosLayout = 0;
 	int lastWidth = 0;
 	void addWidgetsToLayout(QWidget *widget, QLayout *layout);
 	bool populateTalentsView();
+	bool populateAbilitiesView();
 };
 
 #endif // CHARACTERTAB_H

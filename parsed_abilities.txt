@@ -1,0 +1,164 @@
+new entry "Man-at-Arms"
+type "Skills"
+data "id" "0"
+data "tip" "Determines how many Man-at-Arms skills you can learn and how many Action Points it costs to use higher level [2] skills."
+
+new entry "Expert Marksman"
+type "Skills"
+data "id" "1"
+data "tip" "Determines how many Expert Marksman skills you can learn and how many Action Points it costs to use higher level [2] skills."
+
+new entry "Scoundrel"
+type "Skills"
+data "id" "2"
+data "tip" "Determines how many Scoundrel skills you can learn and how many Action Points it costs to use higher level [2] skills."
+
+new entry "Single-handed"
+type "Weapons"
+data "id" "3"
+data "tip" "Single-handed increases damage when using single-handed weapons (daggers, swords, axes, maces)."
+
+new entry "Two-handed"
+type "Weapons"
+data "id" "4"
+data "tip" "Two-handed increases damage when using two-handed weapons (swords, axes, spears, staffs)."
+
+new entry "Tenebrium"
+type "Weapons"
+data "id" "5"
+data "tip" "Tenebrium increases damage when using Tenebrium weapons."
+
+new entry "Bow"
+type "Weapons"
+data "id" "6"
+data "tip" "Bow increases damage dealt by bows."
+
+new entry "Crossbow"
+type "Weapons"
+data "id" "7"
+data "tip" "Crossbow increases damage dealt by crossbows."
+
+new entry "Shield Specialist"
+type "Defence"
+data "id" "8"
+data "tip" "Shield Specialist increases chance of blocking when using shields."
+
+new entry "Reflexes"
+type "Defence"
+data "id" "9"
+data "tip" "Reflexes determines your chance of dodging attacks."
+
+new entry "Armour Specialist"
+type "Defence"
+data "id" "10"
+data "tip" "Armour Specialist improves your armour rating by [2]% per point and decreases heavy armour movement penalty by [3]% per point."
+
+new entry "Witchcraft"
+type "Skills"
+data "id" "11"
+data "tip" "Determines how many Witchcraft spells you can learn and how many Action Points it costs to use higher level [2] spells."
+
+new entry "Telekinesis"
+type "Craftsmanship"
+data "id" "12"
+data "tip" "Telekinesis determines the range and weight of items you can move telepathically."
+
+new entry "Willpower"
+type "Defence"
+data "id" "13"
+data "tip" "Willpower affects saving throws against magical and mental spells."
+
+new entry "Pyrokinetic"
+type "Skills"
+data "id" "14"
+data "tip" "Determines how many Pyrokinetic spells you can learn and how many Action Points it costs to use higher level [2] spells."
+
+new entry "Hydrosophist"
+type "Skills"
+data "id" "15"
+data "tip" "Determines how many Hydrosophist spells you can learn and how many Action Points it costs to use higher level [2] spells."
+
+new entry "Aerotheurge"
+type "Skills"
+data "id" "16"
+data "tip" "Determines how many Aerotheurge spells you can learn and how many Action Points it costs to use higher level [2] spells."
+
+new entry "Geomancer"
+type "Skills"
+data "id" "17"
+data "tip" "Determines how many Geomancer spells you can learn and how many Action Points it costs to use higher level [2] spells."
+
+new entry "Blacksmithing"
+type "Craftsmanship"
+data "id" "18"
+data "tip" "Blacksmithing allows you to repair your own items; the more you invest, the faster you&apos;ll work. Required to create and improve metal-enhanced weapons and armour."
+
+new entry "Sneaking"
+type "Nasty Deeds"
+data "id" "19"
+data "tip" "Sneaking determines how well you can sneak without getting caught."
+
+new entry "Pickpocketing"
+type "Nasty Deeds"
+data "id" "20"
+data "tip" "Pickpocketing determines what you can steal and who you can successfully pickpocket."
+
+new entry "Lockpicking"
+type "Nasty Deeds"
+data "id" "21"
+data "tip" "Lockpicking determines what complexity of locks you can pick and how fast you can do it."
+
+new entry "Loremaster"
+type "Craftsmanship"
+data "id" "22"
+data "tip" "Loremaster identifies enemies and allows you to identify items. The more invested it is, the more you can identify and the faster it goes."
+
+new entry "Crafting"
+type "Craftsmanship"
+data "id" "23"
+data "tip" "Crafting determines what you can craft and the quality of your crafted items. The more invested it is, the faster you can craft."
+
+new entry "Bartering"
+type "Personality"
+data "id" "24"
+data "tip" "Bartering determines your haggling skills with traders."
+
+new entry "Charm"
+type "Personality"
+data "id" "25"
+data "tip" "Intimidate determines how well you can Intimidate in dialogues."
+
+new entry "Intimidate"
+type "Personality"
+data "id" "26"
+data "tip" "Intimidate determines how well you can Intimidate in dialogues."
+
+new entry "Reason"
+type "Personality"
+data "id" "27"
+data "tip" "Intimidate determines how well you can Intimidate in dialogues."
+
+new entry "Charisma"
+type "Personality"
+data "id" "28"
+data "tip" "Lucky Charm determines the first impression you make on other people and your talent for Charming, Intimidating, and Reasoning."
+
+new entry "Leadership"
+type "Personality"
+data "id" "29"
+data "tip" "Leadership will give boosts to party members and friends that can see you."
+
+new entry "Lucky Charm"
+type "Personality"
+data "id" "30"
+data "tip" "Lucky Charm determines your luck in finding extra treasure and improves your offence rating."
+
+new entry "Body Building"
+type "Defence"
+data "id" "31"
+data "tip" "Body Building affects saving throws against physical statuses."
+
+new entry "Air"
+data "id" "32"
+data "tip" "Air determines your luck in finding extra treasure and improves your offence rating."
+

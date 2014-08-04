@@ -40,7 +40,9 @@ SOURCES += main.cpp\
     StatsView.cpp \
     ItemGeneral.cpp \
     RelativePositionLayout.cpp \
-    CheckboxListItem.cpp
+    CheckboxListItem.cpp \
+    AbilityGroupItem.cpp \
+    ExpandableGroupBox.cpp
 
 HEADERS  += mainwindow.h \
     LsbReader.h \
@@ -64,7 +66,9 @@ HEADERS  += mainwindow.h \
     StatsView.h \
     ItemGeneral.h \
     RelativePositionLayout.h \
-    CheckboxListItem.h
+    CheckboxListItem.h \
+    AbilityGroupItem.h \
+    ExpandableGroupBox.h
 
 FORMS    += mainwindow.ui \
     charactertab.ui \
@@ -72,7 +76,8 @@ FORMS    += mainwindow.ui \
     TooltipFrame.ui \
     ItemEditFrame.ui \
     StatsView.ui \
-    ItemGeneral.ui
+    ItemGeneral.ui \
+    AbilityGroupItem.ui
 
 RESOURCES += \
     resources.qrc

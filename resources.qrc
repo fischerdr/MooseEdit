@@ -16,7 +16,6 @@
         <file>weightIcon.png</file>
         <file>folder.png</file>
         <file>folder-open.png</file>
-        <file>seamless-castle-wall.jpg</file>
         <file>inventory_empty.png</file>
         <file>toolbar-button.png</file>
         <file>game_parchment.png</file>
@@ -30,5 +29,9 @@
         <file>traitsButton.png</file>
         <file>selected_diamond.png</file>
         <file>parsed_talents.txt</file>
+        <file>seamless-castle-wall.png</file>
+        <file>abilityGroupCollapsed.png</file>
+        <file>abilityGroupExpanded.png</file>
+        <file>parsed_abilities.txt</file>
     </qresource>
 </RCC>

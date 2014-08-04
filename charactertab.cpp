@@ -8,6 +8,8 @@
 #include <QFile>
 #include <QTextStream>
 #include "CheckboxListItem.h"
+#include "AbilityGroupItem.h"
+#include "ExpandableGroupBox.h"
 
 characterTab::characterTab(std::vector<TAG_LSB *> *tagList, QWidget *parent) :
 	QWidget(parent), tagList(tagList),
@@ -22,6 +24,72 @@ characterTab::characterTab(std::vector<TAG_LSB *> *tagList, QWidget *parent) :
 	QScrollArea *inventoryScrollArea = this->findChild<QScrollArea *>("inventoryScrollArea");
 	inventoryScrollArea->setContextMenuPolicy(Qt::CustomContextMenu);
 	talentList->setContextMenuPolicy(Qt::CustomContextMenu);
+}
+
+bool characterTab::populateAbilitiesView() {
+	QLineEdit *abilitiesAvailableEdit = this->findChild<QLineEdit *>("abilitiesAvailableEdit");
+	LsbObject *characterObject = this->getCharacter()->getObject();
+	LsbObject *abilityPointsObject = LsbReader::lookupByUniquePathEntity(characterObject, "PlayerData/PlayerUpgrade/AbilityPoints");
+	if (abilityPointsObject != 0) {
+		long value = *((long *)abilityPointsObject->getData());
+		std::ostringstream ss;
+		ss<<value;
+		abilitiesAvailableEdit->setText(ss.str().c_str());
+	}
+	
+	QFile mFile(":/parsed_abilities.txt");
+	if(!mFile.open(QFile::ReadOnly | QFile::Text)){
+		return false;
+	}
+
+	QTextStream in(&mFile);
+	QString mText = in.readAll();
+	std::stringstream ss(mText.toStdString());
+	mFile.close();
+	GenStatsReader reader;
+	abilities = reader.loadFile(ss);
+	QList<ExpandableGroupBox *> groupBoxes = this->findChildren<ExpandableGroupBox *>();
+	for (int i=0; i<abilities.size(); ++i) {
+		StatsContainer *ability = abilities[i];
+		
+		AbilityGroupItem *item = 0;
+		ExpandableGroupBox *currentGroupBox = 0;
+		for (int i=0; i<groupBoxes.size(); ++i) {
+			ExpandableGroupBox *groupBox = groupBoxes[i];
+			if (ability->getType() == groupBox->title().toStdString()) {
+				item = new AbilityGroupItem(this->getCharacter(), abilities, groupBox);
+				groupBox->layout()->addWidget(item);
+				currentGroupBox = groupBox;
+				break;
+			}
+		}
+		if (item != 0) {
+			QLabel *abilityLabel = item->findChild<QLabel *>("abilityLabel");
+			QLineEdit *abilityEdit = item->findChild<QLineEdit *>("abilityEdit");
+			abilityLabel->setText(ability->getArg(0).c_str());
+			std::string idText = ability->getData("id");
+			long id = -1;
+			try {
+				id = boost::lexical_cast<long>(idText);
+			} catch (const boost::bad_lexical_cast& e) {
+				
+			}
+			std::vector<LsbObject *> abilityObjects = this->getCharacter()->getAbilityList();
+			if (id < abilityObjects.size()) {
+				long value = *((long*)abilityObjects[id]->getData());
+				std::ostringstream ss;
+				ss<<value;
+				abilityEdit->setText(ss.str().c_str());
+			}
+			item->setToolTip(ability->getData("tip").c_str());
+			
+			if (currentGroupBox != 0) {
+				currentGroupBox->setChecked(true);
+				currentGroupBox->on_clicked();
+			}
+		}
+	}
+	return true;
 }
 
 bool characterTab::populateTalentsView() {
@@ -95,6 +163,7 @@ void characterTab::setCharacter(GameCharacter *character) {
 	perEdit->setText(attributeData[idx++]->toString().c_str());
 	
 	populateTalentsView();
+	populateAbilitiesView();
 }
 
 characterTab::~characterTab()
@@ -362,5 +431,20 @@ void characterTab::on_talentList_customContextMenuRequested(const QPoint &pos)
 			}
 			talentList->setSortingEnabled(true);
 		}
+	}
+}
+
+void characterTab::on_abilitiesAvailableEdit_textEdited(const QString &text)
+{
+	long value = 0;
+	try {
+		value = boost::lexical_cast<long>(text.toStdString());
+	} catch (const boost::bad_lexical_cast& e) {
+		;
+	}
+	LsbObject *characterObject = this->getCharacter()->getObject();
+	LsbObject *talentPointsObject = LsbReader::lookupByUniquePathEntity(characterObject, "PlayerData/PlayerUpgrade/AbilityPoints");
+	if (talentPointsObject != 0) {
+		talentPointsObject->setData((char *)&value, sizeof(long));
 	}
 }

@@ -399,7 +399,7 @@ QScrollBar::down-arrow:vertical {
      <enum>QTabWidget::Rounded</enum>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <property name="iconSize">
      <size>
@@ -410,7 +410,7 @@ QScrollBar::down-arrow:vertical {
     <property name="usesScrollButtons">
      <bool>true</bool>
     </property>
-    <widget class="QWidget" name="tab">
+    <widget class="QWidget" name="equipTab">
      <attribute name="icon">
       <iconset resource="resources.qrc">
        <normaloff>:/inventoryButton.png</normaloff>
@@ -453,7 +453,10 @@ QScrollBar::down-arrow:vertical {
       </item>
      </layout>
     </widget>
-    <widget class="QWidget" name="tab_2">
+    <widget class="QWidget" name="abilitiesTab">
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
      <attribute name="icon">
       <iconset resource="resources.qrc">
        <normaloff>:/abilitiesButton.png</normaloff>
@@ -484,11 +487,12 @@ QScrollBar::down-arrow:vertical {
       <item row="0" column="0">
        <widget class="QWidget" name="widget" native="true">
         <property name="styleSheet">
-         <string notr="true">QWidget {
-	background-image: url(:/game_parchment.png);
-}</string>
+         <string notr="true"/>
         </property>
-        <layout class="QGridLayout" name="gridLayout_5">
+        <layout class="QVBoxLayout" name="verticalLayout_11">
+         <property name="spacing">
+          <number>0</number>
+         </property>
          <property name="leftMargin">
           <number>0</number>
          </property>
@@ -501,11 +505,14 @@ QScrollBar::down-arrow:vertical {
          <property name="bottomMargin">
           <number>0</number>
          </property>
-         <property name="spacing">
-          <number>0</number>
-         </property>
-         <item row="0" column="0">
+         <item>
           <widget class="QFrame" name="frame_5">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -513,7 +520,7 @@ QScrollBar::down-arrow:vertical {
             </size>
            </property>
            <property name="styleSheet">
-            <string notr="true">QFrame  {
+            <string notr="true">QFrame, QLineEdit  {
 	background-image: url(:/game_parchment.png);
 }</string>
            </property>
@@ -536,7 +543,7 @@ QScrollBar::down-arrow:vertical {
              <string>Available: </string>
             </property>
            </widget>
-           <widget class="QLineEdit" name="lineEdit_4">
+           <widget class="QLineEdit" name="abilitiesAvailableEdit">
             <property name="geometry">
              <rect>
               <x>100</x>
@@ -548,113 +555,328 @@ QScrollBar::down-arrow:vertical {
            </widget>
           </widget>
          </item>
-         <item row="1" column="0">
-          <widget class="QToolBox" name="toolBox_3">
+         <item>
+          <widget class="QWidget" name="abilitiesWidget" native="true">
            <property name="styleSheet">
-            <string notr="true">QToolBox {
+            <string notr="true"/>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_11">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <item row="0" column="0">
+             <widget class="QScrollArea" name="abilitiesScrollArea">
+              <property name="styleSheet">
+               <string notr="true">#scrollAreaWidgetContents, QGroupBox{
 	background-image: url(:/game_parchment.png);
 }
 
-QToolBox::tab {
+QLabel {
+	color: rgb(0, 0, 0);
+}
+
+#abilitiesScrollArea,#abilitiesScrollWidget {
+	background-image: url(:/game_parchment.png);
+}
+
+QScrollBar:vertical {
+	background-color: rgb(0, 0, 0);
+    width: 20px;
+}
+
+QScrollBar::up-arrow:vertical {
+	border-image: url(:/up-arrow.png);
+}
+QScrollBar::down-arrow:vertical {
+	border-image: url(:/down-arrow.png);
+}</string>
+              </property>
+              <property name="horizontalScrollBarPolicy">
+               <enum>Qt::ScrollBarAsNeeded</enum>
+              </property>
+              <property name="widgetResizable">
+               <bool>true</bool>
+              </property>
+              <widget class="QWidget" name="abilitiesScrollWidget">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>0</y>
+                 <width>219</width>
+                 <height>216</height>
+                </rect>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="styleSheet">
+                <string notr="true"/>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_7">
+                <property name="spacing">
+                 <number>0</number>
+                </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>6</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QWidget" name="abilitiesGroup" native="true">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QGroupBox {
+	border: transparent;
+}
+
+QGroupBox::indicator::unchecked {
+	image: url(:/abilityGroupCollapsed.png);
+}
+
+QGroupBox::indicator::checked {
+	image: url(:/abilityGroupExpanded.png);
+}
+
+QGroupBox::title {
 	border-image: url(:/tooltipPanelBorder.png);
 	color: rgb(255, 255, 255);
- }
-</string>
-           </property>
-           <property name="currentIndex">
-            <number>0</number>
-           </property>
-           <widget class="QWidget" name="page_15">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>221</width>
-              <height>184</height>
-             </rect>
-            </property>
-            <attribute name="label">
-             <string>Weapons</string>
-            </attribute>
-           </widget>
-           <widget class="QWidget" name="page_16">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>203</width>
-              <height>160</height>
-             </rect>
-            </property>
-            <attribute name="label">
-             <string>Defence</string>
-            </attribute>
-           </widget>
-           <widget class="QWidget" name="page_17">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>100</width>
-              <height>30</height>
-             </rect>
-            </property>
-            <attribute name="label">
-             <string>Skills</string>
-            </attribute>
-           </widget>
-           <widget class="QWidget" name="page_18">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>100</width>
-              <height>30</height>
-             </rect>
-            </property>
-            <attribute name="label">
-             <string>Personality</string>
-            </attribute>
-           </widget>
-           <widget class="QWidget" name="page_19">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>100</width>
-              <height>30</height>
-             </rect>
-            </property>
-            <attribute name="label">
-             <string>Craftsmanship</string>
-            </attribute>
-           </widget>
-           <widget class="QWidget" name="page_20">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>100</width>
-              <height>30</height>
-             </rect>
-            </property>
-            <attribute name="label">
-             <string>Nasty Deeds</string>
-            </attribute>
-           </widget>
-           <widget class="QWidget" name="page_21">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>100</width>
-              <height>30</height>
-             </rect>
-            </property>
-            <attribute name="label">
-             <string>Other</string>
-            </attribute>
-           </widget>
+	padding-right: 2000px;
+}</string>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_3">
+                   <item>
+                    <widget class="ExpandableGroupBox" name="weaponsGroup">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true"/>
+                     </property>
+                     <property name="title">
+                      <string>Weapons</string>
+                     </property>
+                     <property name="flat">
+                      <bool>false</bool>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                     <layout class="QVBoxLayout" name="verticalLayout_9">
+                      <property name="spacing">
+                       <number>1</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>18</number>
+                      </property>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="ExpandableGroupBox" name="defenceGroup">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true"/>
+                     </property>
+                     <property name="title">
+                      <string>Defence</string>
+                     </property>
+                     <property name="flat">
+                      <bool>false</bool>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                     <layout class="QVBoxLayout" name="verticalLayout_10">
+                      <property name="spacing">
+                       <number>1</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>18</number>
+                      </property>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="ExpandableGroupBox" name="skillsGroup">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true"/>
+                     </property>
+                     <property name="title">
+                      <string>Skills</string>
+                     </property>
+                     <property name="flat">
+                      <bool>false</bool>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                     <layout class="QVBoxLayout" name="verticalLayout_13">
+                      <property name="spacing">
+                       <number>1</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>18</number>
+                      </property>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="ExpandableGroupBox" name="personalityGroup">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true"/>
+                     </property>
+                     <property name="title">
+                      <string>Personality</string>
+                     </property>
+                     <property name="flat">
+                      <bool>false</bool>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                     <layout class="QVBoxLayout" name="verticalLayout_14">
+                      <property name="spacing">
+                       <number>1</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>18</number>
+                      </property>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="ExpandableGroupBox" name="craftsmanshipGroup">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true"/>
+                     </property>
+                     <property name="title">
+                      <string>Craftsmanship</string>
+                     </property>
+                     <property name="flat">
+                      <bool>false</bool>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                     <layout class="QVBoxLayout" name="verticalLayout_15">
+                      <property name="spacing">
+                       <number>1</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>18</number>
+                      </property>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="ExpandableGroupBox" name="nastyDeeds">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true"/>
+                     </property>
+                     <property name="title">
+                      <string>Nasty Deeds</string>
+                     </property>
+                     <property name="flat">
+                      <bool>false</bool>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                     <layout class="QVBoxLayout" name="verticalLayout_16">
+                      <property name="spacing">
+                       <number>1</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>18</number>
+                      </property>
+                     </layout>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
         </layout>
@@ -662,7 +884,7 @@ QToolBox::tab {
       </item>
      </layout>
     </widget>
-    <widget class="QWidget" name="tab_3">
+    <widget class="QWidget" name="talentsTab">
      <attribute name="icon">
       <iconset resource="resources.qrc">
        <normaloff>:/talentsButton.png</normaloff>
@@ -793,7 +1015,7 @@ QScrollBar::down-arrow:vertical {
       </item>
      </layout>
     </widget>
-    <widget class="QWidget" name="tab_4">
+    <widget class="QWidget" name="traitsTab">
      <property name="styleSheet">
       <string notr="true">tab_4 {
 	background-image: url(:/game_parchment.png);
@@ -962,6 +1184,14 @@ QScrollBar::down-arrow:vertical {
    <zorder>frame_2</zorder>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ExpandableGroupBox</class>
+   <extends>QGroupBox</extends>
+   <header>ExpandableGroupBox.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="resources.qrc"/>
  </resources>

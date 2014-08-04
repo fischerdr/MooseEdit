@@ -1,5 +1,17 @@
 #include "GameCharacter.h"
 
+std::vector<LsbObject *> GameCharacter::getAbilityList() {
+	std::vector<LsbObject *> abilityObjects;
+	LsbObject *playerUpgradeObject = LsbReader::lookupByUniquePathEntity(this->getObject(), "PlayerData/PlayerUpgrade");
+	if (playerUpgradeObject != 0) {
+		std::vector<LsbObject *> abilitiesObjects = LsbReader::lookupAllEntitiesWithName(playerUpgradeObject, "Abilities");
+		for (int i=0; i<abilitiesObjects.size(); ++i) {
+			abilityObjects.push_back(LsbReader::lookupByUniquePathEntity(abilitiesObjects[i], "Object"));
+		}
+	}
+	return abilityObjects;
+}
+
 bool GameCharacter::hasTalent(long talentId) {
 	LsbObject *upgradeObject = LsbReader::lookupByUniquePathEntity(this->getObject(), "PlayerData/PlayerUpgrade");
 	if (upgradeObject != 0) {

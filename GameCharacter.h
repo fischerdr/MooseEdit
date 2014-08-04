@@ -56,6 +56,7 @@ public:
 	}
 	bool hasTalent(long talentId);
 	void setTalent(long talentId, bool enabled);
+	std::vector<LsbObject *> getAbilityList();
 };
 
 #endif // GAMECHARACTER_H
