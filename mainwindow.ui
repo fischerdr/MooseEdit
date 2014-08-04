@@ -25,7 +25,7 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="styleSheet">
-    <string notr="true">#centralWidget{ background-image: url(:/seamless-castle-wall.jpg); }</string>
+    <string notr="true">#centralWidget{ background-image: url(:/seamless-castle-wall.png); }</string>
    </property>
    <layout class="QGridLayout" name="gridLayout">
     <item row="1" column="0">
