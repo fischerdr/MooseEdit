@@ -201,9 +201,6 @@ void ItemLabel::setupTooltip()
 	std::ostringstream contentHtml;
 	if (item != 0) {
 		headerLabel->setText(item->getItemName().c_str());
-
-		
-		
 		std::string colorText = "";
 		if (item->getItemRarity() != "Common") {
 			std::ostringstream ss;
@@ -474,7 +471,6 @@ void ItemLabel::setupTooltip()
 			
 		}
 	}
-	
 	if (item->getBody().size() > 0) {
 		contentHtml<<item->getBody().c_str()<<"<br/>";
 	}

@@ -28,23 +28,35 @@ void ItemGeneral::refreshGeneralData()
 	LsbObject *statsDirectory = item->getStatsDirectory();
 	
 	//stats
+	QLineEdit *levelEdit = this->findChild<QLineEdit *>("levelEdit");
+	QLineEdit *duraEdit = this->findChild<QLineEdit *>("duraEdit");
+	QCheckBox *identCheck = this->findChild<QCheckBox *>("identCheck");
+	QComboBox *itemTypeCombo = this->findChild<QComboBox *>("itemTypeCombo");
+	QLineEdit *repairDuraEdit = this->findChild<QLineEdit *>("repairDuraEdit");
+	levelEdit->blockSignals(true);
+	duraEdit->blockSignals(true);
+	identCheck->blockSignals(true);
+	itemTypeCombo->blockSignals(true);
+	repairDuraEdit->blockSignals(true);
 	if (statsDirectory != 0) {
-		QLineEdit *levelEdit = this->findChild<QLineEdit *>("levelEdit");
 		levelEdit->setText(LsbReader::lookupByUniquePathEntity(statsDirectory, "Level")->toString().c_str());
-		
-		QLineEdit *duraEdit = this->findChild<QLineEdit *>("duraEdit");
 		duraEdit->setText(LsbReader::lookupByUniquePathEntity(statsDirectory, "Durability")->toString().c_str());
-		
-		QCheckBox *identCheck = this->findChild<QCheckBox *>("identCheck");
 		std::string identText = LsbReader::lookupByUniquePathEntity(statsDirectory, "IsIdentified")->toString();
 		identCheck->setChecked((identText == "false" ? false : true));
-		
-		QComboBox *itemTypeCombo = this->findChild<QComboBox *>("itemTypeCombo");
 		itemTypeCombo->setCurrentText(LsbReader::lookupByUniquePathEntity(statsDirectory, "ItemType")->toString().c_str());
-		
-		QLineEdit *repairDuraEdit = this->findChild<QLineEdit *>("repairDuraEdit");
 		repairDuraEdit->setText(LsbReader::lookupByUniquePathEntity(statsDirectory, "RepairDurabilityPenalty")->toString().c_str());
+	} else {
+		levelEdit->clear();
+		duraEdit->clear();
+		identCheck->setChecked(false);
+		itemTypeCombo->setCurrentIndex(0);
+		repairDuraEdit->clear();
 	}
+	levelEdit->blockSignals(false);
+	duraEdit->blockSignals(false);
+	identCheck->blockSignals(false);
+	itemTypeCombo->blockSignals(false);
+	repairDuraEdit->blockSignals(false);
 }
 
 ItemGeneral::~ItemGeneral()

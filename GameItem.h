@@ -41,7 +41,9 @@ public:
 	}
 	LsbObject *createStatsDirectory();
 	bool removeStatsDirectory();
+	bool removeGenerationDirectory();
 	LsbObject *getStatsDirectory();
+	LsbObject *getGenerationDirectory();
 	void setHasStatsDirectory(bool statsDirectory) {
 		this->statsDirectory = statsDirectory;
 	}

@@ -35,6 +35,9 @@ public:
 					if (itemEditFrame->item->getStatsDirectory() != 0) {
 						itemEditFrame->item->removeStatsDirectory();
 					}
+					if (itemEditFrame->item->getGenerationDirectory() != 0) {
+						itemEditFrame->item->removeGenerationDirectory();
+					}
 				}
 			}
 			

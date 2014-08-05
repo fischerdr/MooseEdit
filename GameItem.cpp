@@ -68,12 +68,30 @@ LsbObject *GameItem::getStatsDirectory() {
 	return statsDirectory;
 }
 
+LsbObject *GameItem::getGenerationDirectory() {
+	LsbObject *generationDir = LsbReader::lookupByUniquePathEntity(this->getObject(), "Generation");
+	return generationDir;
+}
+
 bool GameItem::removeStatsDirectory()
 {
 	LsbObject *statsDir = getStatsDirectory();
 	if (statsDir != 0) {
-		statsDir->getParent()->removeChild(statsDir);
+		return this->getObject()->removeChild(statsDir);
 	}
+	return false;
+}
+
+bool GameItem::removeGenerationDirectory()
+{
+	LsbObject *generationDir = LsbReader::lookupByUniquePathEntity(this->getObject(), "Generation");
+	if (generationDir != 0) {
+		LsbObject *isGeneratedObject = LsbReader::lookupByUniquePathEntity(this->getObject(), "IsGenerated");
+		bool isGen = false;
+		isGeneratedObject->setData((char *)&isGen, sizeof(bool));
+		return this->getObject()->removeChild(generationDir);
+	}
+	return false;
 }
 
 std::string GameItem::getStatsText() const

@@ -76,6 +76,9 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow) {
 						item->getPermBoosts().push_back(permBoostEntry);
 					}
 				}
+			} else {
+				item->setHasStatsDirectory(false);
+				item->setItemRarity("Common");
 			}
 			LsbObject *currentTemplateObject = LsbReader::lookupByUniquePathEntity(itemObject, "CurrentTemplate");
 			char *currentTemplate = currentTemplateObject->getData();
