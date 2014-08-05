@@ -158,7 +158,8 @@ std::string MainWindow::getSteamPathFromRegistry() {
 				  0, KEY_READ, &hKey)) == ERROR_SUCCESS) {
 		unsigned long dataSize = MAX_PATH + 1;
 		char buf[dataSize];
-		if ((returnVal = RegGetValueA(hKey, 0, "InstallLocation", RRF_RT_REG_SZ, 0, buf, &dataSize)) == ERROR_SUCCESS) {
+		if ((returnVal = RegQueryValueExA(hKey, "InstallLocation", 0, 0, (LPBYTE) buf, &dataSize)) == ERROR_SUCCESS) {
+			buf[dataSize] = 0;
 			text = buf;
 		}
 		else {
@@ -959,6 +960,7 @@ void MainWindow::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 		}
 		contextMenu.addAction("&Copy Text");
 		contextMenu.addAction("Copy &Path");
+		contextMenu.addAction("Copy &Type");
 		QAction *findAction = contextMenu.addAction("&Find");
 		findAction->setShortcut(QKeySequence::Find);
 		QAction *result = contextMenu.exec(treeWidget->viewport()->mapToGlobal(pos));
@@ -990,8 +992,16 @@ void MainWindow::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 				}
 				QClipboard *clipboard = QApplication::clipboard();
 				clipboard->setText(QString(ss.str().c_str()));
+			} 
+			if (result->text() == "Copy &Type") {
+				QClipboard *clipboard = QApplication::clipboard();
+				EditableTreeWidgetItem *editable = (EditableTreeWidgetItem *)item;
+				long type = editable->object->getType();
+				std::ostringstream ss;
+				ss<<type;
+				clipboard->setText(ss.str().c_str());
 			}
-			else if (result->text() == "&Find") {
+			if (result->text() == "&Find") {
 				treeFindAction();
 			}
 		}

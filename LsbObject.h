@@ -91,7 +91,8 @@ public:
 		memcpy(this->data, other.data, other.dataSize);
 		this->dataSize = other.dataSize;
 		for (int i=0; i<other.children.size(); ++i) {
-			children.push_back(new LsbObject(*other.children[i]));
+			LsbObject *newChild = new LsbObject(*other.children[i]);
+			children.push_back(newChild);
 		}
 		this->childId = other.childId;
 		this->itemsLeft = other.itemsLeft;
@@ -127,6 +128,8 @@ public:
 		for (int i=0; i<children.size(); ++i) {
 			if (children[i] == oldChild) {
 				children[i] = newChild;
+				delete oldChild;
+				break;
 			}
 		}
 	}
@@ -136,6 +139,7 @@ public:
 			LsbObject *child = this->getChildren()[i];
 			if (child == targetChild) {
 				this->getChildren().erase(this->getChildren().begin() + i);
+				delete child;
 				return true;
 			}
 		}
