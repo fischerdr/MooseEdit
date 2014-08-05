@@ -10,6 +10,7 @@
 #include "CheckboxListItem.h"
 #include "AbilityGroupItem.h"
 #include "ExpandableGroupBox.h"
+#include "TraitWidget.h"
 
 characterTab::characterTab(std::vector<TAG_LSB *> *tagList, QWidget *parent) :
 	QWidget(parent), tagList(tagList),
@@ -24,6 +25,70 @@ characterTab::characterTab(std::vector<TAG_LSB *> *tagList, QWidget *parent) :
 	QScrollArea *inventoryScrollArea = this->findChild<QScrollArea *>("inventoryScrollArea");
 	inventoryScrollArea->setContextMenuPolicy(Qt::CustomContextMenu);
 	talentList->setContextMenuPolicy(Qt::CustomContextMenu);
+}
+
+bool characterTab::populateTraitsView() {
+	QFile mFile(":/parsed_traits.txt");
+	if(!mFile.open(QFile::ReadOnly | QFile::Text)){
+		return false;
+	}
+
+	QTextStream in(&mFile);
+	QString mText = in.readAll();
+	std::stringstream ss(mText.toStdString());
+	mFile.close();
+	GenStatsReader reader;
+	traits = reader.loadFile(ss);
+	StatsContainer *last = 0;
+	std::vector<LsbObject *> traitObjects = this->getCharacter()->getTraitList();
+	QWidget *traitsGroup = this->findChild<QWidget *>("traitsGroup");
+	for (int i=0; i<traits.size(); ++i) {
+		StatsContainer *trait = traits[i];
+		
+		if (((i + 1) % 2) == 0) {
+			if (trait != 0 && last != 0) {
+				TraitWidget *item = new TraitWidget(this->getCharacter(), traits, traitsGroup);
+				QLabel *leftLabel = item->findChild<QLabel *>("leftLabel");
+				QLabel *rightLabel = item->findChild<QLabel *>("rightLabel");
+				QLineEdit *leftEdit = item->findChild<QLineEdit *>("leftEdit");
+				QLineEdit *rightEdit = item->findChild<QLineEdit *>("rightEdit");
+				leftLabel->setText(last->getArg(0).c_str());
+				rightLabel->setText(trait->getArg(0).c_str());
+				std::string idText = "";
+				
+				idText = last->getData("id");
+				long leftId = -1;
+				try {
+					leftId = boost::lexical_cast<long>(idText);
+				} catch (const boost::bad_lexical_cast& e) {
+					
+				}
+				
+				idText = trait->getData("id");
+				long rightId = -1;
+				try {
+					rightId = boost::lexical_cast<long>(idText);
+				} catch (const boost::bad_lexical_cast& e) {
+					
+				}
+				
+				if (leftId < traitObjects.size() && rightId < traitObjects.size()) {
+					short leftValue = *((short*)traitObjects[leftId]->getData());
+					short rightValue = *((short*)traitObjects[rightId]->getData());
+					std::ostringstream ssLeft;
+					ssLeft<<leftValue;
+					std::ostringstream ssRight;
+					ssRight<<rightValue;
+					leftEdit->setText(ssLeft.str().c_str());
+					rightEdit->setText(ssRight.str().c_str());
+				}
+				item->setToolTip(trait->getData("tip").c_str());
+				traitsGroup->layout()->addWidget(item);
+			}
+		}
+		last = trait;
+	}
+	return true;
 }
 
 bool characterTab::populateAbilitiesView() {
@@ -48,6 +113,7 @@ bool characterTab::populateAbilitiesView() {
 	mFile.close();
 	GenStatsReader reader;
 	abilities = reader.loadFile(ss);
+	std::vector<LsbObject *> abilityObjects = this->getCharacter()->getAbilityList();
 	QList<ExpandableGroupBox *> groupBoxes = this->findChildren<ExpandableGroupBox *>();
 	for (int i=0; i<abilities.size(); ++i) {
 		StatsContainer *ability = abilities[i];
@@ -74,7 +140,6 @@ bool characterTab::populateAbilitiesView() {
 			} catch (const boost::bad_lexical_cast& e) {
 				
 			}
-			std::vector<LsbObject *> abilityObjects = this->getCharacter()->getAbilityList();
 			if (id < abilityObjects.size()) {
 				long value = *((long*)abilityObjects[id]->getData());
 				std::ostringstream ss;
@@ -164,6 +229,7 @@ void characterTab::setCharacter(GameCharacter *character) {
 	
 	populateTalentsView();
 	populateAbilitiesView();
+	populateTraitsView();
 }
 
 characterTab::~characterTab()

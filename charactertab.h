@@ -84,12 +84,14 @@ private:
 	std::vector<TAG_LSB *> *tagList;
 	std::vector<StatsContainer *> talents;
 	std::vector<StatsContainer *> abilities;
+	std::vector<StatsContainer *> traits;
 	std::map<std::string, std::string> *nameMappings = 0;
 	RelativePositionLayout *relPosLayout = 0;
 	int lastWidth = 0;
 	void addWidgetsToLayout(QWidget *widget, QLayout *layout);
 	bool populateTalentsView();
 	bool populateAbilitiesView();
+	bool populateTraitsView();
 };
 
 #endif // CHARACTERTAB_H

@@ -12,6 +12,18 @@ std::vector<LsbObject *> GameCharacter::getAbilityList() {
 	return abilityObjects;
 }
 
+std::vector<LsbObject *> GameCharacter::getTraitList() {
+	std::vector<LsbObject *> traitObjects;
+	LsbObject *playerUpgradeObject = LsbReader::lookupByUniquePathEntity(this->getObject(), "PlayerData/PlayerUpgrade");
+	if (playerUpgradeObject != 0) {
+		std::vector<LsbObject *> traitsObjects = LsbReader::lookupAllEntitiesWithName(playerUpgradeObject, "Traits");
+		for (int i=0; i<traitsObjects.size(); ++i) {
+			traitObjects.push_back(LsbReader::lookupByUniquePathEntity(traitsObjects[i], "Object"));
+		}
+	}
+	return traitObjects;
+}
+
 bool GameCharacter::hasTalent(long talentId) {
 	LsbObject *upgradeObject = LsbReader::lookupByUniquePathEntity(this->getObject(), "PlayerData/PlayerUpgrade");
 	if (upgradeObject != 0) {

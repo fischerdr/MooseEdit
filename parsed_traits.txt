@@ -1,0 +1,54 @@
+new entry "Forgiving"
+data "id" "0"
+
+new entry "Vindictive"
+data "id" "1"
+
+new entry "Bold"
+data "id" "2"
+
+new entry "Cautious"
+data "id" "3"
+
+new entry "Altruistic"
+data "id" "4"
+
+new entry "Egotistical"
+data "id" "5"
+
+new entry "Independent"
+data "id" "6"
+
+new entry "Obedient"
+data "id" "7"
+
+new entry "Pragmatic"
+data "id" "8"
+
+new entry "Romantic"
+data "id" "9"
+
+new entry "Spiritual"
+data "id" "10"
+
+new entry "Materialistic"
+data "id" "11"
+
+new entry "Righteous"
+data "id" "12"
+
+new entry "Renegade"
+data "id" "13"
+
+new entry "Blunt"
+data "id" "14"
+
+new entry "Considerate"
+data "id" "15"
+
+new entry "Compassionate"
+data "id" "16"
+
+new entry "Heartless"
+data "id" "17"
+

@@ -33,5 +33,8 @@
         <file>abilityGroupCollapsed.png</file>
         <file>abilityGroupExpanded.png</file>
         <file>parsed_abilities.txt</file>
+        <file>parsed_traits.txt</file>
+        <file>left-arrow.png</file>
+        <file>right-arrow.png</file>
     </qresource>
 </RCC>
