@@ -12,7 +12,7 @@
 #include "GenStatsReader.h"
 #include "PakReader.h"
 
-#define PRG_VERSION	"alpha9"
+#define PRG_VERSION	"alpha10"
 
 namespace Ui {
 class MainWindow;
