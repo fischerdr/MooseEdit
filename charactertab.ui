@@ -352,10 +352,10 @@ QScrollBar::down-arrow:vertical {
    <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
-      <x>360</x>
-      <y>80</y>
+      <x>362</x>
+      <y>84</y>
       <width>221</width>
-      <height>431</height>
+      <height>430</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -438,17 +438,38 @@ QScrollBar::down-arrow:vertical {
       <property name="spacing">
        <number>0</number>
       </property>
-      <item row="0" column="0" rowspan="2">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string/>
-        </property>
-        <property name="pixmap">
-         <pixmap resource="resources.qrc">:/inventory_empty.png</pixmap>
-        </property>
-        <property name="scaledContents">
-         <bool>true</bool>
-        </property>
+      <item row="0" column="0">
+       <widget class="QWidget" name="widget_2" native="true">
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="pixmap">
+            <pixmap resource="resources.qrc">:/inventory_empty.png</pixmap>
+           </property>
+           <property name="scaledContents">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>
@@ -682,9 +703,6 @@ QGroupBox::title {
 }</string>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_3">
-                   <property name="leftMargin">
-                    <number>0</number>
-                   </property>
                    <item>
                     <widget class="ExpandableGroupBox" name="weaponsGroup">
                      <property name="sizePolicy">
@@ -712,14 +730,8 @@ QGroupBox::title {
                       <property name="spacing">
                        <number>1</number>
                       </property>
-                      <property name="leftMargin">
-                       <number>2</number>
-                      </property>
                       <property name="topMargin">
                        <number>18</number>
-                      </property>
-                      <property name="rightMargin">
-                       <number>20</number>
                       </property>
                      </layout>
                     </widget>
@@ -751,14 +763,8 @@ QGroupBox::title {
                       <property name="spacing">
                        <number>1</number>
                       </property>
-                      <property name="leftMargin">
-                       <number>2</number>
-                      </property>
                       <property name="topMargin">
                        <number>18</number>
-                      </property>
-                      <property name="rightMargin">
-                       <number>20</number>
                       </property>
                      </layout>
                     </widget>
@@ -790,14 +796,8 @@ QGroupBox::title {
                       <property name="spacing">
                        <number>1</number>
                       </property>
-                      <property name="leftMargin">
-                       <number>2</number>
-                      </property>
                       <property name="topMargin">
                        <number>18</number>
-                      </property>
-                      <property name="rightMargin">
-                       <number>20</number>
                       </property>
                      </layout>
                     </widget>
@@ -829,14 +829,8 @@ QGroupBox::title {
                       <property name="spacing">
                        <number>1</number>
                       </property>
-                      <property name="leftMargin">
-                       <number>2</number>
-                      </property>
                       <property name="topMargin">
                        <number>18</number>
-                      </property>
-                      <property name="rightMargin">
-                       <number>20</number>
                       </property>
                      </layout>
                     </widget>
@@ -868,14 +862,8 @@ QGroupBox::title {
                       <property name="spacing">
                        <number>1</number>
                       </property>
-                      <property name="leftMargin">
-                       <number>2</number>
-                      </property>
                       <property name="topMargin">
                        <number>18</number>
-                      </property>
-                      <property name="rightMargin">
-                       <number>20</number>
                       </property>
                      </layout>
                     </widget>
@@ -907,14 +895,8 @@ QGroupBox::title {
                       <property name="spacing">
                        <number>1</number>
                       </property>
-                      <property name="leftMargin">
-                       <number>2</number>
-                      </property>
                       <property name="topMargin">
                        <number>18</number>
-                      </property>
-                      <property name="rightMargin">
-                       <number>20</number>
                       </property>
                      </layout>
                     </widget>
@@ -1148,7 +1130,7 @@ QScrollBar::right-arrow:horizontal {
               <x>0</x>
               <y>0</y>
               <width>219</width>
-              <height>391</height>
+              <height>390</height>
              </rect>
             </property>
             <property name="styleSheet">
