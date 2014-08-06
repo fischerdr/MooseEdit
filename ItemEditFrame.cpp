@@ -182,7 +182,7 @@ public:
 			LsbObject *newPermBoost = 0;
 			std::vector<LsbObject *> newPermBoostObjects;
 			if (statsDirectory != 0) {
-				TAG_LSB *newBoostTag = LsbReader::getTagByName(name.c_str(), itemEditFrame->tagList);
+				TAG_LSB *newBoostTag = LsbReader::createTagIfNeeded(name.c_str(), itemEditFrame->tagList);
 				if (newBoostTag == 0) {
 					TAG_LSB *newTag = new TAG_LSB();
 					newTag->index = LsbObject::getNextFreeTagIndex(itemEditFrame->tagList);
@@ -198,10 +198,10 @@ public:
 				if (newBoostTag != 0) {
 					newPermBoost = LsbReader::lookupByUniquePathEntity(statsDirectory, "PermanentBoost");
 					if (newPermBoost == 0) {
-						TAG_LSB *permBoostTag = LsbReader::getTagByName("PermanentBoost", itemEditFrame->tagList);
+						TAG_LSB *permBoostTag = LsbReader::createTagIfNeeded("PermanentBoost", itemEditFrame->tagList);
 						newPermBoost = new LsbObject(true, permBoostTag->index, permBoostTag->tag, 0, statsDirectory, itemEditFrame->tagList);
 						
-						TAG_LSB *abilitiesTag = LsbReader::getTagByName("Abilities", itemEditFrame->tagList);
+						TAG_LSB *abilitiesTag = LsbReader::createTagIfNeeded("Abilities", itemEditFrame->tagList);
 						LsbObject *newAbilitiesObject = new LsbObject(true, abilitiesTag->index, abilitiesTag->tag, 0, newPermBoost, itemEditFrame->tagList);
 						
 						newPermBoost->addChild(newAbilitiesObject);
@@ -243,9 +243,9 @@ public:
 class ModsPickerSelectCallback : public StatsButtonCallback {
 	ItemEditFrame *itemEditFrame;
 	void addBoostToGenerationObject(LsbObject *generationObject, std::string &modName) {
-		TAG_LSB *boostTag = LsbReader::getTagByName("Boost", itemEditFrame->tagList);
+		TAG_LSB *boostTag = LsbReader::createTagIfNeeded("Boost", itemEditFrame->tagList);
 		LsbObject *newBoost = new LsbObject(true, boostTag->index, boostTag->tag, 0, generationObject, itemEditFrame->tagList);
-		TAG_LSB *objectTag = LsbReader::getTagByName("Object", itemEditFrame->tagList);
+		TAG_LSB *objectTag = LsbReader::createTagIfNeeded("Object", itemEditFrame->tagList);
 		LsbObject *newBoostObject = new LsbObject(false, objectTag->index, objectTag->tag, 0x16, newBoost, itemEditFrame->tagList);
 		newBoost->addChild(newBoostObject);
 		newBoostObject->setData(modName.c_str(), modName.length() + 1);
@@ -270,13 +270,13 @@ public:
 		if (generationObject != 0) {
 			addBoostToGenerationObject(generationObject, modName);
 		} else {
-			TAG_LSB *generationTag = LsbReader::getTagByName("Generation", itemEditFrame->tagList);
+			TAG_LSB *generationTag = LsbReader::createTagIfNeeded("Generation", itemEditFrame->tagList);
 			if (generationTag != 0) {
 				generationObject = new LsbObject(true, generationTag->index, generationTag->tag, 0, itemObject, itemEditFrame->tagList);
 				itemObject->addChild(generationObject);
 				
 				LsbObject *statsObject = LsbReader::lookupByUniquePathEntity(itemEditFrame->item->getObject(), "Stats");
-				
+
 				LsbObject *statsDirectory = 0;
 				std::vector<LsbObject *> statsObjects = LsbReader::lookupAllEntitiesWithName(itemEditFrame->item->getObject(), "Stats");
 				for (int i=0; i<statsObjects.size(); ++i) {
@@ -296,12 +296,12 @@ public:
 					long isIdent = 1;
 					isIdentObject->setData((char *)&isIdent, sizeof(long));
 				}
-				
-				TAG_LSB *baseTag = LsbReader::getTagByName("Base", itemEditFrame->tagList);
+
+				TAG_LSB *baseTag = LsbReader::createTagIfNeeded("Base", itemEditFrame->tagList);
 				LsbObject *newBase = new LsbObject(false, baseTag->index, baseTag->tag, 0x16, generationObject, itemEditFrame->tagList);
 				newBase->setData(statsObject->getData(), statsObject->getDataSize());
 				
-				TAG_LSB *itemTypeTag = LsbReader::getTagByName("ItemType", itemEditFrame->tagList);
+				TAG_LSB *itemTypeTag = LsbReader::createTagIfNeeded("ItemType", itemEditFrame->tagList);
 				LsbObject *newItemType = new LsbObject(false, itemTypeTag->index, itemTypeTag->tag, 0x16, generationObject, itemEditFrame->tagList);
 				std::string itemTypeDefault = "Magic";
 				newItemType->setData(itemTypeDefault.c_str(), itemTypeDefault.length() + 1);
@@ -309,17 +309,17 @@ public:
 					LsbObject *itemTypeObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "ItemType");
 					itemTypeObject->setData(itemTypeDefault.c_str(), itemTypeDefault.length() + 1);
 				}
-				
-				TAG_LSB *levelTag = LsbReader::getTagByName("Level", itemEditFrame->tagList);
+
+				TAG_LSB *levelTag = LsbReader::createTagIfNeeded("Level", itemEditFrame->tagList);
 				LsbObject *newLevel = new LsbObject(false, levelTag->index, levelTag->tag, 0x04, generationObject, itemEditFrame->tagList);
 				long statsLevel = itemEditFrame->item->getItemLevel();
 				newLevel->setData((char *)&statsLevel, sizeof(long));
 				
-				TAG_LSB *randomTag = LsbReader::getTagByName("Random", itemEditFrame->tagList);
+				TAG_LSB *randomTag = LsbReader::createTagIfNeeded("Random", itemEditFrame->tagList);
 				LsbObject *newRandom = new LsbObject(false, randomTag->index, randomTag->tag, 0x04, generationObject, itemEditFrame->tagList);
 				long random = 1;
 				newRandom->setData((char *)&random, sizeof(long));
-				
+
 				generationObject->addChild(newBase);
 				generationObject->addChild(newItemType);
 				generationObject->addChild(newLevel);

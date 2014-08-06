@@ -4,40 +4,40 @@
 #include <vector>
 
 LsbObject *GameItem::createStatsDirectory() {
-	TAG_LSB *statsTag = LsbReader::getTagByName("Stats", tagList);
+	TAG_LSB *statsTag = LsbReader::createTagIfNeeded("Stats", tagList);
 	LsbObject *newStatsDir = new LsbObject(true, statsTag->index, statsTag->tag, 0, this->getObject(), tagList);
 	
-	TAG_LSB *customRequirementsTag = LsbReader::getTagByName("CustomRequirements", tagList);
+	TAG_LSB *customRequirementsTag = LsbReader::createTagIfNeeded("CustomRequirements", tagList);
 	LsbObject *newCustomRequirements = new LsbObject(false, customRequirementsTag->index, customRequirementsTag->tag, 0x13, newStatsDir, tagList);
 	bool custRequirements = false;
 	newCustomRequirements->setData((char *)&custRequirements, sizeof(bool));
 	
-	TAG_LSB *durabilityTag = LsbReader::getTagByName("Durability", tagList);
+	TAG_LSB *durabilityTag = LsbReader::createTagIfNeeded("Durability", tagList);
 	LsbObject *newDurability = new LsbObject(false, durabilityTag->index, durabilityTag->tag, 0x04, newStatsDir, tagList);
 	long durability = 100;
 	newDurability->setData((char *)&durability, sizeof(long));
 	
-	TAG_LSB *durabilityCounterTag = LsbReader::getTagByName("DurabilityCounter", tagList);
+	TAG_LSB *durabilityCounterTag = LsbReader::createTagIfNeeded("DurabilityCounter", tagList);
 	LsbObject *newDurabilityCounter = new LsbObject(false, durabilityCounterTag->index, durabilityCounterTag->tag, 0x04, newStatsDir, tagList);
 	long durabilityCounter = 8;
 	newDurabilityCounter->setData((char *)&durabilityCounter, sizeof(long));
 	
-	TAG_LSB *isIdentifiedTag = LsbReader::getTagByName("IsIdentified", tagList);
+	TAG_LSB *isIdentifiedTag = LsbReader::createTagIfNeeded("IsIdentified", tagList);
 	LsbObject *newIsIdentified = new LsbObject(false, isIdentifiedTag->index, isIdentifiedTag->tag, 0x04, newStatsDir, tagList);
 	long isIdentified = 1;
 	newIsIdentified->setData((char *)&isIdentified, sizeof(long));
 	
-	TAG_LSB *thisTypeTag = LsbReader::getTagByName("ItemType", tagList);
+	TAG_LSB *thisTypeTag = LsbReader::createTagIfNeeded("ItemType", tagList);
 	LsbObject *newthisType = new LsbObject(false, thisTypeTag->index, thisTypeTag->tag, 0x16, newStatsDir, tagList);
 	std::string thisType = "Magic";
 	newthisType->setData(thisType.c_str(), thisType.length() + 1);
 	
-	TAG_LSB *levelTag = LsbReader::getTagByName("Level", tagList);
+	TAG_LSB *levelTag = LsbReader::createTagIfNeeded("Level", tagList);
 	LsbObject *newLevel = new LsbObject(false, levelTag->index, levelTag->tag, 0x04, newStatsDir, tagList);
 	long level = 1;
 	newLevel->setData((char *)&level, sizeof(long));
 	
-	TAG_LSB *repairDurabilityPenaltyTag = LsbReader::getTagByName("RepairDurabilityPenalty", tagList);
+	TAG_LSB *repairDurabilityPenaltyTag = LsbReader::createTagIfNeeded("RepairDurabilityPenalty", tagList);
 	LsbObject *newRepairDurabilityPenalty = new LsbObject(false, repairDurabilityPenaltyTag->index, repairDurabilityPenaltyTag->tag, 0x04, newStatsDir, tagList);
 	long repairDurabilityPenalty = 0;
 	newRepairDurabilityPenalty->setData((char *)&repairDurabilityPenalty, sizeof(long));
