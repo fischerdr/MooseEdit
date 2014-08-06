@@ -94,6 +94,7 @@ private:
 	std::vector<LsbObject *> modTemplates;
 	std::vector<StatsContainer *> itemStats;
 	std::vector<StatsContainer *> itemLinks;
+	std::vector<StatsContainer *> skillStats;
 	TextureAtlas iconAtlas;
 	InventoryHandler *editItemHandler;
 	std::map<std::string, std::string> nameMappings;

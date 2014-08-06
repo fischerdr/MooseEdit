@@ -43,7 +43,8 @@ SOURCES += main.cpp\
     CheckboxListItem.cpp \
     AbilityGroupItem.cpp \
     ExpandableGroupBox.cpp \
-    TraitWidget.cpp
+    TraitWidget.cpp \
+    SkillEditFrame.cpp
 
 HEADERS  += mainwindow.h \
     LsbReader.h \
@@ -70,7 +71,8 @@ HEADERS  += mainwindow.h \
     CheckboxListItem.h \
     AbilityGroupItem.h \
     ExpandableGroupBox.h \
-    TraitWidget.h
+    TraitWidget.h \
+    SkillEditFrame.h
 
 FORMS    += mainwindow.ui \
     charactertab.ui \
@@ -80,7 +82,8 @@ FORMS    += mainwindow.ui \
     StatsView.ui \
     ItemGeneral.ui \
     AbilityGroupItem.ui \
-    TraitWidget.ui
+    TraitWidget.ui \
+    SkillEditFrame.ui
 
 RESOURCES += \
     resources.qrc

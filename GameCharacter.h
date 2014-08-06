@@ -19,11 +19,12 @@ class GameCharacter
 	std::string name;
 	QWidget *widget;
 	ItemGroup inventory;
+	std::vector<TAG_LSB *> &tagList;
 	
 	InventoryHandler *inventoryHandler;
 	
 public:
-	GameCharacter();
+	GameCharacter(std::vector<TAG_LSB *> &tagList);
 	~GameCharacter() {
 		delete widget;
 	}
@@ -58,6 +59,9 @@ public:
 	void setTalent(long talentId, bool enabled);
 	std::vector<LsbObject *> getAbilityList();
 	std::vector<LsbObject *> getTraitList();
+	std::vector<LsbObject *> getSkillList();
+	void addSkill(const char *skillName);
+	void removeSkill(const char *skillName);
 };
 
 #endif // GAMECHARACTER_H

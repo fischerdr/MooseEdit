@@ -351,7 +351,7 @@ void MainWindow::handleLoadButton() {
 				}
 				//tabWidget->addTab(widget, "CharTab");
 				std::string charNameStr = charName;
-				this->getCharacterGroup().getCharacters().insert(this->getCharacterGroup().getCharacters().begin(), new GameCharacter);
+				this->getCharacterGroup().getCharacters().insert(this->getCharacterGroup().getCharacters().begin(), new GameCharacter(globalTagList));
 				GameCharacter *gameCharacter = this->getCharacterGroup().getCharacters()[0];
 				gameCharacter->setName(charNameStr);
 				gameCharacter->setObject(character);
@@ -451,6 +451,7 @@ void MainWindow::handleLoadButton() {
 			std::string potionStatsTxt("Public/Main/Stats/Generated/Data/Potion.txt");
 			std::string shieldStatsTxt("Public/Main/Stats/Generated/Data/Shield.txt");
 			std::string modifiersStatsTxt("Public/Main/Stats/Generated/Structure/Modifiers.txt");
+			std::string skillStatsTxt("Public/Main/Stats/Generated/Data/SkillData.txt");
 			
 			std::string iconDds("Public/Main/Assets/Textures/Icons/icons.dds");
 			std::string portraitDds("Public/Main/Assets/Textures/Icons/portraits.dds");
@@ -489,6 +490,7 @@ void MainWindow::handleLoadButton() {
 			pakReader.extractFile(pakMain, potionStatsTxt, tempDirectory, false);
 			pakReader.extractFile(pakMain, shieldStatsTxt, tempDirectory, false);
 			pakReader.extractFile(pakMain, modifiersStatsTxt, tempDirectory, false);
+			pakReader.extractFile(pakMain, skillStatsTxt, tempDirectory, false);
 			pakReader.extractFile(pakMain, weaponLinksTxt, linkDirectory, false);
 			pakReader.extractFile(pakMain, armorLinksTxt, linkDirectory, false);
 			pakReader.extractFile(pakMain, objectLinksTxt, linkDirectory, false);
@@ -544,6 +546,8 @@ void MainWindow::handleLoadButton() {
 			shieldStatsPath += "\\Shield.txt";
 			std::string modifiersStatsPath = tempDirectory;
 			modifiersStatsPath += "\\Modifiers.txt";
+			std::string skillStatsPath = tempDirectory;
+			skillStatsPath += "\\SkillData.txt";
 			
 			std::string weaponLinkPath = linkDirectory;
 			weaponLinkPath += "\\Weapon.txt";
@@ -687,6 +691,10 @@ void MainWindow::handleLoadButton() {
 			modifiersStatsFin.close();
 			this->addItemStats(modifiersStats);
 			
+			std::ifstream skillStatsFin(skillStatsPath.c_str(), std::ios::binary);
+			skillStats = statReader.loadFile(skillStatsFin);
+			skillStatsFin.close();
+			
 			std::ifstream weaponLinkFin(weaponLinkPath.c_str(), std::ios::binary);
 			std::vector<StatsContainer *> weaponLink = statReader.loadFile(weaponLinkFin);
 			weaponLinkFin.close();
@@ -740,6 +748,7 @@ void MainWindow::handleLoadButton() {
 					charTab->setItemLinks(itemLinks);
 					charTab->setAllItemStats(itemStats);
 					charTab->setItemEditHandler(editItemHandler);
+					charTab->setSkillStats(&skillStats);
 				}
 			}
 			else {

@@ -1,5 +1,60 @@
 #include "GameCharacter.h"
 
+std::vector<LsbObject *> GameCharacter::getSkillList() {
+	std::vector<LsbObject *> skillObjects;
+	LsbObject *skillManagerObject = LsbReader::lookupByUniquePathEntity(this->getObject(), "SkillManager");
+	if (skillManagerObject != 0) {
+		return LsbReader::lookupAllEntitiesWithName(skillManagerObject, "Skills");
+	}
+	return skillObjects;
+}
+
+void GameCharacter::addSkill(const char *skillName) {
+	LsbObject *skillManagerObject = LsbReader::lookupByUniquePathEntity(this->getObject(), "SkillManager");
+	if (skillManagerObject != 0) {
+		TAG_LSB *skillsTag = LsbReader::createTagIfNeeded("Skills", &tagList);
+		LsbObject *skillsObject = new LsbObject(true, skillsTag->index, skillsTag->tag, 0, skillManagerObject, &tagList);
+		
+		TAG_LSB *activeCooldownTag = LsbReader::createTagIfNeeded("ActiveCooldown", &tagList);
+		LsbObject *activeCooldownObject = new LsbObject(false, activeCooldownTag->index, activeCooldownTag->tag, 6, skillsObject, &tagList);
+		float activeCooldown = 0.0f;
+		activeCooldownObject->setData((char *)&activeCooldown, sizeof(float));
+		
+		TAG_LSB *isLearnedTag = LsbReader::createTagIfNeeded("IsLearned", &tagList);
+		LsbObject *isLearnedObject = new LsbObject(false, isLearnedTag->index, isLearnedTag->tag, 19, skillsObject, &tagList);
+		bool isLearned = true;
+		isLearnedObject->setData((char *)&isLearned, sizeof(bool));
+		
+		TAG_LSB *mapKeyTag = LsbReader::createTagIfNeeded("MapKey", &tagList);
+		LsbObject *mapKeyObject = new LsbObject(false, mapKeyTag->index, mapKeyTag->tag, 22, skillsObject, &tagList);
+		mapKeyObject->setData(skillName, strlen(skillName) + 1);
+		
+		skillsObject->addChild(activeCooldownObject);
+		skillsObject->addChild(isLearnedObject);
+		skillsObject->addChild(mapKeyObject);
+		
+		skillManagerObject->addChild(skillsObject);
+	}
+}
+
+void GameCharacter::removeSkill(const char *skillName) {
+	LsbObject *skillManagerObject = LsbReader::lookupByUniquePathEntity(this->getObject(), "SkillManager");
+	if (skillManagerObject != 0) {
+		std::vector<LsbObject *> skillObjects = getSkillList();
+		for (int i=0; i<skillObjects.size(); ++i) {
+			LsbObject *skillObject = skillObjects[i];
+			LsbObject *mapKeyObject = LsbReader::lookupByUniquePathEntity(skillObject, "MapKey");
+			if (mapKeyObject != 0) {
+				std::string name = skillName;
+				if (mapKeyObject->getData() == name) {
+					skillManagerObject->removeChild(skillObject);
+					break;
+				}
+			}
+		}
+	}
+}
+
 std::vector<LsbObject *> GameCharacter::getAbilityList() {
 	std::vector<LsbObject *> abilityObjects;
 	LsbObject *playerUpgradeObject = LsbReader::lookupByUniquePathEntity(this->getObject(), "PlayerData/PlayerUpgrade");
@@ -70,6 +125,6 @@ void GameCharacter::setTalent(long talentId, bool enabled) {
 	}
 }
 
-GameCharacter::GameCharacter()
+GameCharacter::GameCharacter(std::vector<TAG_LSB *> &tagList) : tagList(tagList)
 {
 }

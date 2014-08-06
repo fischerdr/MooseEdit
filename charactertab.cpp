@@ -207,6 +207,10 @@ bool characterTab::populateTalentsView() {
 	return true;
 }
 
+void characterTab::setSkillStats(std::vector<StatsContainer *> *skillStats) {
+	skillEditFrame = new SkillEditFrame(character, skillStats);
+}
+
 void characterTab::setCharacter(GameCharacter *character) {
 	this->character = character;
 	
@@ -234,6 +238,8 @@ void characterTab::setCharacter(GameCharacter *character) {
 
 characterTab::~characterTab()
 {
+	delete skillEditFrame;
+	
 	delete ui;
 }
 
@@ -513,4 +519,9 @@ void characterTab::on_abilitiesAvailableEdit_textEdited(const QString &text)
 	if (talentPointsObject != 0) {
 		talentPointsObject->setData((char *)&value, sizeof(long));
 	}
+}
+
+void characterTab::on_skillsButton_released()
+{
+    skillEditFrame->show();
 }

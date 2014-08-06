@@ -601,6 +601,18 @@ QScrollBar::up-arrow:vertical {
 }
 QScrollBar::down-arrow:vertical {
 	border-image: url(:/down-arrow.png);
+}
+
+QScrollBar:horizontal {
+	background-color: rgb(0, 0, 0);
+    width: 20px;
+}
+
+QScrollBar::left-arrow:horizontal {
+	border-image: url(:/left-arrow.png);
+}
+QScrollBar::right-arrow:horizontal {
+	border-image: url(:/right-arrow.png);
 }</string>
               </property>
               <property name="horizontalScrollBarPolicy">
@@ -671,6 +683,9 @@ QGroupBox::title {
 }</string>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_3">
+                   <property name="leftMargin">
+                    <number>3</number>
+                   </property>
                    <item>
                     <widget class="ExpandableGroupBox" name="weaponsGroup">
                      <property name="sizePolicy">
@@ -1141,13 +1156,13 @@ QScrollBar::right-arrow:horizontal {
      </layout>
     </widget>
    </widget>
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QPushButton" name="skillsButton">
     <property name="geometry">
      <rect>
-      <x>60</x>
-      <y>520</y>
-      <width>75</width>
-      <height>23</height>
+      <x>30</x>
+      <y>510</y>
+      <width>91</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
@@ -1165,7 +1180,7 @@ QScrollBar::right-arrow:horizontal {
    <zorder>nameEdit</zorder>
    <zorder>inventoryScrollArea</zorder>
    <zorder>tabWidget</zorder>
-   <zorder>pushButton</zorder>
+   <zorder>skillsButton</zorder>
    <zorder>frame_2</zorder>
   </widget>
  </widget>

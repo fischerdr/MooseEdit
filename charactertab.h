@@ -6,6 +6,7 @@
 #include "mainwindow.h"
 #include "ItemEditFrame.h"
 #include "RelativePositionLayout.h"
+#include "SkillEditFrame.h"
 
 namespace Ui {
 class characterTab;
@@ -35,6 +36,7 @@ public:
 	
 	std::vector<StatsContainer *> getItemLinks() const;
 	void setItemLinks(const std::vector<StatsContainer *> &value);
+	void setSkillStats(std::vector<StatsContainer *> *skillStats);
 	
 private slots:
 	
@@ -70,6 +72,8 @@ private slots:
 	
 	void on_abilitiesAvailableEdit_textEdited(const QString &arg1);
 	
+	void on_skillsButton_released();
+	
 protected:
 	void showEvent(QShowEvent *);
 
@@ -87,6 +91,7 @@ private:
 	std::vector<StatsContainer *> traits;
 	std::map<std::string, std::string> *nameMappings = 0;
 	RelativePositionLayout *relPosLayout = 0;
+	SkillEditFrame *skillEditFrame;
 	int lastWidth = 0;
 	void addWidgetsToLayout(QWidget *widget, QLayout *layout);
 	bool populateTalentsView();
