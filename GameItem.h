@@ -40,6 +40,7 @@ public:
 		this->generationRandom = other.generationRandom;
 	}
 	LsbObject *createStatsDirectory();
+	LsbObject *createGenerationDirectory();
 	bool removeStatsDirectory();
 	bool removeGenerationDirectory();
 	LsbObject *getStatsDirectory();

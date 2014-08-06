@@ -92,7 +92,6 @@ public:
 				LsbObject *targetBoost = boostObjects[childIndex];
 				//TODO: verify this is the correct node
 				generationObject->removeChild(targetBoost);
-				delete targetBoost;
 			}
 		}
 		itemEditFrame->redraw();
@@ -139,7 +138,6 @@ public:
 				LsbObject *targetPermBoost = permBoostObject->getChildren()[childIndex];
 				//TODO: verify this is the correct node
 				permBoostObject->removeChild(targetPermBoost);
-				delete targetPermBoost;
 			}
 		}
 		itemEditFrame->redraw();
@@ -270,61 +268,8 @@ public:
 		if (generationObject != 0) {
 			addBoostToGenerationObject(generationObject, modName);
 		} else {
-			TAG_LSB *generationTag = LsbReader::createTagIfNeeded("Generation", itemEditFrame->tagList);
-			if (generationTag != 0) {
-				generationObject = new LsbObject(true, generationTag->index, generationTag->tag, 0, itemObject, itemEditFrame->tagList);
-				itemObject->addChild(generationObject);
-				
-				LsbObject *statsObject = LsbReader::lookupByUniquePathEntity(itemEditFrame->item->getObject(), "Stats");
-
-				LsbObject *statsDirectory = 0;
-				std::vector<LsbObject *> statsObjects = LsbReader::lookupAllEntitiesWithName(itemEditFrame->item->getObject(), "Stats");
-				for (int i=0; i<statsObjects.size(); ++i) {
-					LsbObject *object = statsObjects[i];
-					if (object->isDirectory()) {
-						statsDirectory = object;
-						break;
-					}
-				}
-				
-				LsbObject *isGeneratedObject = LsbReader::lookupByUniquePathEntity(itemEditFrame->item->getObject(), "IsGenerated");
-				bool isGen = true;
-				isGeneratedObject->setData((char *)&isGen, sizeof(bool));
-				
-				if (statsDirectory != 0) {
-					LsbObject *isIdentObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "IsIdentified");
-					long isIdent = 1;
-					isIdentObject->setData((char *)&isIdent, sizeof(long));
-				}
-
-				TAG_LSB *baseTag = LsbReader::createTagIfNeeded("Base", itemEditFrame->tagList);
-				LsbObject *newBase = new LsbObject(false, baseTag->index, baseTag->tag, 0x16, generationObject, itemEditFrame->tagList);
-				newBase->setData(statsObject->getData(), statsObject->getDataSize());
-				
-				TAG_LSB *itemTypeTag = LsbReader::createTagIfNeeded("ItemType", itemEditFrame->tagList);
-				LsbObject *newItemType = new LsbObject(false, itemTypeTag->index, itemTypeTag->tag, 0x16, generationObject, itemEditFrame->tagList);
-				std::string itemTypeDefault = "Magic";
-				newItemType->setData(itemTypeDefault.c_str(), itemTypeDefault.length() + 1);
-				if (statsDirectory != 0) {
-					LsbObject *itemTypeObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "ItemType");
-					itemTypeObject->setData(itemTypeDefault.c_str(), itemTypeDefault.length() + 1);
-				}
-
-				TAG_LSB *levelTag = LsbReader::createTagIfNeeded("Level", itemEditFrame->tagList);
-				LsbObject *newLevel = new LsbObject(false, levelTag->index, levelTag->tag, 0x04, generationObject, itemEditFrame->tagList);
-				long statsLevel = itemEditFrame->item->getItemLevel();
-				newLevel->setData((char *)&statsLevel, sizeof(long));
-				
-				TAG_LSB *randomTag = LsbReader::createTagIfNeeded("Random", itemEditFrame->tagList);
-				LsbObject *newRandom = new LsbObject(false, randomTag->index, randomTag->tag, 0x04, generationObject, itemEditFrame->tagList);
-				long random = 1;
-				newRandom->setData((char *)&random, sizeof(long));
-
-				generationObject->addChild(newBase);
-				generationObject->addChild(newItemType);
-				generationObject->addChild(newLevel);
-				generationObject->addChild(newRandom);
-				
+			LsbObject *generationObject = itemEditFrame->item->createGenerationDirectory();
+			if (generationObject != 0) {
 				addBoostToGenerationObject(generationObject, modName);
 			}
 		}

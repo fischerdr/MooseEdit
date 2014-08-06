@@ -41,8 +41,10 @@ void ItemGeneral::refreshGeneralData()
 	if (statsDirectory != 0) {
 		levelEdit->setText(LsbReader::lookupByUniquePathEntity(statsDirectory, "Level")->toString().c_str());
 		duraEdit->setText(LsbReader::lookupByUniquePathEntity(statsDirectory, "Durability")->toString().c_str());
-		std::string identText = LsbReader::lookupByUniquePathEntity(statsDirectory, "IsIdentified")->toString();
-		identCheck->setChecked((identText == "false" ? false : true));
+		long identValue = *((long*)LsbReader::lookupByUniquePathEntity(statsDirectory, "IsIdentified")->getData());
+		bool checked = identValue != 0;
+		identCheck->setChecked(checked);
+		identCheck->setText((checked ? "True" : "False"));
 		itemTypeCombo->setCurrentText(LsbReader::lookupByUniquePathEntity(statsDirectory, "ItemType")->toString().c_str());
 		repairDuraEdit->setText(LsbReader::lookupByUniquePathEntity(statsDirectory, "RepairDurabilityPenalty")->toString().c_str());
 	} else {
@@ -206,9 +208,9 @@ void ItemGeneral::on_identCheck_toggled(bool checked)
 		statsDirectory = item->createStatsDirectory();
 	}
 	if (statsDirectory != 0) {
-		LsbObject *levelObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "IsIdentified");
+		LsbObject *identObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "IsIdentified");
 		long value = checked;
-		levelObject->setData((char *)&value, sizeof(long));
+		identObject->setData((char *)&value, sizeof(long));
 		QCheckBox *identCheck = this->findChild<QCheckBox *>("identCheck");
 		if (checked) {
 			identCheck->setText("True");

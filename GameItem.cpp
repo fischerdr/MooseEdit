@@ -3,6 +3,73 @@
 #include "LsbReader.h"
 #include <vector>
 
+LsbObject *GameItem::createGenerationDirectory() {
+	LsbObject *generationObject = 0;
+	
+	LsbObject *itemObject = this->getObject();
+	TAG_LSB *generationTag = LsbReader::createTagIfNeeded("Generation", tagList);
+	if (generationTag != 0) {
+		generationObject = new LsbObject(true, generationTag->index, generationTag->tag, 0, itemObject, tagList);
+		itemObject->addChild(generationObject);
+		
+		LsbObject *statsObject = LsbReader::lookupByUniquePathEntity(itemObject, "Stats");
+
+		LsbObject *statsDirectory = 0;
+		std::vector<LsbObject *> statsObjects = LsbReader::lookupAllEntitiesWithName(itemObject, "Stats");
+		for (int i=0; i<statsObjects.size(); ++i) {
+			LsbObject *object = statsObjects[i];
+			if (object->isDirectory()) {
+				statsDirectory = object;
+				break;
+			}
+		}
+		
+		LsbObject *isGeneratedObject = LsbReader::lookupByUniquePathEntity(itemObject, "IsGenerated");
+		bool isGen = true;
+		isGeneratedObject->setData((char *)&isGen, sizeof(bool));
+		
+		if (statsDirectory != 0) {
+			LsbObject *isIdentObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "IsIdentified");
+			long isIdent = 1;
+			isIdentObject->setData((char *)&isIdent, sizeof(long));
+		}
+
+		TAG_LSB *baseTag = LsbReader::createTagIfNeeded("Base", tagList);
+		LsbObject *newBase = new LsbObject(false, baseTag->index, baseTag->tag, 0x16, generationObject, tagList);
+		newBase->setData(statsObject->getData(), statsObject->getDataSize());
+		
+		TAG_LSB *itemTypeTag = LsbReader::createTagIfNeeded("ItemType", tagList);
+		LsbObject *newItemType = new LsbObject(false, itemTypeTag->index, itemTypeTag->tag, 0x16, generationObject, tagList);
+		std::string itemTypeDefault = "Magic";
+		newItemType->setData(itemTypeDefault.c_str(), itemTypeDefault.length() + 1);
+		if (statsDirectory != 0) {
+			LsbObject *itemTypeObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "ItemType");
+			std::string commonText = "Common";
+			if (itemTypeObject->getData() == commonText) {
+				itemTypeObject->setData(itemTypeDefault.c_str(), itemTypeDefault.length() + 1);
+			} else {
+				newItemType->setData(itemTypeObject->getData(), itemTypeObject->getDataSize());
+			}
+		}
+
+		TAG_LSB *levelTag = LsbReader::createTagIfNeeded("Level", tagList);
+		LsbObject *newLevel = new LsbObject(false, levelTag->index, levelTag->tag, 0x04, generationObject, tagList);
+		long statsLevel = this->getItemLevel();
+		newLevel->setData((char *)&statsLevel, sizeof(long));
+		
+		TAG_LSB *randomTag = LsbReader::createTagIfNeeded("Random", tagList);
+		LsbObject *newRandom = new LsbObject(false, randomTag->index, randomTag->tag, 0x04, generationObject, tagList);
+		long random = 1;
+		newRandom->setData((char *)&random, sizeof(long));
+
+		generationObject->addChild(newBase);
+		generationObject->addChild(newItemType);
+		generationObject->addChild(newLevel);
+		generationObject->addChild(newRandom);
+	}
+	return generationObject;
+}
+
 LsbObject *GameItem::createStatsDirectory() {
 	TAG_LSB *statsTag = LsbReader::createTagIfNeeded("Stats", tagList);
 	LsbObject *newStatsDir = new LsbObject(true, statsTag->index, statsTag->tag, 0, this->getObject(), tagList);

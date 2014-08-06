@@ -370,12 +370,13 @@ void ItemLabel::setupTooltip()
 							isUnbreakable = true;
 						}
 					}
-					if (isUnbreakable) {
-						contentHtml<<"<font color=#C7A758 size=2>Unbreakable</font><br/>";
-					}
 				}
 				
-				contentHtml<<"<font color=#DBDBDB size=2>Durability "<<item->getDurability()<<"/"<<getSummedStat("Durability")<<"0</font><br/>";
+				if (isUnbreakable) {
+					contentHtml<<"<font color=#C7A758 size=2>Unbreakable</font><br/>";
+				} else {
+					contentHtml<<"<font color=#DBDBDB size=2>Durability "<<item->getDurability()<<"/"<<getSummedStat("Durability")<<"0</font><br/>";
+				}
 				contentHtml<<"<font color=#707070 size=2>Requires "<<itemStats->getData("Requirements")<<"</font><br/>";
 			}
 			
