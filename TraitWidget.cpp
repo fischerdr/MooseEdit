@@ -23,31 +23,37 @@ void TraitWidget::on_traitScroll_valueChanged(int value)
 	if (value == mid) {
 		return;
 	}
-	if (value < mid) {
-		std::string leftText = leftEdit->text().toStdString();
-		long value = 0;
-		try {
-			value = boost::lexical_cast<long>(leftText);
-		} catch (const boost::bad_lexical_cast& e) {
-			
-		}
-		++value;
-		std::ostringstream ss;
-		ss<<value;
-		leftEdit->setText(ss.str().c_str());
-	} else {
-		std::string rightText = rightEdit->text().toStdString();
-		long value = 0;
-		try {
-			value = boost::lexical_cast<long>(rightText);
-		} catch (const boost::bad_lexical_cast& e) {
-			
-		}
-		++value;
-		std::ostringstream ss;
-		ss<<value;
-		rightEdit->setText(ss.str().c_str());
+	std::string leftText = leftEdit->text().toStdString();
+	long leftValue = 0;
+	try {
+		leftValue = boost::lexical_cast<long>(leftText);
+	} catch (const boost::bad_lexical_cast& e) {
+		
 	}
+	std::string rightText = rightEdit->text().toStdString();
+	long rightValue = 0;
+	try {
+		rightValue = boost::lexical_cast<long>(rightText);
+	} catch (const boost::bad_lexical_cast& e) {
+		
+	}
+	if (value < mid) {
+		++leftValue;
+		if (rightValue > 0) {
+			--rightValue;
+		}
+	} else {
+		++rightValue;
+		if (leftValue > 0) {
+			--leftValue;
+		}
+	}
+	std::ostringstream ssLeft;
+	ssLeft<<leftValue;
+	std::ostringstream ssRight;
+	ssRight<<rightValue;
+	leftEdit->setText(ssLeft.str().c_str());
+	rightEdit->setText(ssRight.str().c_str());
 	traitScroll->setValue(mid);
 }
 

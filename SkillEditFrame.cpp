@@ -35,9 +35,11 @@ void SkillEditFrame::populateSkillList() {
 		if (mapKeyObject != 0) {
 			DataListItem *item = new DataListItem(skillList);
 			StatsContainer *skill = GenStatsReader::getContainer(*skillStats, mapKeyObject->getData());
-			std::string skillText = skill->getData("DisplayNameRef");
-			item->setStringData(mapKeyObject->getData());
-			item->setText(skillText.c_str());
+			if (skill != 0) {
+				std::string skillText = skill->getData("DisplayNameRef");
+				item->setStringData(mapKeyObject->getData());
+				item->setText(skillText.c_str());
+			}
 		}
 	}
 }
@@ -146,4 +148,10 @@ void SkillEditFrame::on_removeButton_released()
     character->removeSkill(item->getStringData().c_str());
 	
 	delete item;
+}
+
+void SkillEditFrame::on_skillList_itemClicked(QListWidgetItem *current)
+{
+	DataListItem *item = (DataListItem *) current;
+    onCurrentItemChanged((DataContainerItem *)item);
 }

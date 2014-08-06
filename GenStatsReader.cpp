@@ -1,5 +1,6 @@
 #include "GenStatsReader.h"
 #include <boost/tokenizer.hpp>
+#include <boost/algorithm/string.hpp>
 
 typedef boost::tokenizer<boost::escaped_list_separator<char> > LineTokenizer;
 
@@ -56,6 +57,9 @@ std::vector<StatsContainer *> GenStatsReader::loadFile(std::istream& stream)
 		std::getline(stream, buffer, '\n');
 		if (!stream) {
 			break;
+		}
+		if (boost::ends_with(buffer, "\r")) {
+			buffer.resize(buffer.length() - 1);
 		}
 		LineTokenizer tok(buffer, separator);
 		int i = 0;

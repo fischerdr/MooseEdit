@@ -49,6 +49,8 @@ private slots:
 	
 	void on_removeButton_released();
 	
+	void on_skillList_itemClicked(QListWidgetItem *current);
+	
 private:
 	Ui::SkillEditFrame *ui;
 	GameCharacter *character;
