@@ -270,6 +270,19 @@ void characterTab::adjustAttribute(long attribId, long newValue) {
 	std::vector<LsbObject *> attributeData = LsbReader::extractPropertyForEachListItem(attributes, "Object");
 	attributeData[attribId]->setData((char *)&newValue, sizeof(long));
 }
+EquipmentHandler *characterTab::getEquipmentHandler() const
+{
+	return equipmentHandler;
+}
+
+void characterTab::setEquipmentHandler(EquipmentHandler *handler)
+{
+	equipmentHandler = handler;
+	if (equipmentHandler != 0) {
+		equipmentHandler->drawAll();
+	}
+}
+
 std::vector<StatsContainer *> characterTab::getItemLinks() const
 {
 	return itemLinks;
@@ -362,7 +375,7 @@ void characterTab::onItemEdited(GameItem *newItem, GameItem *oldItem) {
 	parent->replaceChild(oldItem->getObject(), copy->getObject());
 	delete oldItem;
 	this->character->getInventoryHandler()->getItems()->addItem(copy);
-	this->character->getInventoryHandler()->draw(this->findChild<QWidget *>("inventoryContents"), this->parentWidget());
+	this->character->getInventoryHandler()->draw(this->findChild<QWidget *>("inventoryContents"), this->parentWidget(), true);
 }
 
 void characterTab::on_inventoryScrollArea_customContextMenuRequested(const QPoint &pos)
@@ -402,14 +415,10 @@ void characterTab::addWidgetsToLayout(QWidget *widget, QLayout *layout) {
 void characterTab::redraw_inventory()
 {
 	if (lastWidth != this->findChild<QWidget *>("inventoryContents")->parentWidget()->width()) {
-		std::cout<<"MW="<<this->findChild<QWidget *>("inventoryContents")->maximumWidth()<<'\n';
-		std::cout<<"PW="<<this->findChild<QWidget *>("inventoryContents")->parentWidget()->width()<<'\n';
 		this->findChild<QWidget *>("inventoryContents")->setMaximumWidth(this->findChild<QWidget *>("inventoryContents")->parentWidget()->width());
 		this->findChild<QWidget *>("inventoryContents")->setMinimumWidth(this->findChild<QWidget *>("inventoryContents")->parentWidget()->width());
 		lastWidth = this->findChild<QWidget *>("inventoryContents")->parentWidget()->width();
-		std::cout<<"MW2="<<this->findChild<QWidget *>("inventoryContents")->maximumWidth()<<'\n';
-		std::cout<<"PW2="<<this->findChild<QWidget *>("inventoryContents")->parentWidget()->width()<<'\n';
-		this->getCharacter()->getInventoryHandler()->draw(this->findChild<QWidget *>("inventoryContents"), this->parentWidget());
+		this->getCharacter()->getInventoryHandler()->draw(this->findChild<QWidget *>("inventoryContents"), this->parentWidget(), true);
 	}
 }
 

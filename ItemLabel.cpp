@@ -381,7 +381,9 @@ void ItemLabel::setupTooltip()
 			}
 			
 			if (itemStats->getType() == "Armor") {
-				contentHtml<<"<font color=#DBDBDB size=5>Armour rating: "<<getSummedStat("Armor Defense Value")<<"</font><br/>";
+				if (getSummedStat("Armor Defense Value") != 0) {
+					contentHtml<<"<font color=#DBDBDB size=5>Armour rating: "<<getSummedStat("Armor Defense Value")<<"</font><br/>";
+				}
 				
 				std::string prefix = "";
 				std::string suffix = "";
@@ -501,7 +503,11 @@ void ItemLabel::enterEvent(QEvent *event)
 	if (this->item != 0) {
 		setupTooltip();
 		bool leftIcon = true;
+		QPoint tooltipEndPt = this->mapToGlobal(QPoint(tooltip->width(), 0));
+		QPoint parentEndPt = tooltip->parentWidget()->mapToGlobal(QPoint(tooltip->parentWidget()->width(), 0));
 		if (this->x() >= this->parentWidget()->width()/2) {
+			leftIcon = false;
+		} else if (tooltipEndPt.x() > parentEndPt.x()) {
 			leftIcon = false;
 		}
 		QWidget *main = tooltip->parentWidget();

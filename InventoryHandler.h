@@ -62,7 +62,7 @@ public:
 	}
 	InventoryHandler(QImage emptySlotImage, std::vector<LsbObject *>& stats, std::vector<LsbObject *>& rootTemplates, 
 					 std::vector<LsbObject *>& modTemplates, TextureAtlas& iconAtlas, std::vector<StatsContainer *>& itemStats, std::map<std::string, std::string>& nameMappings);
-	void draw(QWidget *parent, QWidget *mainWindow);
+	void draw(QWidget *parent, QWidget *mainWindow, bool drawBackground);
 	GameItem *getItemAtPoint(const QPoint& pt);
 };
 

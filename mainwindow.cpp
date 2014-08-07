@@ -7,6 +7,7 @@
 #include "PakReader.h"
 #include "TextureAtlas.h"
 #include "finddialog.h"
+#include "EquipmentHandler.h"
 #include <windows.h>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -365,18 +366,38 @@ void MainWindow::handleLoadButton() {
 			//compile item list
 			LsbObject *allItems = LsbReader::lookupByUniquePath(globals, "Items/root/ItemFactory/Items");
 			
-//			for (int i=0; i<characterCreatorHandles.size(); ++i) {
-//				long handleId = characterCreatorHandles[i]->getIntData();
-//				std::vector<LsbObject *> matches = LsbReader::findItemsByAttribute(allItems->getChildren(), "owner", (const char *)&handleId, sizeof(handleId));
-//				for (int j=0; j<matches.size(); ++j) {
-//					GameItem *newItem = new GameItem;
-//					newItem->setObject(matches[j]);
-//					this->getCharacterGroup().getCharacters()[i]->getInventory().addItem(newItem);
-//				}
+			std::vector<std::vector<GameItem *> > equipmentSets;
+			for (int i=0; i<characterCreatorHandles.size(); ++i) {
+				long handleId = characterCreatorHandles[i]->getIntData();
+				std::vector<LsbObject *> matches = LsbReader::findItemsByAttribute(allItems->getChildren(), "owner", (const char *)&handleId, sizeof(handleId));
+				long parentId = 0;
+				//matches = LsbReader::findItemsByAttribute(matches, "Parent", (const char *)&parentId, sizeof(parentId));
+				std::vector<GameItem *> equipmentSet;
+				for (int j=0; j<matches.size(); ++j) {
+					LsbObject *match = matches[j];
+					LsbObject *slotObject = LsbReader::lookupByUniquePathEntity(match, "Slot");
+					std::vector<LsbObject *> deleteMe;
+					if (slotObject != 0) {
+						unsigned short slot = *((unsigned short *)slotObject->getData());
+						if (slot >= 0 && slot <= EQUIP_SLOTS) {
+							GameItem *equipmentItem = new GameItem(&this->globalTagList);
+							equipmentItem->setObject(match);
+							equipmentSet.push_back(equipmentItem);
+							deleteMe.push_back(match);
+						}
+					}
+					if (i == 0) {
+						displayAllItems2(tree, deleteMe);
+					}
+					//GameItem *newItem = new GameItem;
+					//newItem->setObject(matches[j]);
+					//this->getCharacterGroup().getCharacters()[i]->getInventory().addItem(newItem);
+				}
+				equipmentSets.push_back(equipmentSet);
 //				if (i == 0) {
-//					displayAllItems2(tree, matches);
+//					displayAllItems2(tree, equipmentSet);
 //				}
-//			}
+			}
 			for (int i=0; i<this->getCharacterGroup().getCharacters().size(); ++i) {
 				//if (i != 0)
 					//continue;
@@ -729,26 +750,38 @@ void MainWindow::handleLoadButton() {
 				editItemHandler = new InventoryHandler(inventoryCellImg, stats, rootTemplates, modTemplates, 
 													   iconAtlas, itemStats, nameMappings);
 				for (int i=0; i<this->getCharacterGroup().getCharacters().size(); ++i) {
+					GameCharacter *character = this->getCharacterGroup().getCharacters()[i];
 					//if (i != 0)
 						//continue;
 					InventoryHandler *handlerPtr = new InventoryHandler(inventoryCellImg, stats, rootTemplates, modTemplates, 
 																		iconAtlas, itemStats, nameMappings);
 					InventoryHandler& inventoryHandler = *handlerPtr;
-					for (int j=0; j<this->getCharacterGroup().getCharacters()[i]->getInventory().getItems().size(); ++j) {
-						inventoryHandler.getItems()->addItem(this->getCharacterGroup().getCharacters()[i]->getInventory().getItems()[j]);
+					for (int j=0; j<character->getInventory().getItems().size(); ++j) {
+						inventoryHandler.getItems()->addItem(character->getInventory().getItems()[j]);
 					}
 					std::ostringstream ss;
 					ss<<"charTab"<<i;
 					//inventoryHandler.draw(this->findChild<QWidget *>(ss.str().c_str())->findChild<QWidget *>("inventoryContents"), this);
 					
-					this->getCharacterGroup().getCharacters()[i]->setInventoryHandler(handlerPtr);
+					character->setInventoryHandler(handlerPtr);
 					
-					characterTab *charTab = (characterTab *)this->getCharacterGroup().getCharacters()[i]->getWidget();
+					characterTab *charTab = (characterTab *)character->getWidget();
 					charTab->setNameMappings(&nameMappings);
 					charTab->setItemLinks(itemLinks);
 					charTab->setAllItemStats(itemStats);
 					charTab->setItemEditHandler(editItemHandler);
 					charTab->setSkillStats(&skillStats);
+					
+					EquipmentHandler *equipHandler = new EquipmentHandler(inventoryCellImg, stats, rootTemplates, modTemplates, 
+																		  iconAtlas, itemStats, nameMappings,
+																		  charTab->findChild<QWidget *>("equipmentWidget"), this, itemLinks, globalTagList);
+					
+					std::vector<GameItem *> &equipmentSet = equipmentSets[i];
+					for (int j=0; j<equipmentSet.size(); ++j) {
+						GameItem *item = equipmentSet[j];
+						equipHandler->addItem(item);
+					}
+					charTab->setEquipmentHandler(equipHandler);
 				}
 			}
 			else {

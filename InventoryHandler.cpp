@@ -18,7 +18,7 @@ long InventoryHandler::getItemY(long slotNumber) {
  * @param parent Window which acts as container for generated item labels
  * @param mainWindow Window which acts as container for item label tooltips
  */
-void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow) {
+void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackground) {
 	for (int i=0; i<itemLabels.size(); ++i) {
 		delete itemLabels[i];
 	}
@@ -146,8 +146,13 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow) {
 					if ((imagePtr = iconAtlas.getNamedTexture(iconName)) != 0) {
 						QImage image = *imagePtr;
 						QPixmap result(image.size());
+						if (!drawBackground) {
+							result.fill(Qt::transparent);
+						}
 						QPainter painter(&result);
-						painter.drawImage(QPoint(0, 0), emptySlotImage);
+						if (drawBackground) {
+							painter.drawImage(QPoint(0, 0), emptySlotImage);
+						}
 						painter.drawImage(QPoint(0, 0), image);
 						label->setPixmap(result);
 						painter.end();
@@ -162,7 +167,9 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow) {
 			}
 		}
 		else {
-			label->setPixmap(QPixmap::fromImage(emptySlotImage));
+			if (drawBackground) {
+				label->setPixmap(QPixmap::fromImage(emptySlotImage));
+			}
 		}
 		label->show();
 	}

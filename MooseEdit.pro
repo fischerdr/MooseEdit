@@ -44,7 +44,8 @@ SOURCES += main.cpp\
     AbilityGroupItem.cpp \
     ExpandableGroupBox.cpp \
     TraitWidget.cpp \
-    SkillEditFrame.cpp
+    SkillEditFrame.cpp \
+    EquipmentHandler.cpp
 
 HEADERS  += mainwindow.h \
     LsbReader.h \
@@ -72,7 +73,8 @@ HEADERS  += mainwindow.h \
     AbilityGroupItem.h \
     ExpandableGroupBox.h \
     TraitWidget.h \
-    SkillEditFrame.h
+    SkillEditFrame.h \
+    EquipmentHandler.h
 
 FORMS    += mainwindow.ui \
     charactertab.ui \

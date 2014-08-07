@@ -303,7 +303,7 @@ void ItemEditFrame::redraw() {
 	this->itemEditHandler->getItems()->getItems().clear();
 	this->itemEditHandler->getItems()->addItem(item);
 	item->setSlot(itemSlot);
-	this->itemEditHandler->draw(itemFrame, this);
+	this->itemEditHandler->draw(itemFrame, this, true);
 	this->show();
 	
 }

@@ -7,6 +7,7 @@
 #include "ItemEditFrame.h"
 #include "RelativePositionLayout.h"
 #include "SkillEditFrame.h"
+#include "EquipmentHandler.h"
 
 namespace Ui {
 class characterTab;
@@ -37,6 +38,9 @@ public:
 	std::vector<StatsContainer *> getItemLinks() const;
 	void setItemLinks(const std::vector<StatsContainer *> &value);
 	void setSkillStats(std::vector<StatsContainer *> *skillStats);
+	
+	EquipmentHandler *getEquipmentHandler() const;
+	void setEquipmentHandler(EquipmentHandler *handler);
 	
 private slots:
 	
@@ -83,6 +87,7 @@ private:
 	GameCharacter *character;
 	void adjustAttribute(long attribId, long newValue);
 	InventoryHandler *itemEditHandler;
+	EquipmentHandler *equipmentHandler;
 	std::vector<StatsContainer *> allItemStats;
 	std::vector<StatsContainer *> itemLinks;
 	std::vector<TAG_LSB *> *tagList;
