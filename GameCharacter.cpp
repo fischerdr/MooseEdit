@@ -37,6 +37,18 @@ void GameCharacter::addSkill(const char *skillName) {
 	}
 }
 
+LsbObject *GameCharacter::getInventoryObject() {
+	long inventoryId = *((long *)LsbReader::lookupByUniquePathEntity(this->getObject(), "Inventory")->getData());
+	LsbObject *inventoryCreators = LsbReader::lookupByUniquePath(globals, "Inventories/root/InventoryFactory/Creators");
+	std::vector<LsbObject *> creatorMatches = LsbReader::findItemsByAttribute(inventoryCreators->getChildren(), "Object", (const char *)&inventoryId, sizeof(long));
+	if (creatorMatches.size() == 1) {
+		LsbObject *creator = creatorMatches[0];
+		LsbObject *inventoryObject = LsbReader::getObjectFromCreator(creator, "Inventories");
+		return inventoryObject;
+	}
+	return 0;
+}
+
 void GameCharacter::removeSkill(const char *skillName) {
 	LsbObject *skillManagerObject = LsbReader::lookupByUniquePathEntity(this->getObject(), "SkillManager");
 	if (skillManagerObject != 0) {
@@ -125,6 +137,6 @@ void GameCharacter::setTalent(long talentId, bool enabled) {
 	}
 }
 
-GameCharacter::GameCharacter(std::vector<TAG_LSB *> &tagList) : tagList(tagList)
+GameCharacter::GameCharacter(std::vector<LsbObject *> &globals, std::vector<TAG_LSB *> &tagList) : tagList(tagList), globals(globals)
 {
 }
