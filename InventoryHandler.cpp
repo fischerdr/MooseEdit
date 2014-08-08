@@ -111,6 +111,7 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 			item->setItemStats(GenStatsReader::getContainer(itemStats, statsText));
 			long dataSize = currentTemplateObject->getDataSize();
 			long matchCount = 0;
+			LsbObject *displayNameObject = 0;
 			for (int j=0; j<modTemplates.size(); ++j) {
 				LsbObject *templateRoot = LsbReader::lookupByUniquePathEntity(modTemplates[j], "root");
 				std::vector<LsbObject *> matches = LsbReader::findItemsByAttribute(templateRoot->getChildren(), "MapKey", currentTemplate, dataSize);
@@ -122,6 +123,11 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 				if (match != 0) {
 					std::cout<<"mod match for "<<currentTemplate<<'\n';
 					currentTemplate = LsbReader::lookupByUniquePathEntity(match, "TemplateName")->getData();
+					displayNameObject = LsbReader::lookupByUniquePathEntity(match, "DisplayName");
+					if (displayNameObject != 0) {
+						item->setItemName(displayNameObject->getData());
+					}
+					break;
 				}
 			}
 			matchCount = 0;
@@ -142,6 +148,13 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 					} else {
 						item->setBody("");
 					}
+					if (displayNameObject == 0) {
+						displayNameObject = LsbReader::lookupByUniquePathEntity(match, "DisplayName");
+						if (displayNameObject != 0) {
+							item->setItemName(displayNameObject->getData());
+						}
+					}
+					
 					QImage *imagePtr;
 					if ((imagePtr = iconAtlas.getNamedTexture(iconName)) != 0) {
 						QImage image = *imagePtr;
@@ -160,6 +173,7 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 					else {
 						std::cout<<"Failed to find texture "<<iconName<<'\n';
 					}
+					break;
 				}
 			}
 			if (matchCount != 1) {
@@ -173,12 +187,12 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 		}
 		label->show();
 	}
-	//parent->ensureVisible(getItemX(slotsToDisplay - 1), getItemY(slotsToDisplay - 1));
 	long width = getItemX(slotsToDisplay - 1) + iconSize;
 	long height = getItemY(slotsToDisplay - 1) + iconSize;
-	parent->setFixedSize(width, height);
-	parent->parentWidget()->resize(width, parent->parentWidget()->height());
-	//parent->parentWidget()->setFixedWidth(300);
+	if (parent->sizePolicy().horizontalPolicy() == QSizePolicy::Fixed && 
+			parent->sizePolicy().verticalPolicy() == QSizePolicy::Fixed) {
+		parent->setFixedSize(width, height);
+	}
 }
 
 GameItem *InventoryHandler::getItemAtPoint(const QPoint &pt)

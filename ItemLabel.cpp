@@ -503,12 +503,18 @@ void ItemLabel::enterEvent(QEvent *event)
 	if (this->item != 0) {
 		setupTooltip();
 		bool leftIcon = true;
-		QPoint tooltipEndPt = this->mapToGlobal(QPoint(tooltip->width(), 0));
-		QPoint parentEndPt = tooltip->parentWidget()->mapToGlobal(QPoint(tooltip->parentWidget()->width(), 0));
+		QPoint tooltipEndPtR = this->mapToGlobal(QPoint(tooltip->width(), 0));
+		QPoint parentEndPtR = tooltip->parentWidget()->mapToGlobal(QPoint(tooltip->parentWidget()->width(), 0));
+		QPoint tooltipEndPtL = this->mapToGlobal(QPoint(-tooltip->width(), 0));
+		QPoint parentEndPtL = tooltip->parentWidget()->mapToGlobal(QPoint(0, 0));
 		if (this->x() >= this->parentWidget()->width()/2) {
 			leftIcon = false;
-		} else if (tooltipEndPt.x() > parentEndPt.x()) {
-			leftIcon = false;
+		} else {
+			long rightOverflow = tooltipEndPtR.x() - parentEndPtR.x();
+			long leftOverflow = parentEndPtL.x() - tooltipEndPtL.x();
+			if (rightOverflow > leftOverflow) {
+				leftIcon = false;
+			}
 		}
 		QWidget *main = tooltip->parentWidget();
 		QPoint currentPt = this->rect().topLeft();

@@ -419,12 +419,26 @@ void characterTab::redraw_inventory()
 		this->findChild<QWidget *>("inventoryContents")->setMinimumWidth(this->findChild<QWidget *>("inventoryContents")->parentWidget()->width());
 		lastWidth = this->findChild<QWidget *>("inventoryContents")->parentWidget()->width();
 		this->getCharacter()->getInventoryHandler()->draw(this->findChild<QWidget *>("inventoryContents"), this->parentWidget(), true);
+		if (equipmentHandler != 0) {
+			equipmentHandler->drawAll();
+		}
 	}
 }
 
 void characterTab::showEvent(QShowEvent *)
 {
 	if (relPosLayout == 0) {
+		QWidget *equipmentWidget = this->findChild<QWidget *>("equipmentWidget");
+		RelativePositionLayout *relPosLayout2 = new RelativePositionLayout(equipmentWidget);
+		for (int i=0; i<equipmentWidget->children().size(); ++i) {
+			QObject *object = equipmentWidget->children()[i];
+			if (object->isWidgetType()) {
+				QWidget *widget = (QWidget *)object;
+				relPosLayout2->addWidget(widget);
+			}
+		}
+		equipmentWidget->setLayout(relPosLayout2);
+		
 		QFrame *frame = this->findChild<QFrame *>("frame");
 		relPosLayout = new RelativePositionLayout(frame);
 		//addWidgetsToLayout(frame, relPosLayout);
