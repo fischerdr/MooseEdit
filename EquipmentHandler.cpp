@@ -41,10 +41,6 @@ void EquipmentHandler::onItemEdited(GameItem *newItem, GameItem *oldItem) {
 		std::ostringstream ss;
 		ss<<"slot"<<i;
 		QWidget *target = parentWidget->findChild<QWidget *>(ss.str().c_str());
-		target->parentWidget()->setMinimumWidth(target->parentWidget()->width());
-		target->parentWidget()->setMaximumWidth(target->parentWidget()->width());
-		target->parentWidget()->setMinimumHeight(target->parentWidget()->height());
-		target->parentWidget()->setMaximumHeight(target->parentWidget()->height());
 		if (target != 0) {
 			handler->draw(target, mainWindow, false);
 		}
@@ -124,7 +120,6 @@ void EquipmentHandler::drawAll()
 }
 
 void EquipmentHandler::initInventoryHandlers() {
-	//parentWidget->setLayout(new RelativePositionLayout(parentWidget));
 	for (int i=0; i<EQUIP_SLOTS; ++i) {
 		equipHandler[i] = new InventoryHandler(emptySlotImage, stats, rootTemplates, modTemplates, iconAtlas, itemStats, nameMappings);
 		equipHandler[i]->setMinSlots(1);
