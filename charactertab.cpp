@@ -12,8 +12,8 @@
 #include "ExpandableGroupBox.h"
 #include "TraitWidget.h"
 
-characterTab::characterTab(std::vector<TAG_LSB *> *tagList, QWidget *parent) :
-	QWidget(parent), tagList(tagList),
+characterTab::characterTab(std::vector<TAG_LSB *> *tagList, LsbObject *itemsObject, QWidget *parent) :
+	QWidget(parent), tagList(tagList), itemsObject(itemsObject),
 	ui(new Ui::characterTab)
 {
 	ui->setupUi(this);
@@ -370,8 +370,60 @@ void characterTab::on_perEdit_textEdited(const QString &text)
 
 void characterTab::onItemEdited(GameItem *newItem, GameItem *oldItem) {
 	LsbObject *parent = oldItem->getObject()->getParent();
-	this->character->getInventoryHandler()->getItems()->removeItem(oldItem);
 	GameItem *copy = new GameItem(*newItem);
+	if (!this->character->getInventoryHandler()->getItems()->removeItem(oldItem)) {
+		//item did not exist in inventoryHandler: item is newly added to inventory
+		itemsObject->addChild(copy->getObject());
+		LsbObject *slotObject = LsbReader::lookupByUniquePathEntity(copy->getObject(), "Slot");
+		if (slotObject != 0) {
+			unsigned short newSlot = this->character->getInventoryHandler()->getItems()->getLargestInternalSlot() + 1;
+			slotObject->setData((char *)&newSlot, sizeof(newSlot));
+		}
+		
+		LsbObject *newCreatorObject = GameItem::createNewItemCreator(tagList, itemsObject, copy->getObject());
+		LsbObject *creatorsObject = GameItem::getCreatorsObject(itemsObject);
+		creatorsObject->addChild(newCreatorObject);
+		
+		LsbObject *newItemObject = LsbReader::getObjectFromCreator(newCreatorObject, "Items");
+		LsbObject *statsObject = LsbReader::lookupByUniquePathEntity(newItemObject, "Stats");
+		std::string inventoryTab = "";
+		if (statsObject != 0) {
+			std::string statName = statsObject->getData();
+			StatsContainer *itemStat = GenStatsReader::getContainer(allItemStats, statName);
+			if (itemStat != 0) {
+				inventoryTab = itemStat->getData("InventoryTab");
+			}
+		}
+		unsigned long extraInventoryTab = 0;
+		unsigned long extraViewSlot = 0;
+		if (inventoryTab == "Equipment") {
+			extraInventoryTab = 2;
+			extraViewSlot = this->character->getInventoryHandler()->getItems()->getLargestEquipmentSlot() + 1;
+			copy->setEquipmentSlot(extraViewSlot);
+		} else if (inventoryTab == "Consumable") {
+			extraInventoryTab = 3;
+			extraViewSlot = this->character->getInventoryHandler()->getItems()->getLargestConsumableSlot() + 1;
+			copy->setConsumableSlot(extraViewSlot);
+		} else if (inventoryTab == "Magical") {
+			extraInventoryTab = 4;
+			extraViewSlot = this->character->getInventoryHandler()->getItems()->getLargestMagicalSlot() + 1;
+			copy->setMagicalSlot(extraViewSlot);
+		} else if (inventoryTab == "Ingredient") {
+			extraInventoryTab = 5;
+			extraViewSlot = this->character->getInventoryHandler()->getItems()->getLargestIngredientSlot() + 1;
+			copy->setIngredientSlot(extraViewSlot);
+		} else if (inventoryTab == "Keys") {
+			extraInventoryTab = 6;
+			extraViewSlot = this->character->getInventoryHandler()->getItems()->getLargestKeysSlot() + 1;
+			copy->setKeysSlot(extraViewSlot);
+		} else if (inventoryTab == "Misc") {
+			extraInventoryTab = 7;
+			extraViewSlot = this->character->getInventoryHandler()->getItems()->getLargestMiscSlot() + 1;
+			copy->setMiscSlot(extraViewSlot);
+		}
+		
+		character->addItemToInventoryObject(newCreatorObject, copy->getRenderSlot(), extraInventoryTab, extraViewSlot, false);
+	}
 	parent->replaceChild(oldItem->getObject(), copy->getObject());
 	delete oldItem;
 	this->character->getInventoryHandler()->getItems()->addItem(copy);
@@ -396,6 +448,12 @@ void characterTab::on_inventoryScrollArea_customContextMenuRequested(const QPoin
 	if (result) {
 		if (item != 0) {
 			ItemEditFrame *itemEditFrame = new ItemEditFrame(allItemStats, itemLinks, item, itemEditHandler, this, tagList, *nameMappings);
+		} else {
+			LsbObject *itemObject = GameItem::createNewItem(tagList, itemsObject, character->getInventoryId(), character->getCreatorId());
+			GameItem *newItem = new GameItem(tagList);
+			newItem->setObject(itemObject);
+			newItem->setRenderSlot(character->getInventoryHandler()->slotAtPoint(itemPos));
+			ItemEditFrame *itemEditFrame = new ItemEditFrame(allItemStats, itemLinks, newItem, itemEditHandler, this, tagList, *nameMappings);
 		}
 	}
 }

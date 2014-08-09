@@ -1,15 +1,18 @@
 todo:
 add more tooltip stuff
 figure out armor calculation
-add shield tooltips
-add stats dir if item template changes to include stats
+make non-mod items reflect Rarity status
+handle unicode paths
+add function for extracting/reading pak file
+add function for loading all paths under given path recursively
+recursively load all mod lsb files
+implement books?
 
 ---
 maybe:
 handle character names better (character tab)?
 fix mem leaks?
 add conversion of all types to Dev tab?
-add PAK tab?
 support for string datatypes in PermBoost?
 
 ---

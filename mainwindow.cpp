@@ -250,6 +250,13 @@ void MainWindow::buildNameMappings()
 	}
 }
 
+
+typedef std::map<unsigned long, unsigned long> ViewSlotMap;
+struct ItemHandleData {
+	long characterId;
+	ViewSlotMap viewSlotMap;
+};
+
 void MainWindow::handleLoadButton() {
 	for (int i=0; i<this->getCharacterGroup().getCharacters().size(); ++i) {
 		delete this->getCharacterGroup().getCharacters()[i];
@@ -259,8 +266,6 @@ void MainWindow::handleLoadButton() {
 		delete globals[i];
 	}
 	globals.clear();
-	
-	
 	
 	QPushButton *loadButton = this->findChild<QPushButton *>("loadButton");
 	loadButton->setEnabled(false);
@@ -329,7 +334,8 @@ void MainWindow::handleLoadButton() {
 				LsbObject *character = matchingCharacters[i];
 				std::ostringstream ss;
 				ss<<"charTab"<<i;
-				QWidget *widget = new characterTab(&globalTagList, this);
+				LsbObject *itemsObject = LsbReader::lookupByUniquePath(globals, "Items/root/ItemFactory/Items");
+				QWidget *widget = new characterTab(&globalTagList, itemsObject, this);
 				widget->setObjectName(QString(ss.str().c_str()));
 				
 				LsbObject *origTemplate = LsbReader::lookupByUniquePathEntity(character, "OriginalTemplate");
@@ -352,7 +358,7 @@ void MainWindow::handleLoadButton() {
 				}
 				//tabWidget->addTab(widget, "CharTab");
 				std::string charNameStr = charName;
-				this->getCharacterGroup().getCharacters().insert(this->getCharacterGroup().getCharacters().begin(), new GameCharacter(globalTagList));
+				this->getCharacterGroup().getCharacters().insert(this->getCharacterGroup().getCharacters().begin(), new GameCharacter(globals, globalTagList));
 				GameCharacter *gameCharacter = this->getCharacterGroup().getCharacters()[0];
 				gameCharacter->setName(charNameStr);
 				gameCharacter->setObject(character);
@@ -398,6 +404,10 @@ void MainWindow::handleLoadButton() {
 //					displayAllItems2(tree, equipmentSet);
 //				}
 			}
+			
+			
+			typedef std::map<unsigned long, ItemHandleData> ItemHandleMap;
+			ItemHandleMap itemHandleMap;
 			for (int i=0; i<this->getCharacterGroup().getCharacters().size(); ++i) {
 				//if (i != 0)
 					//continue;
@@ -413,40 +423,109 @@ void MainWindow::handleLoadButton() {
 					displayAllItems2(tree, inventoryHolder); //TODO: remove me
 					std::vector<LsbObject *> views = LsbReader::lookupAllEntitiesWithName(inventory, "Views");
 					if (views.size() > 0) {
-						LsbObject *viewMapValue = LsbReader::lookupByUniquePathEntity(views[0], "MapValue");
-						if (viewMapValue != 0) {
-							std::vector<LsbObject *> indicesList = LsbReader::lookupAllEntitiesWithName(viewMapValue, "Indices");
-							std::vector<LsbObject *> itemList;
-							for (int j=0; j<indicesList.size(); ++j) {
-								LsbObject *index = indicesList[j];
-								long itemCreatorHandle = *((long *)LsbReader::lookupByUniquePathEntity(index, "MapKey")->getData());
-								unsigned short slot = *((long *)LsbReader::lookupByUniquePathEntity(index, "MapValue")->getData());
-								if (i == 0){
-									std::cout<<"slot = "<<slot<<'\n';
-								}
-								if (itemCreatorHandle != 0) {
-									LsbObject *itemCreators = LsbReader::lookupByUniquePath(globals, "Items/root/ItemFactory/Creators");
-									std::vector<LsbObject *> itemCreatorMatches = LsbReader::findItemsByAttribute(itemCreators->getChildren(), "Handle", (char *)&itemCreatorHandle, sizeof(long));
-									if (itemCreatorMatches.size() == 1) {
-										LsbObject *itemCreator = itemCreatorMatches[0];
-										LsbObject *item = LsbReader::getObjectFromCreator(itemCreator, "Items");
-										GameItem *newItem = new GameItem(&globalTagList);
-										newItem->setObject(item);
-										newItem->setSlot(slot);
-										this->getCharacterGroup().getCharacters()[i]->getInventory().addItem(newItem);
-										
-										itemList.push_back(item); //TODO: remove me
+						for (int k=0; k<views.size(); ++k) {
+							LsbObject *viewMapKey = LsbReader::lookupByUniquePathEntity(views[k], "MapKey");
+							unsigned long viewId = *((unsigned long*)viewMapKey->getData());
+							LsbObject *viewMapValue = LsbReader::lookupByUniquePathEntity(views[k], "MapValue");
+							if (viewMapValue != 0) {
+								std::vector<LsbObject *> indicesList = LsbReader::lookupAllEntitiesWithName(viewMapValue, "Indices");
+								//std::vector<LsbObject *> itemList;
+								for (int j=0; j<indicesList.size(); ++j) {
+									LsbObject *index = indicesList[j];
+									unsigned long itemCreatorHandle = *((unsigned long *)LsbReader::lookupByUniquePathEntity(index, "MapKey")->getData());
+									unsigned long slot = *((unsigned long *)LsbReader::lookupByUniquePathEntity(index, "MapValue")->getData());
+									if (i == 0){
+										std::cout<<"slot = "<<slot<<'\n';
 									}
+									if (itemHandleMap.find(itemCreatorHandle) == itemHandleMap.end()) {
+										//itemHandleMap[itemCreatorHandle] = std::map<unsigned long, unsigned long>();
+										itemHandleMap[itemCreatorHandle] = ItemHandleData();
+									}
+									ItemHandleData &itemHandleData = itemHandleMap[itemCreatorHandle];
+									itemHandleData.characterId = i;
+									ViewSlotMap &viewSlotMap = itemHandleData.viewSlotMap;
+									viewSlotMap[viewId] = slot;
+									
+//									if (viewId == 0 && itemCreatorHandle != 0) {
+//										LsbObject *itemCreators = LsbReader::lookupByUniquePath(globals, "Items/root/ItemFactory/Creators");
+//										std::vector<LsbObject *> itemCreatorMatches = LsbReader::findItemsByAttribute(itemCreators->getChildren(), "Handle", (char *)&itemCreatorHandle, sizeof(long));
+//										if (itemCreatorMatches.size() == 1) {
+//											LsbObject *itemCreator = itemCreatorMatches[0];
+//											LsbObject *item = LsbReader::getObjectFromCreator(itemCreator, "Items");
+//											GameItem *newItem = new GameItem(&globalTagList);
+//											itemHandleMap[itemCreatorHandle] = newItem;
+//											newItem->setObject(item);
+//											newItem->setRenderSlot(slot);
+//											this->getCharacterGroup().getCharacters()[i]->getInventory().addItem(newItem);
+											
+//											itemList.push_back(item); //TODO: remove me
+//										}
+//									} else {
+//										if (itemHandleMap.find(itemCreatorHandle) != itemHandleMap.end()) {
+////											GameItem *item = itemHandleMap[itemCreatorHandle];
+////											std::string itemStatName = LsbReader::lookupByUniquePathEntity(item->getObject(), "Stats")->getData();
+											
+//										}
+//									}
 								}
-							}
-							if (i == 0) {
-								displayAllItems2(tree, itemList);
+//								if (i == 0) {
+//									displayAllItems2(tree, itemList);
+//								}
 							}
 						}
 					}
 				}
 			}
+			
+			std::vector<LsbObject *> itemList;
+			for (ItemHandleMap::iterator it = itemHandleMap.begin(); it != itemHandleMap.end(); ++it) {
+				ItemHandleData& itemHandleData = it->second;
+				ViewSlotMap& viewSlotMap = itemHandleData.viewSlotMap;
+				unsigned long itemCreatorHandle = it->first;
 				
+				LsbObject *itemCreators = LsbReader::lookupByUniquePath(globals, "Items/root/ItemFactory/Creators");
+				std::vector<LsbObject *> itemCreatorMatches = LsbReader::findItemsByAttribute(itemCreators->getChildren(), "Handle", (char *)&itemCreatorHandle, sizeof(long));
+				if (itemCreatorMatches.size() == 1) {
+					LsbObject *itemCreator = itemCreatorMatches[0];
+					LsbObject *item = LsbReader::getObjectFromCreator(itemCreator, "Items");
+					GameItem *newItem = new GameItem(&globalTagList);
+					newItem->setObject(item);
+					
+					for (ViewSlotMap::iterator it2 = viewSlotMap.begin(); it2 != viewSlotMap.end(); ++it2) {
+						switch (it2->first) {
+						case 0:
+							newItem->setRenderSlot(it2->second);
+							break;
+						case 2:
+							newItem->setEquipmentSlot(it2->second);
+							break;
+						case 3:
+							newItem->setConsumableSlot(it2->second);
+							break;
+						case 4:
+							newItem->setMagicalSlot(it2->second);
+							break;
+						case 5:
+							newItem->setIngredientSlot(it2->second);
+							break;
+						case 6:
+							newItem->setKeysSlot(it2->second);
+							break;
+						case 7:
+							newItem->setMiscSlot(it2->second);
+							break;
+						}
+					}
+					
+					this->getCharacterGroup().getCharacters()[itemHandleData.characterId]->getInventory().addItem(newItem);
+					
+					if (itemHandleData.characterId == 0) {
+						itemList.push_back(item); //TODO: remove me
+					}
+				}
+			}
+			displayAllItems2(tree, itemList);
+			
 			//load pak resources for textures
 			std::string gameDataPath = this->getGameDataLocation();
 			PakReader pakReader;
@@ -772,9 +851,11 @@ void MainWindow::handleLoadButton() {
 					charTab->setItemEditHandler(editItemHandler);
 					charTab->setSkillStats(&skillStats);
 					
+					QWidget *equipmentWidget = charTab->findChild<QWidget *>("equipmentWidget");
+					LsbObject *itemsObject = LsbReader::lookupByUniquePath(globals, "Items/root/ItemFactory/Items");
 					EquipmentHandler *equipHandler = new EquipmentHandler(inventoryCellImg, stats, rootTemplates, modTemplates, 
 																		  iconAtlas, itemStats, nameMappings,
-																		  charTab->findChild<QWidget *>("equipmentWidget"), this, itemLinks, globalTagList);
+																		  equipmentWidget, this, itemLinks, globalTagList, itemsObject, character);
 					
 					std::vector<GameItem *> &equipmentSet = equipmentSets[i];
 					for (int j=0; j<equipmentSet.size(); ++j) {
@@ -1039,9 +1120,7 @@ void MainWindow::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 				QClipboard *clipboard = QApplication::clipboard();
 				EditableTreeWidgetItem *editable = (EditableTreeWidgetItem *)item;
 				long type = editable->object->getType();
-				std::ostringstream ss;
-				ss<<type;
-				clipboard->setText(ss.str().c_str());
+				clipboard->setText((boost::format("0x%02X") % type).str().c_str());
 			}
 			if (result->text() == "&Find") {
 				treeFindAction();
@@ -1124,6 +1203,15 @@ void MainWindow::on_treeWidget_itemChanged(QTreeWidgetItem *item, int column)
 			}
 
 			editable->object->setData((char *)&value, sizeof(unsigned long));
+		} else if (type == 0x07) {
+			double value = 0;
+			try {
+				value = boost::lexical_cast<double>(text);
+			} catch (const boost::bad_lexical_cast& e) {
+				
+			}
+
+			editable->object->setData((char *)&value, sizeof(double));
 		}
 	}
 }
@@ -1261,6 +1349,7 @@ void MainWindow::on_pakListWidget_customContextMenuRequested(const QPoint &pos)
 					std::string folderName = fileDialog.selectedFiles()[0].toStdString();
 					QProgressDialog progress("Extracting...", "Cancel", 0, pakListWidget->selectedItems().size(), this);
 					progress.setWindowModality(Qt::WindowModal);
+					QApplication::processEvents();
 					for (int i=0; i<pakListWidget->selectedItems().size(); ++i) {
 						if (progress.wasCanceled()) {
 							progress.close();
@@ -1270,6 +1359,7 @@ void MainWindow::on_pakListWidget_customContextMenuRequested(const QPoint &pos)
 						std::string text = item->text().toStdString();
 						userPakReader.extractFile(userPakFileName, text, folderName, true);
 						progress.setValue(i + 1);
+						QApplication::processEvents();
 					}
 					if (!progress.wasCanceled()) {
 						QMessageBox qmsg;

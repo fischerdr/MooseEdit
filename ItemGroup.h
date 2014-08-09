@@ -9,25 +9,65 @@
 class ItemGroup
 {
 	std::vector<GameItem *> items;
-	std::map<unsigned short, GameItem *> slotMap;
-	unsigned short largestSlot = 0;
+	std::map<unsigned long, GameItem *> renderSlotMap;
+	std::map<unsigned short, GameItem *> internalSlotMap;
+	unsigned long largestRenderSlot = 0;
+	unsigned short largestInternalSlot = 0;
+	unsigned long largestEquipmentSlot = 0;
+	unsigned long largestConsumableSlot = 0;
+	unsigned long largestMagicalSlot = 0;
+	unsigned long largestIngredientSlot = 0;
+	unsigned long largestKeysSlot = 0;
+	unsigned long largestMiscSlot = 0;
 public:
 	ItemGroup();
 	std::vector<GameItem *>& getItems() {
 		return items;
 	}
 	void addItem(GameItem *item) {
-		unsigned short slot = item->getSlot();
-		if (slot == SLOT_INVALID && item != 0 && item->getObject() != 0) {
+		if (item != 0 && item->getObject() != 0) {
 			LsbObject *slotObject = LsbReader::lookupByUniquePathEntity(item->getObject(), "Slot");
-			slot = *((unsigned short *)slotObject->getData());
-		}
-		if (slot != SLOT_INVALID) {
-			if (slot > largestSlot) {
-				largestSlot = slot;
+			unsigned short internalSlot = SLOT_INVALID;
+			if (slotObject != 0) {
+				internalSlot = *((unsigned short *)slotObject->getData());
 			}
-			slotMap[slot] = item;
+			if (internalSlot != SLOT_INVALID) {
+				if (internalSlot > largestInternalSlot) {
+					largestInternalSlot = internalSlot;
+				}
+				internalSlotMap[internalSlot] = item;
+			}
 		}
+		unsigned long renderSlot = item->getRenderSlot();
+		if (renderSlot > largestRenderSlot) {
+			largestRenderSlot = renderSlot;
+		}
+		unsigned long equipmentSlot = item->getEquipmentSlot();
+		if (equipmentSlot > largestEquipmentSlot) {
+			largestEquipmentSlot = equipmentSlot;
+		}
+		unsigned long consumableSlot = item->getConsumableSlot();
+		if (consumableSlot > largestConsumableSlot) {
+			largestConsumableSlot = consumableSlot;
+		}
+		unsigned long magicalSlot = item->getMagicalSlot();
+		if (magicalSlot > largestMagicalSlot) {
+			largestMagicalSlot = magicalSlot;
+		}
+		unsigned long ingredientSlot = item->getIngredientSlot();
+		if (ingredientSlot > largestIngredientSlot) {
+			largestIngredientSlot = ingredientSlot;
+		}
+		unsigned long keysSlot = item->getKeysSlot();
+		if (keysSlot > largestKeysSlot) {
+			largestKeysSlot = keysSlot;
+		}
+		unsigned long miscSlot = item->getMiscSlot();
+		if (miscSlot > largestMiscSlot) {
+			largestMiscSlot = miscSlot;
+		}
+		
+		renderSlotMap[renderSlot] = item;
 		items.push_back(item);
 	}
 	bool removeItem(GameItem *item) {
@@ -40,15 +80,30 @@ public:
 		return false;
 	}
 
-	GameItem *getItemBySlot(unsigned short slot) {
-		if (slotMap.find(slot) != slotMap.end()) {
-			return slotMap[slot];
+	GameItem *getItemByRenderSlot(unsigned long renderSlot) {
+		if (renderSlotMap.find(renderSlot) != renderSlotMap.end()) {
+			return renderSlotMap[renderSlot];
 		}
 		return 0;
 	}
-	unsigned short getLargestSlot() {
-		return largestSlot;
+	unsigned long getLargestRenderSlot() {
+		return largestRenderSlot;
 	}
+	unsigned short getLargestInternalSlot() {
+		return largestInternalSlot;
+	}
+	unsigned long getLargestEquipmentSlot() const;
+	void setLargestEquipmentSlot(unsigned long value);
+	unsigned long getLargestConsumableSlot() const;
+	void setLargestConsumableSlot(unsigned long value);
+	unsigned long getLargestMagicalSlot() const;
+	void setLargestMagicalSlot(unsigned long value);
+	unsigned long getLargestIngredientSlot() const;
+	void setLargestIngredientSlot(unsigned long value);
+	unsigned long getLargestKeysSlot() const;
+	void setLargestKeysSlot(unsigned long value);
+	unsigned long getLargestMiscSlot() const;
+	void setLargestMiscSlot(unsigned long value);
 };
 
 #endif // ITEMGROUP_H

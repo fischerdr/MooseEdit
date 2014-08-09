@@ -11,7 +11,13 @@
 class GameItem
 {
 	LsbObject *object;
-	unsigned short slot = SLOT_INVALID;
+	unsigned long renderSlot = 0;
+	unsigned long equipmentSlot = 0;
+	unsigned long consumableSlot = 0;
+	unsigned long magicalSlot = 0;
+	unsigned long ingredientSlot = 0;
+	unsigned long keysSlot = 0;
+	unsigned long miscSlot = 0;
 	std::string itemName;
 	std::string body;
 	StatsContainer *itemStats = 0;
@@ -28,7 +34,7 @@ public:
 	GameItem(std::vector<TAG_LSB*> *tagList);
 	GameItem(const GameItem &other) : tagList(other.tagList) {
 		this->object = new LsbObject(*other.object);
-		this->slot = other.slot;
+		this->renderSlot = other.renderSlot;
 		this->itemName = other.itemName;
 		this->body = other.body;
 		this->itemStats = other.itemStats;
@@ -38,7 +44,14 @@ public:
 		this->statsText = other.statsText;
 		this->statsDirectory = other.statsDirectory;
 		this->generationRandom = other.generationRandom;
+		this->equipmentSlot = other.equipmentSlot;
+		this->consumableSlot = other.consumableSlot;
+		this->magicalSlot = other.magicalSlot;
+		this->ingredientSlot = other.ingredientSlot;
+		this->keysSlot = other.keysSlot;
+		this->miscSlot = other.miscSlot;
 	}
+	static LsbObject *createNewItem(std::vector<TAG_LSB*> *tagList, LsbObject *_parent, unsigned long inventoryId, unsigned long characterCreatorHandle);
 	LsbObject *createStatsDirectory();
 	LsbObject *createGenerationDirectory();
 	bool removeStatsDirectory();
@@ -51,11 +64,11 @@ public:
 	bool hasStatsDirectory() {
 		return this->statsDirectory;
 	}
-	void setSlot(unsigned short slot) {
-		this->slot = slot;
+	void setRenderSlot(unsigned long slot) {
+		this->renderSlot = slot;
 	}
-	unsigned short getSlot() {
-		return this->slot;
+	unsigned long getRenderSlot() {
+		return this->renderSlot;
 	}
 	LsbObject *getObject() {
 		return object;
@@ -116,6 +129,21 @@ public:
 	void setGenerationRandom(long value);
 	long getDurability() const;
 	void setDurability(long value);
+	static LsbObject *getCreatorsObject(LsbObject *itemsObject);
+	static LsbObject *createNewItemCreator(std::vector<TAG_LSB *> *tagList, LsbObject *itemsObject, LsbObject *itemObject);
+	static unsigned long getNewItemCreatorHandle(LsbObject *itemsObject);
+	unsigned long getEquipmentSlot() const;
+	void setEquipmentSlot(unsigned long value);
+	unsigned long getConsumableSlot() const;
+	void setConsumableSlot(unsigned long value);
+	unsigned long getMagicalSlot() const;
+	void setMagicalSlot(unsigned long value);
+	unsigned long getIngredientSlot() const;
+	void setIngredientSlot(unsigned long value);
+	unsigned long getKeysSlot() const;
+	void setKeysSlot(unsigned long value);
+	unsigned long getMiscSlot() const;
+	void setMiscSlot(unsigned long value);
 };
 
 #endif // GAMEITEM_H

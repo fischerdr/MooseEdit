@@ -491,7 +491,7 @@ QScrollBar::down-arrow:vertical {
           </rect>
          </property>
         </widget>
-        <widget class="QWidget" name="slot11" native="true">
+        <widget class="QWidget" name="slot5" native="true">
          <property name="geometry">
           <rect>
            <x>16</x>
@@ -511,7 +511,7 @@ QScrollBar::down-arrow:vertical {
           </rect>
          </property>
         </widget>
-        <widget class="QWidget" name="slot5" native="true">
+        <widget class="QWidget" name="slot11" native="true">
          <property name="geometry">
           <rect>
            <x>148</x>
@@ -555,7 +555,7 @@ QScrollBar::down-arrow:vertical {
          <property name="geometry">
           <rect>
            <x>82</x>
-           <y>90</y>
+           <y>91</y>
            <width>61</width>
            <height>61</height>
           </rect>

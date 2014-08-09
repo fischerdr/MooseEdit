@@ -3,9 +3,11 @@
 
 EquipmentHandler::EquipmentHandler(QImage emptySlotImage, std::vector<LsbObject *> &stats, std::vector<LsbObject *> &rootTemplates, 
 								   std::vector<LsbObject *> &modTemplates, TextureAtlas &iconAtlas, std::vector<StatsContainer *> &itemStats, 
-								   std::map<std::string, std::string> &nameMappings, QWidget *parentWidget, QWidget *mainWindow, std::vector<StatsContainer *> &itemLinks, std::vector<TAG_LSB *> &tagList) :
+								   std::map<std::string, std::string> &nameMappings, QWidget *parentWidget, QWidget *mainWindow, 
+								   std::vector<StatsContainer *> &itemLinks, std::vector<TAG_LSB *> &tagList,
+								   LsbObject *itemsObject, GameCharacter *character) :
 	emptySlotImage(emptySlotImage), stats(stats), rootTemplates(rootTemplates), modTemplates(modTemplates), iconAtlas(iconAtlas), itemStats(itemStats),
-	nameMappings(nameMappings), parentWidget(parentWidget), mainWindow(mainWindow), itemLinks(itemLinks), tagList(tagList)
+	nameMappings(nameMappings), parentWidget(parentWidget), mainWindow(mainWindow), itemLinks(itemLinks), tagList(tagList), itemsObject(itemsObject), character(character)
 {
 	initInventoryHandlers();
 }
@@ -19,7 +21,7 @@ GameItem *EquipmentHandler::getItemAtSlot(unsigned short slot) {
 	}
 	return 0;
 }
-
+#include <windows.h>
 void EquipmentHandler::onItemEdited(GameItem *newItem, GameItem *oldItem) {
 	InventoryHandler *handler = 0;
 	int i;
@@ -30,7 +32,25 @@ void EquipmentHandler::onItemEdited(GameItem *newItem, GameItem *oldItem) {
 			break;
 		}
 	}
-	if (handler != 0) {
+	if (handler == 0) {
+		//item is newly added
+		LsbObject *itemObject = newItem->getObject();
+		itemsObject->addChild(itemObject);
+		LsbObject *slotObject = LsbReader::lookupByUniquePathEntity(itemObject, "Slot");
+		unsigned short slot = EQUIP_SLOTS;
+		if (slotObject != 0) {
+			slot = *((unsigned short *)slotObject->getData());
+		}
+		LsbObject *newCreatorObject = GameItem::createNewItemCreator(&tagList, itemsObject, itemObject);
+		LsbObject *creatorsObject = GameItem::getCreatorsObject(itemsObject);
+		creatorsObject->addChild(newCreatorObject);
+		if (!character->addItemToInventoryObject(newCreatorObject, 0, 0, 0, true))
+			MessageBoxA(0, "error", 0, 0);
+		
+		handler = equipHandler[slot];
+		i = slot;
+	}
+	if (handler != 0 && i < EQUIP_SLOTS) {
 		LsbObject *parent = oldItem->getObject()->getParent();
 		handler->getItems()->removeItem(oldItem);
 		GameItem *copy = new GameItem(*newItem);
@@ -76,9 +96,20 @@ void EquipmentHandler::customContextRequested(const QPoint& pos) {
 				}
 				QAction *result = contextMenu.exec(globalPos);
 				if (result) {
+					InventoryHandler *newHandler = new InventoryHandler(emptySlotImage, stats, rootTemplates, modTemplates, iconAtlas, itemStats, nameMappings);
 					if (item != 0) {
-						ItemEditFrame *itemEditFrame = new ItemEditFrame(itemStats, itemLinks, item, 
-																		 new InventoryHandler(emptySlotImage, stats, rootTemplates, modTemplates, iconAtlas, itemStats, nameMappings),
+						ItemEditFrame *itemEditFrame = new ItemEditFrame(itemStats, itemLinks, item, newHandler,
+																		 this, &tagList, nameMappings);
+					} else {
+						LsbObject *itemObject = GameItem::createNewItem(&tagList, itemsObject, character->getInventoryId(), character->getCreatorId());
+						LsbObject *slotObject = LsbReader::lookupByUniquePathEntity(itemObject, "Slot");
+						if (slotObject != 0) {
+							slotObject->setData((char *)&slot, sizeof(slot));
+						}
+						GameItem *newItem = new GameItem(&tagList);
+						newItem->setObject(itemObject);
+						newItem->setRenderSlot(character->getInventoryHandler()->slotAtPoint(pos));
+						ItemEditFrame *itemEditFrame = new ItemEditFrame(itemStats, itemLinks, newItem, newHandler, 
 																		 this, &tagList, nameMappings);
 					}
 				}
@@ -99,7 +130,7 @@ void EquipmentHandler::addItem(GameItem *item) {
 		if (slot >= 0 && slot < EQUIP_SLOTS) {
 			InventoryHandler *handler = equipHandler[slot];
 			if (handler->getItems()->getItems().size() == 0) {
-				item->setSlot(0);
+				item->setRenderSlot(0);
 				handler->getItems()->addItem(item);
 			}
 		}

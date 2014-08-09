@@ -24,6 +24,7 @@ class GameCharacter
 	
 	InventoryHandler *inventoryHandler;
 	
+	void ensureInventoryCapacity(LsbObject *viewMapValueObject, unsigned long viewSlot);
 public:
 	GameCharacter(std::vector<LsbObject *> &globals, std::vector<TAG_LSB *> &tagList);
 	~GameCharacter() {
@@ -64,6 +65,9 @@ public:
 	void addSkill(const char *skillName);
 	void removeSkill(const char *skillName);
 	LsbObject *getInventoryObject();
+	unsigned long getInventoryId();
+	unsigned long getCreatorId();
+	bool addItemToInventoryObject(LsbObject *itemCreatorObject, unsigned long viewSlot, unsigned long extraInventoryTab, unsigned long extraViewSlot, bool equippedItem);
 };
 
 #endif // GAMECHARACTER_H

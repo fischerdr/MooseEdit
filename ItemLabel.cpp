@@ -4,6 +4,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
 #include <QLayout>
+#include <map>
 #include "LsbObject.h"
 
 double ItemLabel::calculateDamage(long damageStat, long itemLevel, long damageBoost) {
@@ -132,9 +133,17 @@ void ItemLabel::displayItemStats(std::ostringstream &contentHtml) {
 		contentHtml<<"<font color=#188EDE size=2>Perception: +"<<perception<<"</font><br/>";
 	}
 	
+	long sneaking = getSummedItemStat("Sneaking");
+	if (sneaking != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Sneaking: +"<<sneaking<<"</font><br/>";
+	}
 	long singleHanded = getSummedItemStat("SingleHanded");
 	if (singleHanded != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Single-handed: +"<<singleHanded<<"</font><br/>";
+	}
+	long twoHanded = getSummedItemStat("TwoHanded");
+	if (twoHanded != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Two-handed: +"<<twoHanded<<"</font><br/>";
 	}
 	long shield = getSummedItemStat("Shield");
 	if (shield != 0) {
@@ -147,6 +156,22 @@ void ItemLabel::displayItemStats(std::ostringstream &contentHtml) {
 	long bodybuilding = getSummedItemStat("BodyBuilding");
 	if (bodybuilding != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Bodybuilding: +"<<bodybuilding<<"</font><br/>";
+	}
+	long willpower = getSummedItemStat("Willpower");
+	if (willpower != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Willpower: +"<<willpower<<"</font><br/>";
+	}
+	long loremaster = getSummedItemStat("Loremaster");
+	if (loremaster != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Loremaster: +"<<loremaster<<"</font><br/>";
+	}
+	long leadership = getSummedItemStat("Leadership");
+	if (leadership != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Leadership: +"<<leadership<<"</font><br/>";
+	}
+	long telekinesis = getSummedItemStat("Telekinesis");
+	if (telekinesis != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Telekinesis: +"<<telekinesis<<"</font><br/>";
 	}
 	long lockpicking = getSummedItemStat("LockPicking");
 	if (lockpicking != 0) {
@@ -179,6 +204,10 @@ void ItemLabel::displayItemStats(std::ostringstream &contentHtml) {
 	long earth = getSummedItemStat("Earth") * 5;
 	if (earth != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Earth resistance: +"<<earth<<"%</font><br/>";
+	}
+	long posion = getSummedItemStat("Poison") * 5;
+	if (posion != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Poison resistance: +"<<posion<<"%</font><br/>";
 	}
 	
 	long vitBoost = 0;
@@ -279,6 +308,8 @@ void ItemLabel::setupTooltip()
 				
 				std::string prefix = "";
 				std::string suffix = "";
+				std::map<std::string, long> elementalMinMap;
+				std::map<std::string, long> elementalMaxMap;
 				for (int i=0; i<boosts.size(); ++i) {
 					StatsContainer *boostStats = boosts[i];
 					
@@ -305,10 +336,22 @@ void ItemLabel::setupTooltip()
 						long eleMinDmg = dmgMin * mod;
 						long eleMaxDmg = dmgMax * mod;
 						if (parsedDamageMod > 0) {
-							contentHtml<<"<font color=#DBDBDB size=5>"<<itemBoost->getData("Damage Type")<<": "<<eleMinDmg<<"-"<<eleMaxDmg<<"</font><br/>";
+							std::string damageType = itemBoost->getData("Damage Type");
+							if (elementalMinMap.find(damageType) != elementalMinMap.end()) {
+								eleMinDmg += elementalMinMap[damageType];
+							}
+							elementalMinMap[damageType] = eleMinDmg;
+							if (elementalMaxMap.find(damageType) != elementalMaxMap.end()) {
+								eleMaxDmg += elementalMaxMap[damageType];
+							}
+							elementalMaxMap[damageType] = eleMaxDmg;
 						}
 					}
 				}
+				for (std::map<std::string, long>::iterator it = elementalMinMap.begin(); it != elementalMinMap.end(); ++it) {
+					contentHtml<<"<font color=#DBDBDB size=5>"<<it->first<<": "<<it->second<<"-"<<elementalMaxMap[it->first]<<"</font><br/>";
+				}
+				
 				std::string newHeader = "";
 				if (prefix.size() > 0) {
 					newHeader += prefix;
@@ -349,8 +392,9 @@ void ItemLabel::setupTooltip()
 						}
 					}
 				}
-				
+
 				//proc effects
+				std::map<std::string, std::string> procMap;
 				for (int i=0; i<boosts.size(); ++i) {
 					StatsContainer *boostStats = boosts[i];
 					
@@ -362,7 +406,9 @@ void ItemLabel::setupTooltip()
 							std::vector<std::string> properties;
 							boost::split(properties, extraProp, boost::is_any_of(","));
 							if (properties.size() == 3) {
-								contentHtml<<"<font color=#C7A758 size=2>"<<properties[1]<<"% chance to set "<<properties[0]<<" Status</font><br/>";
+								std::string& procName = properties[0];
+								std::string& procChance = properties[1];
+								procMap[procName] = procChance;
 							}
 						}
 						
@@ -370,6 +416,10 @@ void ItemLabel::setupTooltip()
 							isUnbreakable = true;
 						}
 					}
+				}
+				
+				for (std::map<std::string, std::string>::iterator it = procMap.begin(); it != procMap.end(); ++it) {
+					contentHtml<<"<font color=#C7A758 size=2>"<<it->second<<"% chance to set "<<it->first<<" Status</font><br/>";
 				}
 				
 				if (isUnbreakable) {

@@ -31,7 +31,7 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 		newWidth = parent->minimumWidth();
 	}
 	iconSize = (newWidth / itemsPerRow);
-	long slotsToDisplay = (itemsPerRow * ((items.getLargestSlot()/itemsPerRow) + 2));
+	long slotsToDisplay = (itemsPerRow * ((items.getLargestRenderSlot()/itemsPerRow) + 2));
 	slotsToDisplay = std::max(minSlots, slotsToDisplay);
 	slotsToDisplay = std::min(maxSlots, slotsToDisplay);
 	iconAtlas.setAbsoluteSize(iconSize);
@@ -42,7 +42,7 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 		itemLabels.push_back(label);
 		label->setFixedSize(iconSize, iconSize);
 		label->move(getItemX(i), getItemY(i));
-		GameItem *item = items.getItemBySlot(i);
+		GameItem *item = items.getItemByRenderSlot(i);
 		if (item != 0) {
 			std::cout<<"Processing item "<<i<<'\n';
 			label->setItem(item);
@@ -195,12 +195,18 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 	}
 }
 
+unsigned long InventoryHandler::slotAtPoint(const QPoint &pt) {
+	unsigned long column = pt.x()/iconSize;
+	unsigned long row = pt.y()/iconSize;
+	return row * itemsPerRow + column;
+}
+
 GameItem *InventoryHandler::getItemAtPoint(const QPoint &pt)
 {
 	for (int i=0; i<items.getItems().size(); ++i) {
 		GameItem *item = items.getItems()[i];
-		long x = getItemX(item->getSlot());
-		long y = getItemY(item->getSlot());
+		unsigned long x = getItemX(item->getRenderSlot());
+		unsigned long y = getItemY(item->getRenderSlot());
 		long right = x + iconSize;
 		long bottom = y + iconSize;
 		if (pt.x() >= x && pt.x() <= right &&

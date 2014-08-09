@@ -298,11 +298,11 @@ void ItemEditFrame::redraw() {
 	itemEditHandler->setIconsPerRow(1);
 	itemEditHandler->setMinSlots(1);
 	itemEditHandler->setMaxSlots(1);
-	long itemSlot = item->getSlot(); //TODO: remove this hack
-	item->setSlot(0);
+	unsigned long itemSlot = item->getRenderSlot(); //TODO: remove this hack
+	item->setRenderSlot(0);
 	this->itemEditHandler->getItems()->getItems().clear();
 	this->itemEditHandler->getItems()->addItem(item);
-	item->setSlot(itemSlot);
+	item->setRenderSlot(itemSlot);
 	this->itemEditHandler->draw(itemFrame, this, true);
 	this->show();
 	

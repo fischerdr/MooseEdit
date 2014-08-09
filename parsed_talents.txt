@@ -176,7 +176,7 @@ data "tip" "Guerrilla doubles your attack damage while sneaking."
 
 new entry "Light Stepper"
 data "id" "45"
-data "tip" "1
+data "tip" "Light Stepper gives you a +2 Perception bonus for detecting traps and secrets."
 
 new entry "Morning Person"
 data "id" "46"

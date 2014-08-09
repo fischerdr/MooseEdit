@@ -18,7 +18,7 @@ class characterTab : public QWidget, ItemEditCallback
 	Q_OBJECT
 	
 public:
-	explicit characterTab(std::vector<TAG_LSB *> *tagList, QWidget *parent = 0);
+	explicit characterTab(std::vector<TAG_LSB *> *tagList, LsbObject *itemsObject, QWidget *parent = 0);
 	~characterTab();
 	void setCharacter(GameCharacter *character);
 	GameCharacter *getCharacter() {
@@ -82,6 +82,7 @@ protected:
 	void showEvent(QShowEvent *);
 
 private:
+	LsbObject *itemsObject;
 	Ui::characterTab *ui;
 	MainWindow *mainWindow;
 	GameCharacter *character;
