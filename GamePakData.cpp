@@ -114,49 +114,56 @@ void GamePakData::parsePakFile(std::string& pakPath, const char *pakExtractPath,
 		lastPakPath = pakPath;
 	}
 	std::string extractPath = pakExtractPath;
-	pakReader.extractFile(pakPath, extractPath, outputDir, false);
-	std::string extractedPath = pakReader.getLastExtractPath();
+	unsigned long fileSize;
+	char *fileBytes = pakReader.extractFileIntoMemory(pakPath, extractPath, outputDir, false, &fileSize);
 	
+	if (fileBytes == 0) {
+		return;
+	}
+	
+	std::istringstream fileByteStream;
+	fileByteStream.rdbuf()->pubsetbuf(fileBytes, fileSize);
 	switch (processingType) {
 	
 	case PROCESSING_TYPE_STATS: {
-		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
-		stats = lsbReader.loadFile(lsbFin);
-		lsbFin.close();
+		//std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
+		stats = lsbReader.loadFile(fileByteStream);
+		//lsbFin.close();
 		
 		buildNameMappings();
 		break;}
 	case PROCESSING_TYPE_ROOTTEMPLATE: {
-		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
-		std::vector<LsbObject *> rootTemplates = lsbReader.loadFile(lsbFin);
-		lsbFin.close();
+//		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
+		std::vector<LsbObject *> rootTemplates = lsbReader.loadFile(fileByteStream);
+//		lsbFin.close();
 		this->addRootTemplates(rootTemplates);
 		break;}
 	case PROCESSING_TYPE_MODTEMPLATE: {
-		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
-		std::vector<LsbObject *> modTemplates = lsbReader.loadFile(lsbFin);
-		lsbFin.close();
+//		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
+		std::vector<LsbObject *> modTemplates = lsbReader.loadFile(fileByteStream);
+//		lsbFin.close();
 		this->addModTemplates(modTemplates);
 		break;}
 	case PROCESSING_TYPE_ITEMSTATS: {
-		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
-		std::vector<StatsContainer *> itemStats = genStatsReader.loadFile(lsbFin);
-		lsbFin.close();
+//		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
+		std::vector<StatsContainer *> itemStats = genStatsReader.loadFile(fileByteStream);
+//		lsbFin.close();
 		this->addItemStats(itemStats);
 		break;}
 	case PROCESSING_TYPE_SKILLSTATS: {
-		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
-		skillStats = genStatsReader.loadFile(lsbFin);
-		lsbFin.close();
+//		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
+		skillStats = genStatsReader.loadFile(fileByteStream);
+//		lsbFin.close();
 		break;}
 	case PROCESSING_TYPE_ITEMLINKS: {
-		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
-		std::vector<StatsContainer *> itemLinks = genStatsReader.loadFile(lsbFin);
-		lsbFin.close();
+//		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
+		std::vector<StatsContainer *> itemLinks = genStatsReader.loadFile(fileByteStream);
+//		lsbFin.close();
 		this->addItemLinks(itemLinks);
 		break;}
 		
 	}
+	delete[] fileBytes;
 }
 
 void GamePakData::load(std::string gameDataPath) {
