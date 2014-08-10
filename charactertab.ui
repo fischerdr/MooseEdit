@@ -1277,6 +1277,66 @@ QScrollBar::right-arrow:horizontal {
      <string>Skills</string>
     </property>
    </widget>
+   <widget class="QLineEdit" name="statsAvailableEdit">
+    <property name="geometry">
+     <rect>
+      <x>128</x>
+      <y>95</y>
+      <width>21</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <weight>75</weight>
+      <italic>false</italic>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>Stats Available</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background: transparent;
+color: rgb(255, 255, 255);</string>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="levelEdit">
+    <property name="geometry">
+     <rect>
+      <x>307</x>
+      <y>52</y>
+      <width>20</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <weight>75</weight>
+      <italic>false</italic>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>Stats Available</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background: transparent;
+color: rgb(116, 109, 101);</string>
+    </property>
+    <property name="text">
+     <string>5</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
   </widget>
  </widget>
  <customwidgets>

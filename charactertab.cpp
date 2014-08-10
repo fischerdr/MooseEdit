@@ -27,6 +27,45 @@ characterTab::characterTab(std::vector<TAG_LSB *> *tagList, LsbObject *itemsObje
 	talentList->setContextMenuPolicy(Qt::CustomContextMenu);
 }
 
+long characterTab::levelFromExperience(long experience) {
+	for (int i=0; i<experienceRequired.size(); ++i) {
+		if (experience < experienceRequired[i]) {
+			return i;
+		}
+	}
+}
+
+bool characterTab::loadExperienceData() {	
+	QFile mFile(":/experience.txt");
+	if(!mFile.open(QFile::ReadOnly | QFile::Text)){
+		return false;
+	}
+
+	QTextStream in(&mFile);
+	QString mText = in.readAll();
+	std::stringstream ss(mText.toStdString());
+	mFile.close();
+	
+	std::string input = "";
+	for (;;) {
+		std::getline(ss, input);
+		if (!ss || input.length() == 0) {
+			break;
+		}
+		
+		unsigned long exp = 0;
+		try {
+			exp = boost::lexical_cast<unsigned long>(input);
+		} catch (const boost::bad_lexical_cast& e) {
+			
+		}
+
+		experienceRequired.push_back(exp);
+	}
+	
+	return true;
+}
+
 bool characterTab::populateTraitsView() {
 	QFile mFile(":/parsed_traits.txt");
 	if(!mFile.open(QFile::ReadOnly | QFile::Text)){
@@ -220,7 +259,9 @@ void characterTab::setCharacter(GameCharacter *character) {
 	QLineEdit *consEdit = this->findChild<QLineEdit *>("consEdit");
 	QLineEdit *spdEdit = this->findChild<QLineEdit *>("spdEdit");
 	QLineEdit *perEdit = this->findChild<QLineEdit *>("perEdit");
+	QLineEdit *statsAvailableEdit = this->findChild<QLineEdit *>("statsAvailableEdit");
 	LsbObject *playerUpgrades = LsbReader::lookupByUniquePathEntity(character->getObject(), "PlayerData/PlayerUpgrade");
+	LsbObject *attributePointsObject = LsbReader::lookupByUniquePathEntity(playerUpgrades, "AttributePoints");
 	std::vector<LsbObject *> attributes = LsbReader::lookupAllEntitiesWithName(playerUpgrades, "Attributes");
 	std::vector<LsbObject *> attributeData = LsbReader::extractPropertyForEachListItem(attributes, "Object");
 	int idx = 0;
@@ -230,10 +271,23 @@ void characterTab::setCharacter(GameCharacter *character) {
 	consEdit->setText(attributeData[idx++]->toString().c_str());
 	spdEdit->setText(attributeData[idx++]->toString().c_str());
 	perEdit->setText(attributeData[idx++]->toString().c_str());
+	statsAvailableEdit->setText(attributePointsObject->toString().c_str());
 	
 	populateTalentsView();
 	populateAbilitiesView();
 	populateTraitsView();
+	
+	loadExperienceData();
+	QLineEdit *levelEdit = this->findChild<QLineEdit *>("levelEdit");
+	LsbObject *characterObject = this->getCharacter()->getObject();
+	LsbObject *experienceObject = LsbReader::lookupByUniquePathEntity(characterObject, "Stats/Experience");
+	if (experienceObject != 0) {
+		unsigned long exp = *((unsigned long *)experienceObject->getData());
+		unsigned long level = levelFromExperience(exp);
+		std::ostringstream ss;
+		ss<<level;
+		levelEdit->setText(ss.str().c_str());
+	}
 }
 
 characterTab::~characterTab()
@@ -605,4 +659,38 @@ void characterTab::on_abilitiesAvailableEdit_textEdited(const QString &text)
 void characterTab::on_skillsButton_released()
 {
     skillEditFrame->show();
+}
+
+void characterTab::on_statsAvailableEdit_textEdited(const QString &text)
+{
+	long value = 0;
+	try {
+		value = boost::lexical_cast<long>(text.toStdString());
+	} catch (const boost::bad_lexical_cast& e) {
+		;
+	}
+	LsbObject *characterObject = this->getCharacter()->getObject();
+	LsbObject *attribPointsObject = LsbReader::lookupByUniquePathEntity(characterObject, "PlayerData/PlayerUpgrade/AttributePoints");
+	if (attribPointsObject != 0) {
+		attribPointsObject->setData((char *)&value, sizeof(long));
+	}
+}
+
+void characterTab::on_levelEdit_textEdited(const QString &text)
+{
+	long value = 1;
+	try {
+		value = boost::lexical_cast<long>(text.toStdString());
+	} catch (const boost::bad_lexical_cast& e) {
+		;
+	}
+	LsbObject *characterObject = this->getCharacter()->getObject();
+	LsbObject *experienceObject = LsbReader::lookupByUniquePathEntity(characterObject, "Stats/Experience");
+	if (experienceObject != 0) {
+		--value;
+		if (value >= 0 && value < experienceRequired.size()) {
+			long exp = experienceRequired[value];
+			experienceObject->setData((char *)&exp, sizeof(exp));
+		}
+	}
 }

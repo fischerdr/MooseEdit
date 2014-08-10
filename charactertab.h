@@ -78,10 +78,16 @@ private slots:
 	
 	void on_skillsButton_released();
 	
+	void on_statsAvailableEdit_textEdited(const QString &text);
+	
+	void on_levelEdit_textEdited(const QString &text);
+	
 protected:
 	void showEvent(QShowEvent *);
 
 private:
+	std::vector<long> experienceRequired;
+	bool loadExperienceData();
 	LsbObject *itemsObject;
 	Ui::characterTab *ui;
 	MainWindow *mainWindow;
@@ -100,6 +106,7 @@ private:
 	SkillEditFrame *skillEditFrame;
 	int lastWidth = 0;
 	void addWidgetsToLayout(QWidget *widget, QLayout *layout);
+	long levelFromExperience(long experience);
 	bool populateTalentsView();
 	bool populateAbilitiesView();
 	bool populateTraitsView();

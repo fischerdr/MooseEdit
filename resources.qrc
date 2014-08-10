@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>charsheet.png</file>
         <file>btn_left.png</file>
         <file>btn_right.png</file>
         <file>save_disk.png</file>
@@ -36,5 +35,7 @@
         <file>parsed_traits.txt</file>
         <file>left-arrow.png</file>
         <file>right-arrow.png</file>
+        <file>charsheet.png</file>
+        <file>experience.txt</file>
     </qresource>
 </RCC>
