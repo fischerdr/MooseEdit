@@ -44,6 +44,11 @@ HEADER_PAK_FILEINFO *PakReader::getHeaderForFile(std::string& filePath) {
 	}
 	return 0;
 }
+std::string PakReader::getLastExtractPath() const
+{
+	return lastExtractPath;
+}
+
 
 bool PakReader::loadFile(std::string fileName) {
 	fileInfo.clear();
@@ -128,6 +133,7 @@ bool PakReader::extractFile(std::string fileName, std::string& filePath, std::st
 			}
 			ss<<lastToken;
 		}
+		lastExtractPath = ss.str();
 		std::ofstream outFile(ss.str().c_str(), std::ios_base::binary);
 		outFile.write(alloc, info->fileSize);
 		delete []alloc;

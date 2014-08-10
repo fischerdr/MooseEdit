@@ -34,6 +34,7 @@ class PakReader
 	long getStreamLength(std::istream& input);
 	std::string getFileNameByPakNumber(std::string& fileName, long pakNumber);
 	HEADER_PAK_FILEINFO *getHeaderForFile(std::string& filePath);
+	std::string lastExtractPath;
 public:
 	static const long BLOCK_SIZE = 0x8000;
 	static const long expectedVersion = 0x09;
@@ -41,6 +42,7 @@ public:
 	bool loadFile(std::string fileName);
 	std::vector<std::string> getFileList();
 	bool extractFile(std::string fileName, std::string& filePath, std::string& destination, bool preservePath);
+	std::string getLastExtractPath() const;
 };
 
 #endif // PAKREADER_H

@@ -9,6 +9,9 @@
 #include <QImage>
 #include <map>
 
+#include "LsbReader.h"
+#include "PakReader.h"
+
 class GamePakData
 {
 	TextureAtlas iconAtlas;
@@ -21,7 +24,13 @@ class GamePakData
 	std::map<std::string, std::string> nameMappings;
 	QImage inventoryCellImg;
 	QImage *inventoryCellPtr = 0;
+	
+	LsbReader lsbReader;
+	PakReader pakReader;
+	GenStatsReader genStatsReader;
+	std::string lastPakPath = "";
 
+	void parsePakFile(std::string& pakPath, const char *pakExtractPath, std::string& outputDir, int processingType);
 	void buildNameMappings();
 	void addRootTemplates(std::vector<LsbObject *>& rootTemplates) {
 		for (int i=0; i<rootTemplates.size(); ++i) {

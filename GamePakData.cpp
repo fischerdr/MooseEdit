@@ -100,6 +100,65 @@ void GamePakData::buildNameMappings()
 	}
 }
 
+#define PROCESSING_TYPE_NONE			0
+#define PROCESSING_TYPE_STATS			1
+#define PROCESSING_TYPE_ROOTTEMPLATE	2
+#define PROCESSING_TYPE_MODTEMPLATE		3
+#define PROCESSING_TYPE_ITEMSTATS		4
+#define PROCESSING_TYPE_SKILLSTATS		5
+#define PROCESSING_TYPE_ITEMLINKS		6
+
+void GamePakData::parsePakFile(std::string& pakPath, const char *pakExtractPath, std::string& outputDir, int processingType) {
+	if (pakPath != lastPakPath) {
+		pakReader.loadFile(pakPath);
+		lastPakPath = pakPath;
+	}
+	std::string extractPath = pakExtractPath;
+	pakReader.extractFile(pakPath, extractPath, outputDir, false);
+	std::string extractedPath = pakReader.getLastExtractPath();
+	
+	switch (processingType) {
+	
+	case PROCESSING_TYPE_STATS: {
+		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
+		stats = lsbReader.loadFile(lsbFin);
+		lsbFin.close();
+		
+		buildNameMappings();
+		break;}
+	case PROCESSING_TYPE_ROOTTEMPLATE: {
+		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
+		std::vector<LsbObject *> rootTemplates = lsbReader.loadFile(lsbFin);
+		lsbFin.close();
+		this->addRootTemplates(rootTemplates);
+		break;}
+	case PROCESSING_TYPE_MODTEMPLATE: {
+		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
+		std::vector<LsbObject *> modTemplates = lsbReader.loadFile(lsbFin);
+		lsbFin.close();
+		this->addModTemplates(modTemplates);
+		break;}
+	case PROCESSING_TYPE_ITEMSTATS: {
+		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
+		std::vector<StatsContainer *> itemStats = genStatsReader.loadFile(lsbFin);
+		lsbFin.close();
+		this->addItemStats(itemStats);
+		break;}
+	case PROCESSING_TYPE_SKILLSTATS: {
+		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
+		skillStats = genStatsReader.loadFile(lsbFin);
+		lsbFin.close();
+		break;}
+	case PROCESSING_TYPE_ITEMLINKS: {
+		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
+		std::vector<StatsContainer *> itemLinks = genStatsReader.loadFile(lsbFin);
+		lsbFin.close();
+		this->addItemLinks(itemLinks);
+		break;}
+		
+	}
+}
+
 void GamePakData::load(std::string gameDataPath) {
 	LsbReader reader;
 	
@@ -144,33 +203,59 @@ void GamePakData::load(std::string gameDataPath) {
 	linkDirectory += "\\links";
 	mkdir(linkDirectory.c_str());
 	
+	parsePakFile(pakMain, "Public/Main/Localization/Stats.lsb", tempDirectory, PROCESSING_TYPE_STATS);
+	parsePakFile(pakMain, "Public/Main/RootTemplates/Armors.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
+	parsePakFile(pakMain, "Public/Main/RootTemplates/Loot.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
+	parsePakFile(pakMain, "Public/Main/RootTemplates/Unique.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
+	parsePakFile(pakMain, "Public/Main/RootTemplates/Consumables.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
+	parsePakFile(pakMain, "Public/Main/RootTemplates/Equipment.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
+	parsePakFile(pakMain, "Public/Main/RootTemplates/Tools.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
+	parsePakFile(pakMain, "Public/Main/RootTemplates/Books_Scrolls.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
+	parsePakFile(pakMain, "Mods/Main/Globals/Homestead/Items/items-LS2011_AXEL.lsb", tempDirectory, PROCESSING_TYPE_MODTEMPLATE);
+	parsePakFile(pakMain, "Mods/Main/Globals/Cyseal/Items/items.lsb", tempDirectory, PROCESSING_TYPE_MODTEMPLATE);
+	parsePakFile(pakMain, "Mods/Main/Globals/Cyseal/Items/items-LS2012_JORIS.lsb", tempDirectory, PROCESSING_TYPE_MODTEMPLATE);
+	parsePakFile(pakMain, "Public/Main/Stats/Generated/Data/Weapon.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS);
+	parsePakFile(pakMain, "Public/Main/Stats/Generated/DeltaModifier.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS);
+	parsePakFile(pakMain, "Public/Main/Stats/Generated/Data/Armor.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS);
+	parsePakFile(pakMain, "Public/Main/Stats/Generated/Data/Object.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS);
+	parsePakFile(pakMain, "Public/Main/Stats/Generated/Data/Potion.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS);
+	parsePakFile(pakMain, "Public/Main/Stats/Generated/Data/Shield.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS);
+	parsePakFile(pakMain, "Public/Main/Stats/Generated/Structure/Modifiers.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS);
+	parsePakFile(pakMain, "Public/Main/Stats/Generated/Data/SkillData.txt", tempDirectory, PROCESSING_TYPE_SKILLSTATS);
+		
+	parsePakFile(pakMain, "Public/Main/Stats/Generated/Links/Weapon.txt", linkDirectory, PROCESSING_TYPE_ITEMLINKS);
+	parsePakFile(pakMain, "Public/Main/Stats/Generated/Links/Armor.txt", linkDirectory, PROCESSING_TYPE_ITEMLINKS);
+	parsePakFile(pakMain, "Public/Main/Stats/Generated/Links/Object.txt", linkDirectory, PROCESSING_TYPE_ITEMLINKS);
+	parsePakFile(pakMain, "Public/Main/Stats/Generated/Links/Potion.txt", linkDirectory, PROCESSING_TYPE_ITEMLINKS);
+	parsePakFile(pakMain, "Public/Main/Stats/Generated/Links/Shield.txt", linkDirectory, PROCESSING_TYPE_ITEMLINKS);
+	
 	pakReader.loadFile(pakMain);
 	pakReader.extractFile(pakMain, iconLsx, tempDirectory, false);
 	pakReader.extractFile(pakMain, portraitLsx, tempDirectory, false);
-	pakReader.extractFile(pakMain, statsLsb, tempDirectory, false);
-	pakReader.extractFile(pakMain, armorsLsb, tempDirectory, false);
-	pakReader.extractFile(pakMain, lootLsb, tempDirectory, false);
-	pakReader.extractFile(pakMain, uniqueLsb, tempDirectory, false);
-	pakReader.extractFile(pakMain, consumablesLsb, tempDirectory, false);
-	pakReader.extractFile(pakMain, equipmentLsb, tempDirectory, false);
-	pakReader.extractFile(pakMain, toolsLsb, tempDirectory, false);
-	pakReader.extractFile(pakMain, booksScrollsLsb, tempDirectory, false);
-	pakReader.extractFile(pakMain, modHomesteadLsb, tempDirectory, false);
-	pakReader.extractFile(pakMain, modCysealLsb, tempDirectory, false);
-	pakReader.extractFile(pakMain, modCysealEvelynLsb, tempDirectory, false);
-	pakReader.extractFile(pakMain, weaponStatsTxt, tempDirectory, false);
-	pakReader.extractFile(pakMain, deltaModStatsTxt, tempDirectory, false);
-	pakReader.extractFile(pakMain, armorStatsTxt, tempDirectory, false);
-	pakReader.extractFile(pakMain, objectStatsTxt, tempDirectory, false);
-	pakReader.extractFile(pakMain, potionStatsTxt, tempDirectory, false);
-	pakReader.extractFile(pakMain, shieldStatsTxt, tempDirectory, false);
-	pakReader.extractFile(pakMain, modifiersStatsTxt, tempDirectory, false);
-	pakReader.extractFile(pakMain, skillStatsTxt, tempDirectory, false);
-	pakReader.extractFile(pakMain, weaponLinksTxt, linkDirectory, false);
-	pakReader.extractFile(pakMain, armorLinksTxt, linkDirectory, false);
-	pakReader.extractFile(pakMain, objectLinksTxt, linkDirectory, false);
-	pakReader.extractFile(pakMain, potionLinksTxt, linkDirectory, false);
-	pakReader.extractFile(pakMain, shieldLinksTxt, linkDirectory, false);
+//	pakReader.extractFile(pakMain, statsLsb, tempDirectory, false);
+//	pakReader.extractFile(pakMain, armorsLsb, tempDirectory, false);
+//	pakReader.extractFile(pakMain, lootLsb, tempDirectory, false);
+//	pakReader.extractFile(pakMain, uniqueLsb, tempDirectory, false);
+//	pakReader.extractFile(pakMain, consumablesLsb, tempDirectory, false);
+//	pakReader.extractFile(pakMain, equipmentLsb, tempDirectory, false);
+//	pakReader.extractFile(pakMain, toolsLsb, tempDirectory, false);
+//	pakReader.extractFile(pakMain, booksScrollsLsb, tempDirectory, false);
+//	pakReader.extractFile(pakMain, modHomesteadLsb, tempDirectory, false);
+//	pakReader.extractFile(pakMain, modCysealLsb, tempDirectory, false);
+//	pakReader.extractFile(pakMain, modCysealEvelynLsb, tempDirectory, false);
+//	pakReader.extractFile(pakMain, weaponStatsTxt, tempDirectory, false);
+//	pakReader.extractFile(pakMain, deltaModStatsTxt, tempDirectory, false);
+//	pakReader.extractFile(pakMain, armorStatsTxt, tempDirectory, false);
+//	pakReader.extractFile(pakMain, objectStatsTxt, tempDirectory, false);
+//	pakReader.extractFile(pakMain, potionStatsTxt, tempDirectory, false);
+//	pakReader.extractFile(pakMain, shieldStatsTxt, tempDirectory, false);
+//	pakReader.extractFile(pakMain, modifiersStatsTxt, tempDirectory, false);
+//	pakReader.extractFile(pakMain, skillStatsTxt, tempDirectory, false);
+//	pakReader.extractFile(pakMain, weaponLinksTxt, linkDirectory, false);
+//	pakReader.extractFile(pakMain, armorLinksTxt, linkDirectory, false);
+//	pakReader.extractFile(pakMain, objectLinksTxt, linkDirectory, false);
+//	pakReader.extractFile(pakMain, potionLinksTxt, linkDirectory, false);
+//	pakReader.extractFile(pakMain, shieldLinksTxt, linkDirectory, false);
 	pakReader.loadFile(pakTextures);
 	pakReader.extractFile(pakTextures, iconDds, tempDirectory, false);
 	pakReader.extractFile(pakTextures, portraitDds, tempDirectory, false);
@@ -263,127 +348,127 @@ void GamePakData::load(std::string gameDataPath) {
 	inventoryCellDdsFin.read(fileBytesInventoryCell, fileLengthInventoryCellDds);
 	inventoryCellDdsFin.close();
 	
-	std::ifstream statsLsbFin(statsLsbPath.c_str(), std::ios::binary);
-	stats = reader.loadFile(statsLsbFin);
-	statsLsbFin.close();
+//	std::ifstream statsLsbFin(statsLsbPath.c_str(), std::ios::binary);
+//	stats = reader.loadFile(statsLsbFin);
+//	statsLsbFin.close();
 	
-	buildNameMappings();
+//	buildNameMappings();
 	
-	std::ifstream armorsLsbFin(armorsLsbPath.c_str(), std::ios::binary);
-	std::vector<LsbObject *> armorTemplates = reader.loadFile(armorsLsbFin);
-	armorsLsbFin.close();
-	this->addRootTemplates(armorTemplates);
+//	std::ifstream armorsLsbFin(armorsLsbPath.c_str(), std::ios::binary);
+//	std::vector<LsbObject *> armorTemplates = reader.loadFile(armorsLsbFin);
+//	armorsLsbFin.close();
+//	this->addRootTemplates(armorTemplates);
 	
-	std::ifstream lootLsbFin(lootLsbPath.c_str(), std::ios::binary);
-	std::vector<LsbObject *> lootTemplates = reader.loadFile(lootLsbFin);
-	lootLsbFin.close();
-	this->addRootTemplates(lootTemplates);
+//	std::ifstream lootLsbFin(lootLsbPath.c_str(), std::ios::binary);
+//	std::vector<LsbObject *> lootTemplates = reader.loadFile(lootLsbFin);
+//	lootLsbFin.close();
+//	this->addRootTemplates(lootTemplates);
 	
-	std::ifstream uniqueLsbFin(uniqueLsbPath.c_str(), std::ios::binary);
-	std::vector<LsbObject *> uniqueTemplates = reader.loadFile(uniqueLsbFin);
-	uniqueLsbFin.close();
-	this->addRootTemplates(uniqueTemplates);
+//	std::ifstream uniqueLsbFin(uniqueLsbPath.c_str(), std::ios::binary);
+//	std::vector<LsbObject *> uniqueTemplates = reader.loadFile(uniqueLsbFin);
+//	uniqueLsbFin.close();
+//	this->addRootTemplates(uniqueTemplates);
 	
-	std::ifstream consumablesLsbFin(consumablesLsbPath.c_str(), std::ios::binary);
-	std::vector<LsbObject *> consumablesTemplates = reader.loadFile(consumablesLsbFin);
-	consumablesLsbFin.close();
-	this->addRootTemplates(consumablesTemplates);
+//	std::ifstream consumablesLsbFin(consumablesLsbPath.c_str(), std::ios::binary);
+//	std::vector<LsbObject *> consumablesTemplates = reader.loadFile(consumablesLsbFin);
+//	consumablesLsbFin.close();
+//	this->addRootTemplates(consumablesTemplates);
 	
-	std::ifstream equipmentLsbFin(equipmentLsbPath.c_str(), std::ios::binary);
-	std::vector<LsbObject *> equipmentTemplates = reader.loadFile(equipmentLsbFin);
-	equipmentLsbFin.close();
-	this->addRootTemplates(equipmentTemplates);
+//	std::ifstream equipmentLsbFin(equipmentLsbPath.c_str(), std::ios::binary);
+//	std::vector<LsbObject *> equipmentTemplates = reader.loadFile(equipmentLsbFin);
+//	equipmentLsbFin.close();
+//	this->addRootTemplates(equipmentTemplates);
 	
-	std::ifstream toolsLsbFin(toolsLsbPath.c_str(), std::ios::binary);
-	std::vector<LsbObject *> toolsTemplates = reader.loadFile(toolsLsbFin);
-	toolsLsbFin.close();
-	this->addRootTemplates(toolsTemplates);
+//	std::ifstream toolsLsbFin(toolsLsbPath.c_str(), std::ios::binary);
+//	std::vector<LsbObject *> toolsTemplates = reader.loadFile(toolsLsbFin);
+//	toolsLsbFin.close();
+//	this->addRootTemplates(toolsTemplates);
 	
-	std::ifstream booksScrollsLsbFin(booksScrollsLsbPath.c_str(), std::ios::binary);
-	std::vector<LsbObject *> booksScrollsTemplates = reader.loadFile(booksScrollsLsbFin);
-	booksScrollsLsbFin.close();
-	this->addRootTemplates(booksScrollsTemplates);
+//	std::ifstream booksScrollsLsbFin(booksScrollsLsbPath.c_str(), std::ios::binary);
+//	std::vector<LsbObject *> booksScrollsTemplates = reader.loadFile(booksScrollsLsbFin);
+//	booksScrollsLsbFin.close();
+//	this->addRootTemplates(booksScrollsTemplates);
 	
-	std::ifstream modHomesteadLsbFin(modHomesteadLsbPath.c_str(), std::ios::binary);
-	std::vector<LsbObject *> modHomesteadTemplates = reader.loadFile(modHomesteadLsbFin);
-	modHomesteadLsbFin.close();
-	this->addModTemplates(modHomesteadTemplates);
+//	std::ifstream modHomesteadLsbFin(modHomesteadLsbPath.c_str(), std::ios::binary);
+//	std::vector<LsbObject *> modHomesteadTemplates = reader.loadFile(modHomesteadLsbFin);
+//	modHomesteadLsbFin.close();
+//	this->addModTemplates(modHomesteadTemplates);
 	
-	std::ifstream modCysealLsbFin(modCysealLsbPath.c_str(), std::ios::binary);
-	std::vector<LsbObject *> modCysealTemplates = reader.loadFile(modCysealLsbFin);
-	modCysealLsbFin.close();
-	this->addModTemplates(modCysealTemplates);
+//	std::ifstream modCysealLsbFin(modCysealLsbPath.c_str(), std::ios::binary);
+//	std::vector<LsbObject *> modCysealTemplates = reader.loadFile(modCysealLsbFin);
+//	modCysealLsbFin.close();
+//	this->addModTemplates(modCysealTemplates);
 	
-	std::ifstream modCysealEvelynLsbFin(modCysealEvelynLsbPath.c_str(), std::ios::binary);
-	std::vector<LsbObject *> modCysealEvelynTemplates = reader.loadFile(modCysealEvelynLsbFin);
-	modCysealEvelynLsbFin.close();
-	this->addModTemplates(modCysealEvelynTemplates);
+//	std::ifstream modCysealEvelynLsbFin(modCysealEvelynLsbPath.c_str(), std::ios::binary);
+//	std::vector<LsbObject *> modCysealEvelynTemplates = reader.loadFile(modCysealEvelynLsbFin);
+//	modCysealEvelynLsbFin.close();
+//	this->addModTemplates(modCysealEvelynTemplates);
 	
-	GenStatsReader statReader;
+//	GenStatsReader statReader;
 	
-	std::ifstream weaponStatsFin(weaponStatsPath.c_str(), std::ios::binary);
-	std::vector<StatsContainer *> weaponStats = statReader.loadFile(weaponStatsFin);
-	weaponStatsFin.close();
-	this->addItemStats(weaponStats);
+//	std::ifstream weaponStatsFin(weaponStatsPath.c_str(), std::ios::binary);
+//	std::vector<StatsContainer *> weaponStats = statReader.loadFile(weaponStatsFin);
+//	weaponStatsFin.close();
+//	this->addItemStats(weaponStats);
 	
-	std::ifstream deltaModStatsFin(deltaModStatsPath.c_str(), std::ios::binary);
-	std::vector<StatsContainer *> deltaModStats = statReader.loadFile(deltaModStatsFin);
-	deltaModStatsFin.close();
-	this->addItemStats(deltaModStats);
+//	std::ifstream deltaModStatsFin(deltaModStatsPath.c_str(), std::ios::binary);
+//	std::vector<StatsContainer *> deltaModStats = statReader.loadFile(deltaModStatsFin);
+//	deltaModStatsFin.close();
+//	this->addItemStats(deltaModStats);
 	
-	std::ifstream armorStatsFin(armorStatsPath.c_str(), std::ios::binary);
-	std::vector<StatsContainer *> armorStats = statReader.loadFile(armorStatsFin);
-	armorStatsFin.close();
-	this->addItemStats(armorStats);
+//	std::ifstream armorStatsFin(armorStatsPath.c_str(), std::ios::binary);
+//	std::vector<StatsContainer *> armorStats = statReader.loadFile(armorStatsFin);
+//	armorStatsFin.close();
+//	this->addItemStats(armorStats);
 	
-	std::ifstream objectStatsFin(objectStatsPath.c_str(), std::ios::binary);
-	std::vector<StatsContainer *> objectStats = statReader.loadFile(objectStatsFin);
-	objectStatsFin.close();
-	this->addItemStats(objectStats);
+//	std::ifstream objectStatsFin(objectStatsPath.c_str(), std::ios::binary);
+//	std::vector<StatsContainer *> objectStats = statReader.loadFile(objectStatsFin);
+//	objectStatsFin.close();
+//	this->addItemStats(objectStats);
 	
-	std::ifstream potionStatsFin(potionStatsPath.c_str(), std::ios::binary);
-	std::vector<StatsContainer *> potionStats = statReader.loadFile(potionStatsFin);
-	potionStatsFin.close();
-	this->addItemStats(potionStats);
+//	std::ifstream potionStatsFin(potionStatsPath.c_str(), std::ios::binary);
+//	std::vector<StatsContainer *> potionStats = statReader.loadFile(potionStatsFin);
+//	potionStatsFin.close();
+//	this->addItemStats(potionStats);
 	
-	std::ifstream shieldStatsFin(shieldStatsPath.c_str(), std::ios::binary);
-	std::vector<StatsContainer *> shieldStats = statReader.loadFile(shieldStatsFin);
-	shieldStatsFin.close();
-	this->addItemStats(shieldStats);
+//	std::ifstream shieldStatsFin(shieldStatsPath.c_str(), std::ios::binary);
+//	std::vector<StatsContainer *> shieldStats = statReader.loadFile(shieldStatsFin);
+//	shieldStatsFin.close();
+//	this->addItemStats(shieldStats);
 	
-	std::ifstream modifiersStatsFin(modifiersStatsPath.c_str(), std::ios::binary);
-	std::vector<StatsContainer *> modifiersStats = statReader.loadFile(modifiersStatsFin);
-	modifiersStatsFin.close();
-	this->addItemStats(modifiersStats);
+//	std::ifstream modifiersStatsFin(modifiersStatsPath.c_str(), std::ios::binary);
+//	std::vector<StatsContainer *> modifiersStats = statReader.loadFile(modifiersStatsFin);
+//	modifiersStatsFin.close();
+//	this->addItemStats(modifiersStats);
 	
-	std::ifstream skillStatsFin(skillStatsPath.c_str(), std::ios::binary);
-	skillStats = statReader.loadFile(skillStatsFin);
-	skillStatsFin.close();
+//	std::ifstream skillStatsFin(skillStatsPath.c_str(), std::ios::binary);
+//	skillStats = statReader.loadFile(skillStatsFin);
+//	skillStatsFin.close();
 	
-	std::ifstream weaponLinkFin(weaponLinkPath.c_str(), std::ios::binary);
-	std::vector<StatsContainer *> weaponLink = statReader.loadFile(weaponLinkFin);
-	weaponLinkFin.close();
-	this->addItemLinks(weaponLink);
+//	std::ifstream weaponLinkFin(weaponLinkPath.c_str(), std::ios::binary);
+//	std::vector<StatsContainer *> weaponLink = statReader.loadFile(weaponLinkFin);
+//	weaponLinkFin.close();
+//	this->addItemLinks(weaponLink);
 	
-	std::ifstream armorLinkFin(armorLinkPath.c_str(), std::ios::binary);
-	std::vector<StatsContainer *> armorLink = statReader.loadFile(armorLinkFin);
-	armorLinkFin.close();
-	this->addItemLinks(armorLink);
+//	std::ifstream armorLinkFin(armorLinkPath.c_str(), std::ios::binary);
+//	std::vector<StatsContainer *> armorLink = statReader.loadFile(armorLinkFin);
+//	armorLinkFin.close();
+//	this->addItemLinks(armorLink);
 	
-	std::ifstream objectLinkFin(objectLinkPath.c_str(), std::ios::binary);
-	std::vector<StatsContainer *> objectLink = statReader.loadFile(objectLinkFin);
-	objectLinkFin.close();
-	this->addItemLinks(objectLink);
+//	std::ifstream objectLinkFin(objectLinkPath.c_str(), std::ios::binary);
+//	std::vector<StatsContainer *> objectLink = statReader.loadFile(objectLinkFin);
+//	objectLinkFin.close();
+//	this->addItemLinks(objectLink);
 	
-	std::ifstream potionLinkFin(potionLinkPath.c_str(), std::ios::binary);
-	std::vector<StatsContainer *> potionLink = statReader.loadFile(potionLinkFin);
-	potionLinkFin.close();
-	this->addItemLinks(potionLink);
+//	std::ifstream potionLinkFin(potionLinkPath.c_str(), std::ios::binary);
+//	std::vector<StatsContainer *> potionLink = statReader.loadFile(potionLinkFin);
+//	potionLinkFin.close();
+//	this->addItemLinks(potionLink);
 	
-	std::ifstream shieldLinkFin(shieldLinkPath.c_str(), std::ios::binary);
-	std::vector<StatsContainer *> shieldLink = statReader.loadFile(shieldLinkFin);
-	shieldLinkFin.close();
-	this->addItemLinks(shieldLink);
+//	std::ifstream shieldLinkFin(shieldLinkPath.c_str(), std::ios::binary);
+//	std::vector<StatsContainer *> shieldLink = statReader.loadFile(shieldLinkFin);
+//	shieldLinkFin.close();
+//	this->addItemLinks(shieldLink);
 	
 	if (!iconAtlas.loadTextureAtlas(fileBytesDds, fileLengthDds, lsxBytes)) {
 		MessageBoxA(0, "failed to load Atlas", 0, 0);
