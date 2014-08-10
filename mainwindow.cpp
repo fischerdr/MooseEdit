@@ -773,6 +773,7 @@ void MainWindow::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 		contextMenu.addAction("&Copy Text");
 		contextMenu.addAction("Copy &Path");
 		contextMenu.addAction("Copy &Type");
+		contextMenu.addAction("Copy &Child Number");
 		QAction *findAction = contextMenu.addAction("&Find");
 		findAction->setShortcut(QKeySequence::Find);
 		QAction *result = contextMenu.exec(treeWidget->viewport()->mapToGlobal(pos));
@@ -810,6 +811,21 @@ void MainWindow::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 				EditableTreeWidgetItem *editable = (EditableTreeWidgetItem *)item;
 				long type = editable->object->getType();
 				clipboard->setText((boost::format("0x%02X") % type).str().c_str());
+			}
+			if (result->text() == "Copy &Child Number") {
+				QClipboard *clipboard = QApplication::clipboard();
+				EditableTreeWidgetItem *editable = (EditableTreeWidgetItem *)item;
+				std::vector<LsbObject *> objects = editable->object->getParent()->getChildren();
+				bool found = false;
+				for (int i=0; i<objects.size(); ++i) {
+					if (objects[i] == editable->object) {
+						clipboard->setText((boost::format("%i") % i).str().c_str());
+						found = true;
+						break;
+					}
+				}
+				if (!found)
+					clipboard->setText("?");
 			}
 			if (result->text() == "&Find") {
 				treeFindAction();

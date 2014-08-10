@@ -273,6 +273,31 @@ public:
 		return children[children.size() - 1];
 	}
 	
+	LsbObject *insertChild(LsbObject *obj, unsigned index) {
+		if (index < children.size()) {
+			children.insert(children.begin() + index, obj);
+			return obj;
+		} else {
+			return addChild(obj);
+		}
+	}
+	
+	bool insertLast(LsbObject *object, const char *objectType) {
+		bool found = false;
+		for (int i=0; i<this->getChildren().size(); ++i) {
+			LsbObject *child = this->getChildren()[i];
+			if (found && child->getName() != objectType) {
+				//assumed to be continuous
+				insertChild(object, i);
+				return true;
+			}
+			if (child->getName() == objectType) {
+				found = true;
+			}
+		}
+		return false;
+	}
+	
 	std::vector<LsbObject*>& getChildren() {
 		return children;
 	}

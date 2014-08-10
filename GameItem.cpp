@@ -17,10 +17,10 @@ LsbObject *GameItem::createNewItem(std::vector<TAG_LSB*> *tagList, LsbObject *_p
 	std::string currentTemplate = "1c3c9c74-34a1-4685-989e-410dc080be6f";
 	currentTemplateObject->setData(currentTemplate.c_str(), currentTemplate.length() + 1);
 	
-	TAG_LSB *currentTemplateTypeTag = LsbReader::createTagIfNeeded("CurrentTemplateType", tagList);
-	LsbObject *currentTemplateTypeObject = new LsbObject(false, currentTemplateTypeTag->index, currentTemplateTypeTag->tag, 0x01, itemObject, tagList);
-	unsigned char currentTemplateType = 0;
-	currentTemplateTypeObject->setData((char *)&currentTemplateType, sizeof(currentTemplateType));
+//	TAG_LSB *currentTemplateTypeTag = LsbReader::createTagIfNeeded("CurrentTemplateType", tagList);
+//	LsbObject *currentTemplateTypeObject = new LsbObject(false, currentTemplateTypeTag->index, currentTemplateTypeTag->tag, 0x01, itemObject, tagList);
+//	unsigned char currentTemplateType = 0;
+//	currentTemplateTypeObject->setData((char *)&currentTemplateType, sizeof(currentTemplateType));
 	
 	TAG_LSB *flagsTag = LsbReader::createTagIfNeeded("Flags", tagList);
 	LsbObject *flagsObject = new LsbObject(false, flagsTag->index, flagsTag->tag, 0x05, itemObject, tagList);
@@ -183,7 +183,7 @@ LsbObject *GameItem::createNewItem(std::vector<TAG_LSB*> *tagList, LsbObject *_p
 	
 	itemObject->addChild(amountObject);
 	itemObject->addChild(currentTemplateObject);
-	itemObject->addChild(currentTemplateTypeObject);
+	//itemObject->addChild(currentTemplateTypeObject);
 	itemObject->addChild(flagsObject);
 	itemObject->addChild(globalObject);
 	itemObject->addChild(inventoryObject);
@@ -250,7 +250,12 @@ LsbObject *GameItem::createNewItemCreator(std::vector<TAG_LSB*> *tagList, LsbObj
 		TAG_LSB *templateTypeTag = LsbReader::createTagIfNeeded("TemplateType", tagList);
 		LsbObject *templateTypeObject = new LsbObject(false, templateTypeTag->index, templateTypeTag->tag, 0x01, creatorObject, tagList);
 		LsbObject *currentTemplateTypeObject = LsbReader::lookupByUniquePathEntity(itemObject, "CurrentTemplateType");
-		templateTypeObject->setData(currentTemplateTypeObject->getData(), currentTemplateTypeObject->getDataSize());
+		if (currentTemplateTypeObject != 0) {
+			templateTypeObject->setData(currentTemplateTypeObject->getData(), currentTemplateTypeObject->getDataSize());
+		} else {
+			unsigned char currentTemplateType = 0;
+			templateTypeObject->setData((char *)&currentTemplateType, sizeof(currentTemplateType));
+		}
 		
 		creatorObject->addChild(handleObject);
 		creatorObject->addChild(templateIDObject);
@@ -276,6 +281,7 @@ unsigned long GameItem::getNewItemCreatorHandle(LsbObject *itemsObject) {
 			}
 		}
 	}
+	handle += 128;
 	return handle;
 }
 

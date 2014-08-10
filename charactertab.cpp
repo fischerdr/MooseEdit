@@ -431,6 +431,7 @@ void characterTab::onItemEdited(GameItem *newItem, GameItem *oldItem) {
 		LsbObject *slotObject = LsbReader::lookupByUniquePathEntity(copy->getObject(), "Slot");
 		if (slotObject != 0) {
 			unsigned short newSlot = this->character->getInventoryHandler()->getItems()->getLargestInternalSlot() + 1;
+			//unsigned short newSlot = copy->getRenderSlot() + 15;
 			slotObject->setData((char *)&newSlot, sizeof(newSlot));
 		}
 		

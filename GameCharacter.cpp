@@ -33,7 +33,7 @@ void GameCharacter::addSkill(const char *skillName) {
 		skillsObject->addChild(isLearnedObject);
 		skillsObject->addChild(mapKeyObject);
 		
-		skillManagerObject->addChild(skillsObject);
+		skillManagerObject->insertLast(skillsObject, "Skills");
 		
 		TAG_LSB *timeItemAddedToSkillManagerTag = LsbReader::createTagIfNeeded("TimeItemAddedToSkillManager", &tagList);
 		LsbObject *timeItemAddedToSkillManagerObject = new LsbObject(true, timeItemAddedToSkillManagerTag->index, timeItemAddedToSkillManagerTag->tag, 0, skillManagerObject, &tagList);
@@ -110,7 +110,7 @@ bool GameCharacter::addItemToInventoryObject(LsbObject *itemCreatorObject, unsig
 			timeAddedToInventoryObject->addChild(mapKeyObject);
 			timeAddedToInventoryObject->addChild(mapValueObject);
 			
-			inventoryObject->addChild(timeAddedToInventoryObject);
+			inventoryObject->insertLast(timeAddedToInventoryObject, "TimeItemAddedToInventory");
 		}
 		
 		if (!equippedItem) {
@@ -142,7 +142,7 @@ bool GameCharacter::addItemToInventoryObject(LsbObject *itemCreatorObject, unsig
 							
 							indicesObject->addChild(mapKeyObject2);
 							indicesObject->addChild(mapValueObject2);
-							mapValueObject->addChild(indicesObject);
+							mapValueObject->insertLast(indicesObject, "Indices");
 
 							ensureInventoryCapacity(mapValueObject, currentSlot);
 							

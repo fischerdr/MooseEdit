@@ -132,6 +132,10 @@ void ItemLabel::displayItemStats(std::ostringstream &contentHtml) {
 	if (perception != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Perception: +"<<perception<<"</font><br/>";
 	}
+	long charisma = getSummedItemStat("Charisma");
+	if (charisma != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Charisma: +"<<charisma<<"</font><br/>";
+	}
 	
 	long sneaking = getSummedItemStat("Sneaking");
 	if (sneaking != 0) {
