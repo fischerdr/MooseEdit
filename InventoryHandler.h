@@ -26,6 +26,9 @@ class InventoryHandler
 	long getItemY(long slotNumber);
 	ItemGroup items;
 	std::map<std::string, std::string> &nameMappings;
+	std::map<std::string, LsbObject *> &rootTemplateMap;
+	std::map<std::string, LsbObject *> &modTemplateMap;
+	
 	void buildNameMappings();
 	long itemsPerRow = 10;
 	long minSlots = 50;
@@ -62,7 +65,8 @@ public:
 	}
 	unsigned long slotAtPoint(const QPoint &pt);
 	InventoryHandler(QImage emptySlotImage, std::vector<LsbObject *>& stats, std::vector<LsbObject *>& rootTemplates, 
-					 std::vector<LsbObject *>& modTemplates, TextureAtlas& iconAtlas, std::vector<StatsContainer *>& itemStats, std::map<std::string, std::string>& nameMappings);
+					 std::vector<LsbObject *>& modTemplates, TextureAtlas& iconAtlas, std::vector<StatsContainer *>& itemStats, std::map<std::string, std::string>& nameMappings,
+					 std::map<std::string, LsbObject *> &rootTemplateMap, std::map<std::string, LsbObject *> &modTemplateMap);
 	void draw(QWidget *parent, QWidget *mainWindow, bool drawBackground);
 	GameItem *getItemAtPoint(const QPoint& pt);
 };

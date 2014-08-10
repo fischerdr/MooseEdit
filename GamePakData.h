@@ -16,6 +16,8 @@ class GamePakData
 {
 	TextureAtlas iconAtlas;
 	std::vector<LsbObject *> stats;
+	std::map<std::string, LsbObject *> rootTemplateMap;
+	std::map<std::string, LsbObject *> modTemplateMap;
 	std::vector<LsbObject *> rootTemplates;
 	std::vector<LsbObject *> modTemplates;
 	std::vector<StatsContainer *> itemStats;
@@ -30,6 +32,8 @@ class GamePakData
 	GenStatsReader genStatsReader;
 	std::string lastPakPath = "";
 
+	void populateRootTemplateMap(std::vector<LsbObject *>& rootTemplates);
+	void populateModTemplateMap(std::vector<LsbObject *>& modTemplates);
 	void parsePakFile(std::string& pakPath, const char *pakExtractPath, std::string& outputDir, int processingType);
 	void buildNameMappings();
 	void addRootTemplates(std::vector<LsbObject *>& rootTemplates) {
@@ -74,6 +78,10 @@ public:
 	void setNameMappings(const std::map<std::string, std::string> &value);
 	TextureAtlas &getIconAtlas();
 	void setIconAtlas(const TextureAtlas &value);
+	std::map<std::string, LsbObject *> &getRootTemplateMap();
+	void setRootTemplateMap(const std::map<std::string, LsbObject *> &value);
+	std::map<std::string, LsbObject *> &getModTemplateMap();
+	void setModTemplateMap(const std::map<std::string, LsbObject *> &value);
 };
 
 #endif // GAMEPAKDATA_H

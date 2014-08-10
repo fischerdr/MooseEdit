@@ -100,6 +100,52 @@ void GamePakData::buildNameMappings()
 	}
 }
 
+
+std::map<std::string, LsbObject *> &GamePakData::getRootTemplateMap()
+{
+	return rootTemplateMap;
+}
+
+void GamePakData::setRootTemplateMap(const std::map<std::string, LsbObject *> &value)
+{
+	rootTemplateMap = value;
+}
+
+std::map<std::string, LsbObject *> &GamePakData::getModTemplateMap()
+{
+	return modTemplateMap;
+}
+
+void GamePakData::setModTemplateMap(const std::map<std::string, LsbObject *> &value)
+{
+	modTemplateMap = value;
+}
+void GamePakData::populateRootTemplateMap(std::vector<LsbObject *>& rootTemplates) {
+	for (int i=0; i<rootTemplates.size(); ++i) {
+		LsbObject *rootTemplate = rootTemplates[i];
+		LsbObject *rootObject = LsbReader::lookupByUniquePathEntity(rootTemplate, "root");
+		std::vector<LsbObject *> mapKeyObjects = LsbReader::extractPropertyForEachListItem(rootObject->getChildren(), "MapKey");
+		for (int j=0; j<mapKeyObjects.size(); ++j) {
+			LsbObject *mapKeyObject = mapKeyObjects[j];
+			std::string templateKey = mapKeyObject->getData();
+			rootTemplateMap[templateKey] = mapKeyObject->getParent();
+		}
+	}
+}
+
+void GamePakData::populateModTemplateMap(std::vector<LsbObject *>& modTemplates) {
+	for (int i=0; i<modTemplates.size(); ++i) {
+		LsbObject *modTemplate = modTemplates[i];
+		LsbObject *rootObject = LsbReader::lookupByUniquePathEntity(modTemplate, "root");
+		std::vector<LsbObject *> mapKeyObjects = LsbReader::extractPropertyForEachListItem(rootObject->getChildren(), "MapKey");
+		for (int j=0; j<mapKeyObjects.size(); ++j) {
+			LsbObject *mapKeyObject = mapKeyObjects[j];
+			std::string templateKey = mapKeyObject->getData();
+			modTemplateMap[templateKey] = mapKeyObject->getParent();
+		}
+	}
+}
+
 #define PROCESSING_TYPE_NONE			0
 #define PROCESSING_TYPE_STATS			1
 #define PROCESSING_TYPE_ROOTTEMPLATE	2
@@ -107,7 +153,6 @@ void GamePakData::buildNameMappings()
 #define PROCESSING_TYPE_ITEMSTATS		4
 #define PROCESSING_TYPE_SKILLSTATS		5
 #define PROCESSING_TYPE_ITEMLINKS		6
-
 void GamePakData::parsePakFile(std::string& pakPath, const char *pakExtractPath, std::string& outputDir, int processingType) {
 	if (pakPath != lastPakPath) {
 		pakReader.loadFile(pakPath);
@@ -213,12 +258,9 @@ void GamePakData::load(std::string gameDataPath) {
 		}
 	}
 	
-	//load all root templates
-	//pakReader.getFileList();
-	
-	//load all mod templates
-	//pakReader.getFileList()
-	
+	populateRootTemplateMap(this->getRootTemplates());
+	populateModTemplateMap(this->getModTemplates());
+
 //	parsePakFile(pakMain, "Mods/Main/Globals/Homestead/Items/items-LS2011_AXEL.lsb", tempDirectory, PROCESSING_TYPE_MODTEMPLATE);
 //	parsePakFile(pakMain, "Mods/Main/Globals/Cyseal/Items/items.lsb", tempDirectory, PROCESSING_TYPE_MODTEMPLATE);
 //	parsePakFile(pakMain, "Mods/Main/Globals/Cyseal/Items/items-LS2012_JORIS.lsb", tempDirectory, PROCESSING_TYPE_MODTEMPLATE);

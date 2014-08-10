@@ -112,13 +112,18 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 			long dataSize = currentTemplateObject->getDataSize();
 			long matchCount = 0;
 			LsbObject *displayNameObject = 0;
-			for (int j=0; j<modTemplates.size(); ++j) {
-				LsbObject *templateRoot = LsbReader::lookupByUniquePathEntity(modTemplates[j], "root");
-				std::vector<LsbObject *> matches = LsbReader::findItemsByAttribute(templateRoot->getChildren(), "MapKey", currentTemplate, dataSize);
-				LsbObject *match = 0;
-				if (matches.size() == 1) {
-					++matchCount;
-					match = matches[0];
+			LsbObject *match = 0;
+//			for (int j=0; j<modTemplates.size(); ++j) {
+//				LsbObject *templateRoot = LsbReader::lookupByUniquePathEntity(modTemplates[j], "root");
+//				std::vector<LsbObject *> matches = LsbReader::findItemsByAttribute(templateRoot->getChildren(), "MapKey", currentTemplate, dataSize);
+//				LsbObject *match = 0;
+//				if (matches.size() == 1) {
+//					++matchCount;
+//					match = matches[0];
+//				}
+				match = 0;
+				if (modTemplateMap.find(currentTemplate) != modTemplateMap.end()) {
+					match = modTemplateMap[currentTemplate];
 				}
 				if (match != 0) {
 					std::cout<<"mod match for "<<currentTemplate<<'\n';
@@ -127,17 +132,21 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 					if (displayNameObject != 0) {
 						item->setItemName(displayNameObject->getData());
 					}
-					break;
+					//break;
 				}
-			}
+//			}
 			matchCount = 0;
-			for (int j=0; j<rootTemplates.size(); ++j) {
-				LsbObject *templateRoot = LsbReader::lookupByUniquePathEntity(rootTemplates[j], "root");
-				std::vector<LsbObject *> matches = LsbReader::findItemsByAttribute(templateRoot->getChildren(), "MapKey", currentTemplate, dataSize);
-				LsbObject *match = 0;
-				if (matches.size() == 1) {
-					++matchCount;
-					match = matches[0];
+//			for (int j=0; j<rootTemplates.size(); ++j) {
+//				LsbObject *templateRoot = LsbReader::lookupByUniquePathEntity(rootTemplates[j], "root");
+//				std::vector<LsbObject *> matches = LsbReader::findItemsByAttribute(templateRoot->getChildren(), "MapKey", currentTemplate, dataSize);
+//				LsbObject *match = 0;
+//				if (matches.size() == 1) {
+//					++matchCount;
+//					match = matches[0];
+//				}
+				match = 0;
+				if (rootTemplateMap.find(currentTemplate) != rootTemplateMap.end()) {
+					match = rootTemplateMap[currentTemplate];
 				}
 				if (match != 0) {
 					char *iconName = LsbReader::lookupByUniquePathEntity(match, "Icon")->getData();
@@ -173,9 +182,9 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 					else {
 						std::cout<<"Failed to find texture "<<iconName<<'\n';
 					}
-					break;
+					//break;
 				}
-			}
+//			}
 			if (matchCount != 1) {
 				std::cout<<"Mismatch for template ID "<<currentTemplate<<", matchCount = "<<matchCount<<"("<<statsText<<")"<<'\n';
 			}
@@ -219,8 +228,9 @@ GameItem *InventoryHandler::getItemAtPoint(const QPoint &pt)
 
 InventoryHandler::InventoryHandler(QImage emptySlotImage, std::vector<LsbObject *>& stats, 
 								   std::vector<LsbObject *> &rootTemplates, std::vector<LsbObject *> &modTemplates, TextureAtlas& iconAtlas, std::vector<StatsContainer *> &itemStats,
-								   std::map<std::string, std::string> &nameMappings) : 
-	stats(stats), rootTemplates(rootTemplates), iconAtlas(iconAtlas), modTemplates(modTemplates), itemStats(itemStats), nameMappings(nameMappings)
+								   std::map<std::string, std::string> &nameMappings, std::map<std::string, LsbObject *> &rootTemplateMap, std::map<std::string, LsbObject *> &modTemplateMap) : 
+	stats(stats), rootTemplates(rootTemplates), iconAtlas(iconAtlas), modTemplates(modTemplates), itemStats(itemStats), nameMappings(nameMappings),
+	rootTemplateMap(rootTemplateMap), modTemplateMap(modTemplateMap)
 {
 	this->emptySlotImage = emptySlotImage;
 }

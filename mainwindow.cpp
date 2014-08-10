@@ -516,13 +516,15 @@ void MainWindow::handleLoadButton() {
 			
 			if (gamePakData.getInventoryCellImg() != 0) {
 				editItemHandler = new InventoryHandler(*gamePakData.getInventoryCellImg(), gamePakData.getStats(), gamePakData.getRootTemplates(), 
-													   gamePakData.getModTemplates(), gamePakData.getIconAtlas(), gamePakData.getItemStats(), gamePakData.getNameMappings());
+													   gamePakData.getModTemplates(), gamePakData.getIconAtlas(), gamePakData.getItemStats(), gamePakData.getNameMappings(),
+													   gamePakData.getRootTemplateMap(), gamePakData.getModTemplateMap());
 				for (int i=0; i<this->getCharacterGroup().getCharacters().size(); ++i) {
 					GameCharacter *character = this->getCharacterGroup().getCharacters()[i];
 					//if (i != 0)
 						//continue;
 					InventoryHandler *handlerPtr = new InventoryHandler(*gamePakData.getInventoryCellImg(), gamePakData.getStats(), gamePakData.getRootTemplates(), 
-																		gamePakData.getModTemplates(), gamePakData.getIconAtlas(), gamePakData.getItemStats(), gamePakData.getNameMappings());
+																		gamePakData.getModTemplates(), gamePakData.getIconAtlas(), gamePakData.getItemStats(), gamePakData.getNameMappings(),
+																		gamePakData.getRootTemplateMap(), gamePakData.getModTemplateMap());
 					InventoryHandler& inventoryHandler = *handlerPtr;
 					for (int j=0; j<character->getInventory().getItems().size(); ++j) {
 						inventoryHandler.getItems()->addItem(character->getInventory().getItems()[j]);
@@ -545,7 +547,8 @@ void MainWindow::handleLoadButton() {
 					EquipmentHandler *equipHandler = 
 							new EquipmentHandler(*gamePakData.getInventoryCellImg(), gamePakData.getStats(), gamePakData.getRootTemplates(), 
 												gamePakData.getModTemplates(), gamePakData.getIconAtlas(), gamePakData.getItemStats(), gamePakData.getNameMappings(),
-												equipmentWidget, this, gamePakData.getItemLinks(), globalTagList, itemsObject, character);
+												equipmentWidget, this, gamePakData.getItemLinks(), globalTagList, itemsObject, character,
+												 gamePakData.getRootTemplateMap(), gamePakData.getModTemplateMap());
 					
 					std::vector<GameItem *> &equipmentSet = equipmentSets[i];
 					for (int j=0; j<equipmentSet.size(); ++j) {

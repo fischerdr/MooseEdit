@@ -38,6 +38,8 @@ private:
 	std::map<std::string, std::string> &nameMappings;
 	std::vector<StatsContainer *>& itemLinks;
 	std::vector<TAG_LSB *>& tagList;
+	std::map<std::string, LsbObject *> &rootTemplateMap;
+	std::map<std::string, LsbObject *> &modTemplateMap;
 	void initInventoryHandlers();
 	QWidget *parentWidget;
 	QWidget *mainWindow;
@@ -52,7 +54,8 @@ public:
 	EquipmentHandler(QImage emptySlotImage, std::vector<LsbObject *>& stats, std::vector<LsbObject *>& rootTemplates, 
 					 std::vector<LsbObject *>& modTemplates, TextureAtlas& iconAtlas, std::vector<StatsContainer *>& itemStats,
 					 std::map<std::string, std::string>& nameMappings, QWidget *parentWidget, QWidget *mainWindow, std::vector<StatsContainer *>& itemLinks,
-					 std::vector<TAG_LSB *>& tagList, LsbObject *itemsObject, GameCharacter *character);
+					 std::vector<TAG_LSB *>& tagList, LsbObject *itemsObject, GameCharacter *character,
+					 std::map<std::string, LsbObject *> &rootTemplateMap, std::map<std::string, LsbObject *> &modTemplateMap);
 	void addItem(GameItem *item);
 	void drawAll();
 	void onItemEdited(GameItem *newItem, GameItem *oldItem);
