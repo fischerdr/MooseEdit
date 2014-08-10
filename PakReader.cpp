@@ -90,6 +90,28 @@ std::vector<std::string> PakReader::getFileList() {
 }
 
 bool PakReader::extractFile(std::string fileName, std::string& filePath, std::string& destination, bool preservePath) {
+	unsigned long fileSize;
+	char *fileBytes = extractFileIntoMemory(fileName, filePath, destination, preservePath, &fileSize);
+	if (fileBytes == 0) {
+		return false;
+	}
+	
+	std::ofstream outFile(lastExtractPath.c_str(), std::ios_base::binary);
+	outFile.write(fileBytes, fileSize);
+	delete[] fileBytes;
+	if (!outFile) {
+		outFile.close();
+		return false;
+	}
+	outFile.close();
+	
+	return true;
+}
+	
+char *PakReader::extractFileIntoMemory(std::string fileName, std::string& filePath, std::string& destination, bool preservePath, unsigned long *fileSize) {
+	if (fileSize == 0) {
+		return 0;
+	}
 	HEADER_PAK_FILEINFO *info = getHeaderForFile(filePath);
 	if (info != 0) {
 		std::ifstream input(getFileNameByPakNumber(fileName, info->pakNumber).c_str(), std::ios_base::binary);
@@ -100,7 +122,7 @@ bool PakReader::extractFile(std::string fileName, std::string& filePath, std::st
 		if (!input) {
 			delete []alloc;
 			input.close();
-			return false;
+			return 0;
 		}
 		char cwd[1024];
 		getcwd(cwd, sizeof(cwd));
@@ -134,20 +156,21 @@ bool PakReader::extractFile(std::string fileName, std::string& filePath, std::st
 			ss<<lastToken;
 		}
 		lastExtractPath = ss.str();
-		std::ofstream outFile(ss.str().c_str(), std::ios_base::binary);
-		outFile.write(alloc, info->fileSize);
-		delete []alloc;
-		if (!outFile) {
-			outFile.close();
-			input.close();
-			return false;
-		}
-		outFile.close();
+		*fileSize = info->fileSize;
+//		std::ofstream outFile(ss.str().c_str(), std::ios_base::binary);
+//		outFile.write(alloc, info->fileSize);
+//		delete []alloc;
+//		if (!outFile) {
+//			outFile.close();
+//			input.close();
+//			return false;
+//		}
+		//outFile.close();
 		input.close();
 		chdir(cwd);
-		return true;
+		return alloc;
 	}
-	return false;
+	return 0;
 }
 
 PakReader::PakReader()

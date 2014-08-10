@@ -42,6 +42,7 @@ public:
 	bool loadFile(std::string fileName);
 	std::vector<std::string> getFileList();
 	bool extractFile(std::string fileName, std::string& filePath, std::string& destination, bool preservePath);
+	char *extractFileIntoMemory(std::string fileName, std::string& filePath, std::string& destination, bool preservePath, unsigned long *fileSize);
 	std::string getLastExtractPath() const;
 };
 
