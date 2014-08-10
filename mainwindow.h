@@ -11,6 +11,7 @@
 #include "TextureAtlas.h"
 #include "GenStatsReader.h"
 #include "PakReader.h"
+#include "GamePakData.h"
 
 #define PRG_VERSION	"alpha12"
 
@@ -30,26 +31,6 @@ public:
 	}
 	CharacterGroup& getCharacterGroup() {
 		return characters;
-	}
-	void addRootTemplates(std::vector<LsbObject *>& rootTemplates) {
-		for (int i=0; i<rootTemplates.size(); ++i) {
-			this->rootTemplates.push_back(rootTemplates[i]);
-		}
-	}
-	void addModTemplates(std::vector<LsbObject *>& modTemplates) {
-		for (int i=0; i<modTemplates.size(); ++i) {
-			this->modTemplates.push_back(modTemplates[i]);
-		}
-	}
-	void addItemStats(std::vector<StatsContainer *>& itemStats) {
-		for (int i=0; i<itemStats.size(); ++i) {
-			this->itemStats.push_back(itemStats[i]);
-		}
-	}
-	void addItemLinks(std::vector<StatsContainer *>& itemLinks) {
-		for (int i=0; i<itemLinks.size(); ++i) {
-			this->itemLinks.push_back(itemLinks[i]);
-		}
 	}
 	QTreeWidgetItem *findInTree(QTreeWidgetItem *item, QString text, int column, QTreeWidgetItem *position, bool wrapAround);
 	void resizeEvent(QResizeEvent* event);
@@ -89,21 +70,13 @@ private:
 	Ui::MainWindow *ui;
 	std::vector<LsbObject *> playerProfiles;
 	CharacterGroup characters;
-	std::vector<LsbObject *> stats;
-	std::vector<LsbObject *> rootTemplates;
-	std::vector<LsbObject *> modTemplates;
-	std::vector<StatsContainer *> itemStats;
-	std::vector<StatsContainer *> itemLinks;
-	std::vector<StatsContainer *> skillStats;
-	TextureAtlas iconAtlas;
 	InventoryHandler *editItemHandler;
-	std::map<std::string, std::string> nameMappings;
-	void buildNameMappings();
 	std::string getSteamPathFromRegistry();
 	std::string getSaveLocation();
 	std::string getGameDataLocation();
 	PakReader userPakReader;
 	std::string userPakFileName;
+	GamePakData gamePakData;
 };
 
 #endif // MAINWINDOW_H
