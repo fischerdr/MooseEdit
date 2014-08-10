@@ -160,7 +160,6 @@ void GamePakData::parsePakFile(std::string& pakPath, const char *pakExtractPath,
 }
 
 void GamePakData::load(std::string gameDataPath) {
-	PakReader pakReader;
 	std::string pakMain(gameDataPath + "Main.pak");
 	std::string pakTextures(gameDataPath + "Textures.pak");
 	std::string iconLsx("Public/Main/GUI/icons.lsx");
@@ -177,16 +176,45 @@ void GamePakData::load(std::string gameDataPath) {
 	mkdir(linkDirectory.c_str());
 	
 	parsePakFile(pakMain, "Public/Main/Localization/Stats.lsb", tempDirectory, PROCESSING_TYPE_STATS);
-	parsePakFile(pakMain, "Public/Main/RootTemplates/Armors.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
-	parsePakFile(pakMain, "Public/Main/RootTemplates/Loot.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
-	parsePakFile(pakMain, "Public/Main/RootTemplates/Unique.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
-	parsePakFile(pakMain, "Public/Main/RootTemplates/Consumables.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
-	parsePakFile(pakMain, "Public/Main/RootTemplates/Equipment.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
-	parsePakFile(pakMain, "Public/Main/RootTemplates/Tools.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
-	parsePakFile(pakMain, "Public/Main/RootTemplates/Books_Scrolls.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
-	parsePakFile(pakMain, "Mods/Main/Globals/Homestead/Items/items-LS2011_AXEL.lsb", tempDirectory, PROCESSING_TYPE_MODTEMPLATE);
-	parsePakFile(pakMain, "Mods/Main/Globals/Cyseal/Items/items.lsb", tempDirectory, PROCESSING_TYPE_MODTEMPLATE);
-	parsePakFile(pakMain, "Mods/Main/Globals/Cyseal/Items/items-LS2012_JORIS.lsb", tempDirectory, PROCESSING_TYPE_MODTEMPLATE);
+//	parsePakFile(pakMain, "Public/Main/RootTemplates/Armors.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
+//	parsePakFile(pakMain, "Public/Main/RootTemplates/Loot.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
+//	parsePakFile(pakMain, "Public/Main/RootTemplates/Unique.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
+//	parsePakFile(pakMain, "Public/Main/RootTemplates/Consumables.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
+//	parsePakFile(pakMain, "Public/Main/RootTemplates/Equipment.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
+//	parsePakFile(pakMain, "Public/Main/RootTemplates/Tools.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
+//	parsePakFile(pakMain, "Public/Main/RootTemplates/Books_Scrolls.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
+	
+	std::string rootTemplatesPath = "Public/Main/RootTemplates/";
+	std::string modTemplatesPath = "Mods/Main/Globals/";
+	std::string modTemplatesPath2 = "Mods/Main/Levels/";
+	std::string itemPathText = "/Items/";
+	std::vector<std::string> allMainFiles = pakReader.getFileList();
+	std::string rootTemplateTemp = tempDirectory + "\\RootTemplates";
+	std::string modTemplateTemp = tempDirectory + "\\ModTemplates";
+	mkdir(rootTemplateTemp.c_str());
+	mkdir(modTemplateTemp.c_str());
+	for (int i=0; i<allMainFiles.size(); ++i) {
+		std::string &mainFile = allMainFiles[i];
+		if (boost::contains(mainFile, itemPathText)) {
+			 if (boost::starts_with(mainFile, modTemplatesPath) || boost::starts_with(mainFile, modTemplatesPath2)) {
+				parsePakFile(pakMain, mainFile.c_str(), modTemplateTemp, PROCESSING_TYPE_MODTEMPLATE);
+			}
+		} else {
+			if (boost::starts_with(mainFile, rootTemplatesPath)) {
+				parsePakFile(pakMain, mainFile.c_str(), rootTemplateTemp, PROCESSING_TYPE_ROOTTEMPLATE);
+			}
+		}
+	}
+	
+	//load all root templates
+	//pakReader.getFileList();
+	
+	//load all mod templates
+	//pakReader.getFileList()
+	
+//	parsePakFile(pakMain, "Mods/Main/Globals/Homestead/Items/items-LS2011_AXEL.lsb", tempDirectory, PROCESSING_TYPE_MODTEMPLATE);
+//	parsePakFile(pakMain, "Mods/Main/Globals/Cyseal/Items/items.lsb", tempDirectory, PROCESSING_TYPE_MODTEMPLATE);
+//	parsePakFile(pakMain, "Mods/Main/Globals/Cyseal/Items/items-LS2012_JORIS.lsb", tempDirectory, PROCESSING_TYPE_MODTEMPLATE);
 	parsePakFile(pakMain, "Public/Main/Stats/Generated/Data/Weapon.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS);
 	parsePakFile(pakMain, "Public/Main/Stats/Generated/DeltaModifier.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS);
 	parsePakFile(pakMain, "Public/Main/Stats/Generated/Data/Armor.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS);
