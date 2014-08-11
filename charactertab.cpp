@@ -504,11 +504,11 @@ void characterTab::on_inventoryScrollArea_customContextMenuRequested(const QPoin
 		if (item != 0) {
 			ItemEditFrame *itemEditFrame = new ItemEditFrame(allItemStats, itemLinks, item, itemEditHandler, this, tagList, *nameMappings);
 		} else {
-			LsbObject *itemObject = GameItem::createNewItem(tagList, itemsObject, character->getInventoryId(), character->getCreatorId());
-			GameItem *newItem = new GameItem(tagList);
-			newItem->setObject(itemObject);
-			newItem->setRenderSlot(character->getInventoryHandler()->slotAtPoint(itemPos));
-			ItemEditFrame *itemEditFrame = new ItemEditFrame(allItemStats, itemLinks, newItem, itemEditHandler, this, tagList, *nameMappings);
+//			LsbObject *itemObject = GameItem::createNewItem(tagList, itemsObject, character->getInventoryId(), character->getCreatorId());
+//			GameItem *newItem = new GameItem(tagList);
+//			newItem->setObject(itemObject);
+//			newItem->setRenderSlot(character->getInventoryHandler()->slotAtPoint(itemPos));
+//			ItemEditFrame *itemEditFrame = new ItemEditFrame(allItemStats, itemLinks, newItem, itemEditHandler, this, tagList, *nameMappings);
 		}
 	}
 }
