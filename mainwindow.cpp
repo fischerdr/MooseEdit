@@ -575,6 +575,7 @@ void MainWindow::handleOpenFileButton() {
 						  std::ios_base::binary);
 		LsbReader reader;
 		std::vector<LsbObject *> directoryList = reader.loadFile(fin);
+		openFileButtonTagList = reader.getTagList();
 		fin.close();
 		QTreeWidget *tree = this->findChild<QTreeWidget *>("treeWidget");
 		tree->clear();
@@ -760,6 +761,14 @@ void MainWindow::treeFindAction() {
 	}
 }
 
+void MainWindow::recursiveExpandAll(QTreeWidgetItem *item) {
+	item->setExpanded(true);
+	for (int i=0; i<item->childCount(); ++i) {
+		QTreeWidgetItem *child = item->child(i);
+		recursiveExpandAll(child);
+	}
+}
+
 void MainWindow::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 {
 	QTreeWidget *treeWidget = this->findChild<QTreeWidget *>("treeWidget");
@@ -774,6 +783,7 @@ void MainWindow::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 		contextMenu.addAction("Copy &Path");
 		contextMenu.addAction("Copy &Type");
 		contextMenu.addAction("Copy &Child Number");
+		contextMenu.addAction("&Expand All");
 		QAction *findAction = contextMenu.addAction("&Find");
 		findAction->setShortcut(QKeySequence::Find);
 		QAction *result = contextMenu.exec(treeWidget->viewport()->mapToGlobal(pos));
@@ -826,6 +836,10 @@ void MainWindow::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 				}
 				if (!found)
 					clipboard->setText("?");
+			}
+			if (result->text() == "&Expand All") {
+				EditableTreeWidgetItem *editable = (EditableTreeWidgetItem *)item;
+				recursiveExpandAll(editable);
 			}
 			if (result->text() == "&Find") {
 				treeFindAction();
@@ -1073,6 +1087,33 @@ void MainWindow::on_pakListWidget_customContextMenuRequested(const QPoint &pos)
 					}
 				}
 			}
+		}
+	}
+}
+
+void MainWindow::on_devSaveFileButton_released()
+{
+	std::ostringstream stream;
+	stream<<this->getSaveLocation();
+	QString result = QFileDialog::getSaveFileName(this,
+												  QString("Save File"), stream.str().c_str(), QString("LSB Files (*.lsb)"));
+	if (result.size() != 0) {
+		std::ofstream fout(result.toStdString().c_str(),
+						  std::ios_base::binary);
+		if (fout) {
+			QTreeWidget *tree = this->findChild<QTreeWidget *>("treeWidget");
+			std::vector<LsbObject *> directoryList;
+			for (int i=0; i<tree->topLevelItemCount(); ++i) {
+				QTreeWidgetItem *item = tree->topLevelItem(i);
+				EditableTreeWidgetItem *editable = (EditableTreeWidgetItem *)item;
+				directoryList.push_back(editable->object);
+			}
+			
+			LsbWriter writer;
+			writer.writeFile(directoryList, openFileButtonTagList, fout);
+			QMessageBox msgBox;
+			msgBox.setText("Success");
+			msgBox.exec();
 		}
 	}
 }

@@ -275,13 +275,20 @@ unsigned long GameItem::getNewItemCreatorHandle(LsbObject *itemsObject) {
 			LsbObject *creatorsObject = LsbReader::lookupByUniquePathEntity(itemFactoryObject, "Creators");
 			handle = 67141632;
 			if (creatorsObject->getChildren().size() > 0) {
-				LsbObject *lastCreatorObject = creatorsObject->getChildren()[creatorsObject->getChildren().size() - 1];
-				handle = *((unsigned long *)LsbReader::lookupByUniquePathEntity(lastCreatorObject, "Handle")->getData());
+				for (int i=0; i<creatorsObject->getChildren().size(); ++i) {
+					LsbObject *creatorObject = creatorsObject->getChildren()[i];
+					unsigned long creatorHandle = *((unsigned long *)LsbReader::lookupByUniquePathEntity(creatorObject, "Handle")->getData());
+					if (creatorHandle > handle) {
+						handle = creatorHandle;
+					}
+				}
 				++handle;
+//				LsbObject *lastCreatorObject = creatorsObject->getChildren()[creatorsObject->getChildren().size() - 1];
+//				handle = *((unsigned long *)LsbReader::lookupByUniquePathEntity(lastCreatorObject, "Handle")->getData());
+//				++handle;
 			}
 		}
 	}
-	handle += 128;
 	return handle;
 }
 

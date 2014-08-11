@@ -62,9 +62,12 @@ private slots:
 	
 	void on_pakListWidget_customContextMenuRequested(const QPoint &pos);
 	
+	void on_devSaveFileButton_released();
+	
 private:
 	float aspect;
 	QTreeWidgetItem *findInTreeHelper(QTreeWidgetItem *item, QString text, int column, QTreeWidgetItem *position, bool& valid, QTreeWidgetItem *& firstItem);
+	void recursiveExpandAll(QTreeWidgetItem *item);
 	std::vector<TAG_LSB *> globalTagList;
 	std::vector<LsbObject *> globals;
 	Ui::MainWindow *ui;
@@ -77,6 +80,7 @@ private:
 	PakReader userPakReader;
 	std::string userPakFileName;
 	GamePakData gamePakData;
+	std::vector<TAG_LSB *> openFileButtonTagList;
 };
 
 #endif // MAINWINDOW_H
