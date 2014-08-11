@@ -13,7 +13,7 @@
 #include "PakReader.h"
 #include "GamePakData.h"
 
-#define PRG_VERSION	"alpha12"
+#define PRG_VERSION	"alpha13"
 
 namespace Ui {
 class MainWindow;
