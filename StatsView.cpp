@@ -115,6 +115,14 @@ void StatsView::selectNodeByName(const char *name)
 	}
 }
 
+void StatsView::clearTree() {
+	QTreeWidget *statsTree = this->findChild<QTreeWidget *>("statsTree");
+	for (int i=0; i<statsTree->topLevelItemCount(); ++i) {
+		delete statsTree->topLevelItem(i);
+		--i;
+	}
+}
+
 void StatsView::resizeTree() {
 	QTreeWidget *statsTree = this->findChild<QTreeWidget *>("statsTree");
 	statsTree->expandAll();

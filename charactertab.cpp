@@ -497,18 +497,18 @@ void characterTab::on_inventoryScrollArea_customContextMenuRequested(const QPoin
 		contextMenu.addAction("&Edit Item");
 	}
 	else {
-		contextMenu.addAction("&Add Item");
+		//contextMenu.addAction("&Add Item");
 	}
 	QAction *result = contextMenu.exec(inventoryScrollArea->mapToGlobal(pos));
 	if (result) {
 		if (item != 0) {
 			ItemEditFrame *itemEditFrame = new ItemEditFrame(allItemStats, itemLinks, item, itemEditHandler, this, tagList, *nameMappings);
 		} else {
-//			LsbObject *itemObject = GameItem::createNewItem(tagList, itemsObject, character->getInventoryId(), character->getCreatorId());
-//			GameItem *newItem = new GameItem(tagList);
-//			newItem->setObject(itemObject);
-//			newItem->setRenderSlot(character->getInventoryHandler()->slotAtPoint(itemPos));
-//			ItemEditFrame *itemEditFrame = new ItemEditFrame(allItemStats, itemLinks, newItem, itemEditHandler, this, tagList, *nameMappings);
+			LsbObject *itemObject = GameItem::createNewItem(tagList, itemsObject, character->getInventoryId(), character->getCreatorId());
+			GameItem *newItem = new GameItem(tagList);
+			newItem->setObject(itemObject);
+			newItem->setRenderSlot(character->getInventoryHandler()->slotAtPoint(itemPos));
+			ItemEditFrame *itemEditFrame = new ItemEditFrame(allItemStats, itemLinks, newItem, itemEditHandler, this, tagList, *nameMappings);
 		}
 	}
 }

@@ -6,6 +6,8 @@
 #include <sstream>
 #include <cstdlib>
 #include <cstring>
+#include <map>
+#include <stack>
 
 #include <iostream>
 
@@ -29,6 +31,22 @@ struct TAG_LSB {
 	long tagLength;
 	char* tag = 0;
 	long index;
+	
+	TAG_LSB() {
+		;
+	}
+	
+	~TAG_LSB() {
+		delete tag;
+	}
+	
+	TAG_LSB(const TAG_LSB& other) {
+		this->tagLength = other.tagLength;
+		long strLen = strlen(other.tag);
+		this->tag = new char[strLen + 1];
+		strcpy(this->tag, other.tag);
+		this->index = other.index;
+	}
 };
 
 struct ENTITY_HEADER_LSB {
@@ -103,6 +121,88 @@ public:
 		this->bIsDirectory = other.bIsDirectory;
 		this->parent = other.parent;
 		this->tagList = other.tagList;
+	}
+	
+	static TAG_LSB *getTagByName(const char *name, std::vector<TAG_LSB *> *tagList)
+	{
+		std::string nameText = name;
+		for (int i=0; i<tagList->size(); ++i) {
+			if (tagList->at(i)->tag == nameText) {
+				return tagList->at(i);
+			}
+		}
+		return 0;
+	}
+	
+	static TAG_LSB *createTagIfNeeded(const char *name, std::vector<TAG_LSB *> *tagList)
+	{
+		TAG_LSB *tag = getTagByName(name, tagList);
+		if (tag != 0) {
+			return tag;
+		}
+		tag = new TAG_LSB();
+		tag->index = LsbObject::getNextFreeTagIndex(tagList);
+		long tagLength = strlen(name) + 1;
+		char *tagAlloc = new char[tagLength];
+		strcpy(tagAlloc, name);
+		tag->tag = tagAlloc;
+		tag->tagLength = tagLength;
+		tagList->push_back(tag);
+		return tag;
+	}
+	
+	void retag(std::vector<TAG_LSB *> *newTagList) {
+		std::stack<LsbObject *> dirStack;
+		dirStack.push(this);
+		while (!dirStack.empty()) {
+			LsbObject *currentDirectory = dirStack.top();
+			dirStack.pop();
+			std::string dirTag = currentDirectory->getName();
+			TAG_LSB *newTag = LsbObject::createTagIfNeeded(dirTag.c_str(), newTagList);
+			currentDirectory->setIndex(newTag->index);
+			std::vector<LsbObject *> items = currentDirectory->getItemsOnly();
+			std::vector<LsbObject *> dirs = currentDirectory->getDirectoriesOnly();
+			for (int j=0; j<items.size(); ++j) {
+				LsbObject *item = items[j];
+				std::string itemTag = item->getName();
+				TAG_LSB *newTag = LsbObject::createTagIfNeeded(itemTag.c_str(), newTagList);
+				item->setIndex(newTag->index);
+			}
+			for (int j=dirs.size() - 1; j>=0; --j) {
+				dirStack.push(dirs[j]);
+			}
+		}
+	}
+	
+	static void stripUnusedTags(std::vector<TAG_LSB *> *tagList, std::vector<LsbObject *> objects) {
+		typedef std::map<int, bool> TagMap;
+		TagMap tagMap;
+		for (int i=0; i<objects.size(); ++i) {
+			std::stack<LsbObject *> dirStack;
+			dirStack.push(objects[i]);
+			while (!dirStack.empty()) {
+				LsbObject *currentDirectory = dirStack.top();
+				dirStack.pop();
+				tagMap[currentDirectory->getIndex()] = true;
+				std::vector<LsbObject *> items = currentDirectory->getItemsOnly();
+				std::vector<LsbObject *> dirs = currentDirectory->getDirectoriesOnly();
+				for (int j=0; j<items.size(); ++j) {
+					LsbObject *item = items[j];
+					tagMap[item->getIndex()] = true;
+				}
+				for (int j=dirs.size() - 1; j>=0; --j) {
+					dirStack.push(dirs[j]);
+				}
+			}
+		}
+		for (int i=0; i<tagList->size(); ++i) {
+			TAG_LSB *tag = tagList->at(i);
+			if (tagMap.find(tag->index) == tagMap.end()) {
+				tagList->erase(tagList->begin() + i);
+				delete tag;
+				--i;
+			}
+		}
 	}
 	
 	static long getNextFreeTagIndex(std::vector<TAG_LSB *> *tagList) {

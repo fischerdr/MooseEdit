@@ -4,6 +4,11 @@
 #include "LsbReader.h"
 #include <QMessageBox>
 #include <cstring>
+#include <QFile>
+#include <QFileDialog>
+#include <fstream>
+#include <boost/algorithm/string.hpp>
+#include "LsbWriter.h"
 
 class BaseStatsViewSelectCallback : public StatsButtonCallback {
 	ItemEditFrame *itemEditFrame;
@@ -180,7 +185,7 @@ public:
 			LsbObject *newPermBoost = 0;
 			std::vector<LsbObject *> newPermBoostObjects;
 			if (statsDirectory != 0) {
-				TAG_LSB *newBoostTag = LsbReader::createTagIfNeeded(name.c_str(), itemEditFrame->tagList);
+				TAG_LSB *newBoostTag = LsbObject::createTagIfNeeded(name.c_str(), itemEditFrame->tagList);
 				if (newBoostTag == 0) {
 					TAG_LSB *newTag = new TAG_LSB();
 					newTag->index = LsbObject::getNextFreeTagIndex(itemEditFrame->tagList);
@@ -196,10 +201,10 @@ public:
 				if (newBoostTag != 0) {
 					newPermBoost = LsbReader::lookupByUniquePathEntity(statsDirectory, "PermanentBoost");
 					if (newPermBoost == 0) {
-						TAG_LSB *permBoostTag = LsbReader::createTagIfNeeded("PermanentBoost", itemEditFrame->tagList);
+						TAG_LSB *permBoostTag = LsbObject::createTagIfNeeded("PermanentBoost", itemEditFrame->tagList);
 						newPermBoost = new LsbObject(true, permBoostTag->index, permBoostTag->tag, 0, statsDirectory, itemEditFrame->tagList);
 						
-						TAG_LSB *abilitiesTag = LsbReader::createTagIfNeeded("Abilities", itemEditFrame->tagList);
+						TAG_LSB *abilitiesTag = LsbObject::createTagIfNeeded("Abilities", itemEditFrame->tagList);
 						LsbObject *newAbilitiesObject = new LsbObject(true, abilitiesTag->index, abilitiesTag->tag, 0, newPermBoost, itemEditFrame->tagList);
 						
 						newPermBoost->addChild(newAbilitiesObject);
@@ -241,9 +246,9 @@ public:
 class ModsPickerSelectCallback : public StatsButtonCallback {
 	ItemEditFrame *itemEditFrame;
 	void addBoostToGenerationObject(LsbObject *generationObject, std::string &modName) {
-		TAG_LSB *boostTag = LsbReader::createTagIfNeeded("Boost", itemEditFrame->tagList);
+		TAG_LSB *boostTag = LsbObject::createTagIfNeeded("Boost", itemEditFrame->tagList);
 		LsbObject *newBoost = new LsbObject(true, boostTag->index, boostTag->tag, 0, generationObject, itemEditFrame->tagList);
-		TAG_LSB *objectTag = LsbReader::createTagIfNeeded("Object", itemEditFrame->tagList);
+		TAG_LSB *objectTag = LsbObject::createTagIfNeeded("Object", itemEditFrame->tagList);
 		LsbObject *newBoostObject = new LsbObject(false, objectTag->index, objectTag->tag, 0x16, newBoost, itemEditFrame->tagList);
 		newBoost->addChild(newBoostObject);
 		newBoostObject->setData(modName.c_str(), modName.length() + 1);
@@ -375,9 +380,7 @@ ItemEditFrame::ItemEditFrame(std::vector<StatsContainer *> &allItemStats, std::v
 	//baseStatsView->addStatsDirectory("_RecipeBooks", "Recipe Books", objectFolder);
 	
 	baseStatsView->resizeTree();
-	if (item->getStatsText().size() > 0) {
-		baseStatsView->selectNodeByName(item->getStatsText().c_str());
-	}
+	
 	baseStatsViewSelectCallback = new BaseStatsViewSelectCallback(this);
 	baseStatsView->enableSelectButton(baseStatsViewSelectCallback);
 	dataGroupBox->layout()->addWidget(baseStatsView);
@@ -394,11 +397,6 @@ ItemEditFrame::ItemEditFrame(std::vector<StatsContainer *> &allItemStats, std::v
 	dataGroupBox->layout()->addWidget(modsPicker);
 	
 	modsView = new StatsView(allItemStats, nameMappings, dataGroupBox);
-	if (item->getItemStats() != 0) {
-		std::vector<StatsContainer *> boosts = item->getBoosts();
-		modsView->addToTree(boosts);
-	}
-	modsView->resizeTree();
 	modsViewAddCallback = new ModsViewAddCallback(this);
 	modsView->enableAddButton(modsViewAddCallback);
 	modsViewRemoveCallback = new ModsViewRemoveCallback(this);
@@ -406,11 +404,6 @@ ItemEditFrame::ItemEditFrame(std::vector<StatsContainer *> &allItemStats, std::v
 	dataGroupBox->layout()->addWidget(modsView);
 	
 	permBoostView = new StatsView(allItemStats, nameMappings, dataGroupBox);
-	if (item->getPermBoosts().size() > 0) {
-		std::vector<LsbObject *> &permBoosts = item->getPermBoosts();
-		permBoostView->addToTree(permBoosts);
-	}
-	permBoostView->resizeTree();
 	permBoostViewAddCallback = new PermBoostViewAddCallback(this);
 	permBoostView->enableAddButton(permBoostViewAddCallback);
 	permBoostViewRemoveCallback = new PermBoostViewRemoveCallback(this);
@@ -457,7 +450,31 @@ ItemEditFrame::ItemEditFrame(std::vector<StatsContainer *> &allItemStats, std::v
 	permBoostPicker->enableCancelButton(permBoostPickerCancelCallback);
 	dataGroupBox->layout()->addWidget(permBoostPicker);
 	
+	refreshViewData();
+	
 	hideAllViews();
+}
+
+void ItemEditFrame::refreshViewData() {
+	generalView->refreshGeneralData();
+	
+	if (item->getStatsText().size() > 0) {
+		baseStatsView->selectNodeByName(item->getStatsText().c_str());
+	}
+	
+	modsView->clearTree();
+	if (item->getItemStats() != 0) {
+		std::vector<StatsContainer *> boosts = item->getBoosts();
+		modsView->addToTree(boosts);
+		modsView->resizeTree();
+	}
+	
+	permBoostView->clearTree();
+	if (item->getPermBoosts().size() > 0) {
+		std::vector<LsbObject *> &permBoosts = item->getPermBoosts();
+		permBoostView->addToTree(permBoosts);
+		permBoostView->resizeTree();
+	}
 }
 
 void ItemEditFrame::onEdit()
@@ -562,4 +579,110 @@ void ItemEditFrame::on_permBoostButton_released()
 {
 	hideAllViews();
     permBoostView->show();
+}
+
+void ItemEditFrame::on_exportButton_released()
+{
+	QFileDialog saveDialog(this);
+	saveDialog.setNameFilter("Item Files (*.lsb)");
+	std::string defaultName = item->getItemName() + ".lsb";
+	boost::replace_all(defaultName, " ", "_");
+	saveDialog.selectFile(defaultName.c_str());
+	saveDialog.setDirectory(currentDir.c_str());
+	saveDialog.setAcceptMode(QFileDialog::AcceptSave);
+	if (saveDialog.exec()) {
+		if (saveDialog.selectedFiles().size() == 1) {
+			currentDir = saveDialog.directory().path().toStdString();
+			std::string fileName = saveDialog.selectedFiles().at(0).toStdString();
+			std::ofstream fout(fileName.c_str(), std::ios_base::binary);
+			bool success = false;
+			if (fout) {
+				LsbWriter writer;
+				std::vector<LsbObject *> objects;
+				objects.push_back(item->getObject());
+				std::vector<TAG_LSB *> itemTags;
+				for (int i=0; i<tagList->size(); ++i) {
+					itemTags.push_back(new TAG_LSB(*tagList->at(i)));
+				}
+				LsbObject::stripUnusedTags(&itemTags, objects);
+				if (writer.writeFile(objects, itemTags, fout)) {
+					success = true;
+				}
+				for (int i=0; i<itemTags.size(); ++i) {
+					delete itemTags[i];
+				}
+				fout.close();
+			}
+			if (success) {
+				QMessageBox msgBox;
+				msgBox.setText("Success");
+				msgBox.exec();
+			} else {
+				QMessageBox msgBox;
+				msgBox.setText("Could not save file!");
+				msgBox.exec();
+			}
+		}
+	}
+}
+
+void ItemEditFrame::on_importButton_released()
+{
+	QFileDialog openDialog(this);
+	openDialog.setNameFilter("Item Files (*.lsb)");
+	openDialog.setDirectory(currentDir.c_str());
+	openDialog.setAcceptMode(QFileDialog::AcceptOpen);
+	if (openDialog.exec()) {
+		if (openDialog.selectedFiles().size() == 1) {
+			currentDir = openDialog.directory().path().toStdString();
+			std::string fileName = openDialog.selectedFiles().at(0).toStdString();
+			std::ifstream fin(fileName.c_str(), std::ios_base::binary);
+			bool success = false;
+			if (fin) {
+				LsbReader reader;
+				std::vector<LsbObject *> objects = reader.loadFile(fin);
+				fin.close();
+				if (objects.size() == 1) {
+					LsbObject *importedObject = objects[0];
+					if (importedObject->isEntity()) {
+						LsbObject *importedItem = LsbReader::lookupByUniquePathEntity(importedObject, "Item");
+						if (importedItem != 0) {
+							LsbObject *oldItem = this->item->getObject();
+							LsbObject *oldParentObject = LsbReader::lookupByUniquePathEntity(oldItem, "Parent");
+							LsbObject *oldOwnerObject = LsbReader::lookupByUniquePathEntity(oldItem, "owner");
+							unsigned long parentId = *((unsigned long *)oldParentObject->getData());
+							unsigned long ownerId = *((unsigned long *)oldOwnerObject->getData());
+							LsbObject *newParentObject = LsbReader::lookupByUniquePathEntity(importedItem, "Parent");
+							LsbObject *newOwnerObject = LsbReader::lookupByUniquePathEntity(importedItem, "owner");
+							newParentObject->setData((char *)&parentId, sizeof(parentId));
+							newOwnerObject->setData((char *)&ownerId, sizeof(ownerId));
+							importedItem->setParent(oldItem->getParent());
+							importedItem->retag(tagList);
+							GameItem *toDelete = this->item;
+							this->item = new GameItem(tagList);
+							this->item->setRenderSlot(toDelete->getRenderSlot());
+							this->item->setEquipmentSlot(toDelete->getEquipmentSlot());
+							this->item->setConsumableSlot(toDelete->getConsumableSlot());
+							this->item->setMagicalSlot(toDelete->getMagicalSlot());
+							this->item->setIngredientSlot(toDelete->getIngredientSlot());
+							this->item->setKeysSlot(toDelete->getKeysSlot());
+							this->item->setMiscSlot(toDelete->getMiscSlot());
+							generalView->setItem(this->item);
+							delete toDelete;
+							this->item->setObject(new LsbObject(*importedItem));
+							delete importedObject;
+							success = true;
+							this->redraw();
+							refreshViewData();
+						}
+					}
+				}
+			}
+			if (!success) {
+				QMessageBox msgBox;
+				msgBox.setText("Import failed!");
+				msgBox.exec();
+			}
+		}
+	}
 }

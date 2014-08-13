@@ -52,8 +52,6 @@ public:
 	static std::vector<LsbObject *> findItemsByAttribute(std::vector<LsbObject *>& list, const char *attributeName, const char *attributeValue, int valueLength);
 	static LsbObject *getObjectCreator(LsbObject *object);
 	static LsbObject *getObjectFromCreator(LsbObject *creator, const char *objectGroupName);
-	static TAG_LSB * getTagByName(const char *name, std::vector<TAG_LSB *> *tagList);
-	static TAG_LSB *createTagIfNeeded(const char *name, std::vector<TAG_LSB *> *tagList);
 };
 
 #endif // LSBREADER_H

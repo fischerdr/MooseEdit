@@ -61,7 +61,12 @@ private slots:
 	
 	void on_permBoostButton_released();
 	
+	void on_exportButton_released();
+	
+	void on_importButton_released();
+	
 private:
+	std::string currentDir = ".";
 	Ui::ItemEditFrame *ui;
 	ItemGeneral *generalView;
 	StatsView *baseStatsView;
@@ -88,6 +93,7 @@ private:
 	InventoryHandler *itemEditHandler;
 	void redraw();
 	void hideAllViews();
+	void refreshViewData();
 };
 
 #endif // ITEMEDITFRAME_H

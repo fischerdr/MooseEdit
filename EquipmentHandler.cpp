@@ -93,7 +93,7 @@ void EquipmentHandler::customContextRequested(const QPoint& pos) {
 					contextMenu.addAction("&Edit Item");
 				}
 				else {
-					contextMenu.addAction("&Add Item");
+					//contextMenu.addAction("&Add Item");
 				}
 				QAction *result = contextMenu.exec(globalPos);
 				if (result) {
@@ -103,16 +103,16 @@ void EquipmentHandler::customContextRequested(const QPoint& pos) {
 						ItemEditFrame *itemEditFrame = new ItemEditFrame(itemStats, itemLinks, item, newHandler,
 																		 this, &tagList, nameMappings);
 					} else {
-//						LsbObject *itemObject = GameItem::createNewItem(&tagList, itemsObject, character->getInventoryId(), character->getCreatorId());
-//						LsbObject *slotObject = LsbReader::lookupByUniquePathEntity(itemObject, "Slot");
-//						if (slotObject != 0) {
-//							slotObject->setData((char *)&slot, sizeof(slot));
-//						}
-//						GameItem *newItem = new GameItem(&tagList);
-//						newItem->setObject(itemObject);
-//						newItem->setRenderSlot(character->getInventoryHandler()->slotAtPoint(pos));
-//						ItemEditFrame *itemEditFrame = new ItemEditFrame(itemStats, itemLinks, newItem, newHandler, 
-//																		 this, &tagList, nameMappings);
+						LsbObject *itemObject = GameItem::createNewItem(&tagList, itemsObject, character->getInventoryId(), character->getCreatorId());
+						LsbObject *slotObject = LsbReader::lookupByUniquePathEntity(itemObject, "Slot");
+						if (slotObject != 0) {
+							slotObject->setData((char *)&slot, sizeof(slot));
+						}
+						GameItem *newItem = new GameItem(&tagList);
+						newItem->setObject(itemObject);
+						newItem->setRenderSlot(character->getInventoryHandler()->slotAtPoint(pos));
+						ItemEditFrame *itemEditFrame = new ItemEditFrame(itemStats, itemLinks, newItem, newHandler, 
+																		 this, &tagList, nameMappings);
 					}
 				}
 			}

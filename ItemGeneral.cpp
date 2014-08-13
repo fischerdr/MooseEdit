@@ -226,3 +226,13 @@ void ItemGeneral::on_identCheck_toggled(bool checked)
 		generalEditCallback->onEdit();
 	}
 }
+GameItem *ItemGeneral::getItem() const
+{
+	return item;
+}
+
+void ItemGeneral::setItem(GameItem *value)
+{
+	item = value;
+}
+

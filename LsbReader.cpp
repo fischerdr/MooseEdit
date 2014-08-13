@@ -150,34 +150,6 @@ LsbObject *LsbReader::getObjectFromCreator(LsbObject *creator, const char *objec
 	return 0;
 }
 
-TAG_LSB *LsbReader::getTagByName(const char *name, std::vector<TAG_LSB *> *tagList)
-{
-	std::string nameText = name;
-	for (int i=0; i<tagList->size(); ++i) {
-		if (tagList->at(i)->tag == nameText) {
-			return tagList->at(i);
-		}
-	}
-	return 0;
-}
-
-TAG_LSB *LsbReader::createTagIfNeeded(const char *name, std::vector<TAG_LSB *> *tagList)
-{
-	TAG_LSB *tag = getTagByName(name, tagList);
-	if (tag != 0) {
-		return tag;
-	}
-	tag = new TAG_LSB();
-	tag->index = LsbObject::getNextFreeTagIndex(tagList);
-	long tagLength = strlen(name) + 1;
-	char *tagAlloc = new char[tagLength];
-	strcpy(tagAlloc, name);
-	tag->tag = tagAlloc;
-	tag->tagLength = tagLength;
-	tagList->push_back(tag);
-	return tag;
-}
-
 bool LsbReader::readTags(std::istream& input, long tagCount, int& bytesLeft, std::vector<TAG_LSB *>& tagList, char * alloc) {
 	for (int i=0; i<tagCount; ++i) {
 		if (input && bytesLeft >= sizeof(long)) {

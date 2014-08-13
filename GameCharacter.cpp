@@ -12,20 +12,20 @@ std::vector<LsbObject *> GameCharacter::getSkillList() {
 void GameCharacter::addSkill(const char *skillName) {
 	LsbObject *skillManagerObject = LsbReader::lookupByUniquePathEntity(this->getObject(), "SkillManager");
 	if (skillManagerObject != 0) {
-		TAG_LSB *skillsTag = LsbReader::createTagIfNeeded("Skills", &tagList);
+		TAG_LSB *skillsTag = LsbObject::createTagIfNeeded("Skills", &tagList);
 		LsbObject *skillsObject = new LsbObject(true, skillsTag->index, skillsTag->tag, 0, skillManagerObject, &tagList);
 		
-		TAG_LSB *activeCooldownTag = LsbReader::createTagIfNeeded("ActiveCooldown", &tagList);
+		TAG_LSB *activeCooldownTag = LsbObject::createTagIfNeeded("ActiveCooldown", &tagList);
 		LsbObject *activeCooldownObject = new LsbObject(false, activeCooldownTag->index, activeCooldownTag->tag, 6, skillsObject, &tagList);
 		float activeCooldown = 0.0f;
 		activeCooldownObject->setData((char *)&activeCooldown, sizeof(float));
 		
-		TAG_LSB *isLearnedTag = LsbReader::createTagIfNeeded("IsLearned", &tagList);
+		TAG_LSB *isLearnedTag = LsbObject::createTagIfNeeded("IsLearned", &tagList);
 		LsbObject *isLearnedObject = new LsbObject(false, isLearnedTag->index, isLearnedTag->tag, 19, skillsObject, &tagList);
 		bool isLearned = true;
 		isLearnedObject->setData((char *)&isLearned, sizeof(bool));
 		
-		TAG_LSB *mapKeyTag = LsbReader::createTagIfNeeded("MapKey", &tagList);
+		TAG_LSB *mapKeyTag = LsbObject::createTagIfNeeded("MapKey", &tagList);
 		LsbObject *mapKeyObject = new LsbObject(false, mapKeyTag->index, mapKeyTag->tag, 0x16, skillsObject, &tagList);
 		mapKeyObject->setData(skillName, strlen(skillName) + 1);
 		
@@ -35,14 +35,14 @@ void GameCharacter::addSkill(const char *skillName) {
 		
 		skillManagerObject->insertLast(skillsObject, "Skills");
 		
-		TAG_LSB *timeItemAddedToSkillManagerTag = LsbReader::createTagIfNeeded("TimeItemAddedToSkillManager", &tagList);
+		TAG_LSB *timeItemAddedToSkillManagerTag = LsbObject::createTagIfNeeded("TimeItemAddedToSkillManager", &tagList);
 		LsbObject *timeItemAddedToSkillManagerObject = new LsbObject(true, timeItemAddedToSkillManagerTag->index, timeItemAddedToSkillManagerTag->tag, 0, skillManagerObject, &tagList);
 		
-		TAG_LSB *mapKeyTag2 = LsbReader::createTagIfNeeded("MapKey", &tagList);
+		TAG_LSB *mapKeyTag2 = LsbObject::createTagIfNeeded("MapKey", &tagList);
 		LsbObject *mapKeyObject2 = new LsbObject(false, mapKeyTag2->index, mapKeyTag2->tag, 0x16, timeItemAddedToSkillManagerObject, &tagList);
 		mapKeyObject2->setData(skillName, strlen(skillName) + 1);
 		
-		TAG_LSB *mapValueTag = LsbReader::createTagIfNeeded("MapValue", &tagList);
+		TAG_LSB *mapValueTag = LsbObject::createTagIfNeeded("MapValue", &tagList);
 		LsbObject *mapValueObject = new LsbObject(false, mapValueTag->index, mapValueTag->tag, 0x07, timeItemAddedToSkillManagerObject, &tagList);
 		double mapValue = 0;
 		mapValueObject->setData((char *)&mapValue, sizeof(mapValue));
@@ -73,10 +73,10 @@ void GameCharacter::ensureInventoryCapacity(LsbObject *viewMapValueObject, unsig
 	std::vector<LsbObject *> itemsObjects = LsbReader::lookupAllEntitiesWithName(viewMapValueObject, "Items");
 	long additionalSlotsRequired = (viewSlot + 1) - itemsObjects.size();
 	for (int i=0; i<additionalSlotsRequired; ++i) {
-		TAG_LSB *itemsTag = LsbReader::createTagIfNeeded("Items", &tagList);
+		TAG_LSB *itemsTag = LsbObject::createTagIfNeeded("Items", &tagList);
 		LsbObject *itemsObject = new LsbObject(true, itemsTag->index, itemsTag->tag, 0, viewMapValueObject, &tagList);
 		
-		TAG_LSB *objectTag = LsbReader::createTagIfNeeded("Object", &tagList);
+		TAG_LSB *objectTag = LsbObject::createTagIfNeeded("Object", &tagList);
 		LsbObject *objectObject = new LsbObject(false, objectTag->index, objectTag->tag, 0x05, itemsObject, &tagList);
 		unsigned long invalidHandle = 0;
 		objectObject->setData((char *)&invalidHandle, sizeof(invalidHandle));
@@ -94,15 +94,15 @@ bool GameCharacter::addItemToInventoryObject(LsbObject *itemCreatorObject, unsig
 		LsbObject *inventoryObject = this->getInventoryObject();
 		
 		{
-			TAG_LSB *timeItemAddedToInventoryTag = LsbReader::createTagIfNeeded("TimeItemAddedToInventory", &tagList);
+			TAG_LSB *timeItemAddedToInventoryTag = LsbObject::createTagIfNeeded("TimeItemAddedToInventory", &tagList);
 			LsbObject *timeAddedToInventoryObject = new LsbObject(true, timeItemAddedToInventoryTag->index, timeItemAddedToInventoryTag->tag, 0, inventoryObject, &tagList);
 			
-			TAG_LSB *mapKeyTag = LsbReader::createTagIfNeeded("MapKey", &tagList);
+			TAG_LSB *mapKeyTag = LsbObject::createTagIfNeeded("MapKey", &tagList);
 			LsbObject *mapKeyObject = new LsbObject(false, mapKeyTag->index, mapKeyTag->tag, 0x05, timeAddedToInventoryObject, &tagList);
 			unsigned long mapKey = creatorHandle;
 			mapKeyObject->setData((char *)&mapKey, sizeof(mapKey));
 			
-			TAG_LSB *mapValueTag = LsbReader::createTagIfNeeded("MapValue", &tagList);
+			TAG_LSB *mapValueTag = LsbObject::createTagIfNeeded("MapValue", &tagList);
 			LsbObject *mapValueObject = new LsbObject(false, mapValueTag->index, mapValueTag->tag, 0x07, timeAddedToInventoryObject, &tagList);
 			double mapValue = 0.0;
 			mapValueObject->setData((char *)&mapValue, sizeof(mapValue));
@@ -129,14 +129,14 @@ bool GameCharacter::addItemToInventoryObject(LsbObject *itemCreatorObject, unsig
 						if (viewId == 0 || viewId == extraInventoryTab) {
 							LsbObject *mapValueObject = LsbReader::lookupByUniquePathEntity(viewObject, "MapValue");
 							
-							TAG_LSB *indicesTag = LsbReader::createTagIfNeeded("Indices", &tagList);
+							TAG_LSB *indicesTag = LsbObject::createTagIfNeeded("Indices", &tagList);
 							LsbObject *indicesObject = new LsbObject(true, indicesTag->index, indicesTag->tag, 0, mapValueObject, &tagList);
 							
-							TAG_LSB *mapKeyTag2 = LsbReader::createTagIfNeeded("MapKey", &tagList);
+							TAG_LSB *mapKeyTag2 = LsbObject::createTagIfNeeded("MapKey", &tagList);
 							LsbObject *mapKeyObject2 = new LsbObject(false, mapKeyTag2->index, mapKeyTag2->tag, 0x05, indicesObject, &tagList);
 							mapKeyObject2->setData((char *)&creatorHandle, sizeof(creatorHandle));
 							
-							TAG_LSB *mapValueTag2 = LsbReader::createTagIfNeeded("MapValue", &tagList);
+							TAG_LSB *mapValueTag2 = LsbObject::createTagIfNeeded("MapValue", &tagList);
 							LsbObject *mapValueObject2 = new LsbObject(false, mapValueTag2->index, mapValueTag2->tag, 0x05, indicesObject, &tagList);
 							mapValueObject2->setData((char *)&currentSlot, sizeof(currentSlot));
 							
@@ -146,10 +146,10 @@ bool GameCharacter::addItemToInventoryObject(LsbObject *itemCreatorObject, unsig
 
 							ensureInventoryCapacity(mapValueObject, currentSlot);
 							
-							TAG_LSB *itemsTag = LsbReader::createTagIfNeeded("Items", &tagList);
+							TAG_LSB *itemsTag = LsbObject::createTagIfNeeded("Items", &tagList);
 							LsbObject *itemsObject = new LsbObject(true, itemsTag->index, itemsTag->tag, 0, mapValueObject, &tagList);
 							
-							TAG_LSB *objectTag = LsbReader::createTagIfNeeded("Object", &tagList);
+							TAG_LSB *objectTag = LsbObject::createTagIfNeeded("Object", &tagList);
 							LsbObject *objectObject = new LsbObject(false, objectTag->index, objectTag->tag, 0x05, itemsObject, &tagList);
 							objectObject->setData((char *)&creatorHandle, sizeof(creatorHandle));
 							

@@ -62,6 +62,7 @@ public:
 	void registerTableEditCallback(TableEditCallback *tableEditCallback);
 	DataContainerTreeItem *addFolder(std::string folderName);
 	void resizeTree();
+	void clearTree();
 	~StatsView();
 	
 protected:

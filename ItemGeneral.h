@@ -24,6 +24,8 @@ public:
 	explicit ItemGeneral(GameItem *item, std::vector<TAG_LSB *> *tagList, QWidget *parent = 0);
 	void registerCallback(GeneralEditCallback *generalEditCallback);
 	void refreshGeneralData();
+	GameItem *getItem() const;
+	void setItem(GameItem *value);
 	~ItemGeneral();
 	
 private slots:
