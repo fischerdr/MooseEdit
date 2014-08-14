@@ -440,6 +440,7 @@ void characterTab::onItemEdited(GameItem *newItem, GameItem *oldItem) {
 		creatorsObject->addChild(newCreatorObject);
 		
 		LsbObject *newItemObject = LsbReader::getObjectFromCreator(newCreatorObject, "Items");
+		//LsbObject *newItemObject = copy->getObject();
 		LsbObject *statsObject = LsbReader::lookupByUniquePathEntity(newItemObject, "Stats");
 		std::string inventoryTab = "";
 		if (statsObject != 0) {
@@ -497,7 +498,7 @@ void characterTab::on_inventoryScrollArea_customContextMenuRequested(const QPoin
 		contextMenu.addAction("&Edit Item");
 	}
 	else {
-		//contextMenu.addAction("&Add Item");
+		contextMenu.addAction("&Add Item");
 	}
 	QAction *result = contextMenu.exec(inventoryScrollArea->mapToGlobal(pos));
 	if (result) {

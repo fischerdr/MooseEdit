@@ -93,7 +93,7 @@ void EquipmentHandler::customContextRequested(const QPoint& pos) {
 					contextMenu.addAction("&Edit Item");
 				}
 				else {
-					//contextMenu.addAction("&Add Item");
+					contextMenu.addAction("&Add Item");
 				}
 				QAction *result = contextMenu.exec(globalPos);
 				if (result) {
