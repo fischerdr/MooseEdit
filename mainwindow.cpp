@@ -18,51 +18,63 @@
 #include <stdlib.h>
 #include <QLineEdit>
 #include <unistd.h>
-#include <QGLWidget>
 #include <QClipboard>
 #include <QDir>
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
 #include <tinyxml/tinyxml.h>
 #include <boost/lexical_cast.hpp>
-#include <QGLContext>
-#include <QGLFramebufferObject>
 #include <QScrollBar>
 #include <QShortcut>
 #include <Shlobj.h>
 #include <QResizeEvent>
 #include <QDesktopWidget>
 #include <QProgressDialog>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/filesystem.hpp>
 
 #define realpath(N,R) _fullpath((R),(N),_MAX_PATH)
 
-std::vector<std::string> getSaveGameList(const char *path, const char *profileName) {
-	const char *saveDirName = "Savegames";
-	std::vector<std::string> saveList;
+std::vector<std::wstring> getSaveGameList(std::wstring fullPath, std::wstring profileName) {
+	std::vector<std::wstring> saveList;
 	DIR *dir;
 	dirent *ent;
-	std::string fullPath = path;
-	fullPath += "\\";
+	fullPath += L"\\";
 	fullPath += profileName;
-	fullPath += "\\";
-	fullPath += saveDirName;
-	chdir(fullPath.c_str());
-	if ((dir = opendir (fullPath.c_str())) != 0) {
-		while ((ent = readdir (dir)) != 0) {
-			struct stat st;
-			stat(ent->d_name, &st);
-			if (S_ISDIR(st.st_mode)) {
-				std::string entName = ent->d_name;
-				if (entName != "." && entName != "..") {
-					std::string saveText = profileName;
-					saveText += "/";
-					saveText += entName;
-					saveList.push_back(saveText);
-				}
+	fullPath += L"\\";
+	fullPath += L"SaveGames";
+	_wchdir(fullPath.c_str());
+	boost::filesystem::path dirPath(fullPath);
+	boost::filesystem::directory_iterator it(dirPath);
+	boost::filesystem::directory_iterator end;
+	for (it; it != end; ++it) {
+		boost::filesystem::path folder = (*it).path();
+		if (boost::filesystem::is_directory(folder)) {
+		std::wstring entName = folder.filename().wstring();
+			if (entName != L"." && entName != L"..") {
+				std::wstring saveText = profileName;
+				saveText += L"/";
+				saveText += entName;
+				saveList.push_back(saveText);
 			}
 		}
-		closedir (dir);
 	}
+//	if ((dir = opendir (fullPath.c_str())) != 0) {
+//		while ((ent = readdir (dir)) != 0) {
+//			struct stat st;
+//			stat(ent->d_name, &st);
+//			if (S_ISDIR(st.st_mode)) {
+//				std::string entName = ent->d_name;
+//				if (entName != "." && entName != "..") {
+//					std::string saveText = profileName;
+//					saveText += "/";
+//					saveText += entName;
+//					saveList.push_back(saveText);
+//				}
+//			}
+//		}
+//		closedir (dir);
+//	}
 	return saveList;
 }
 
@@ -102,16 +114,16 @@ MainWindow::MainWindow(QWidget *parent) :
 	versionString += PRG_VERSION;
 	statusBar->showMessage(QString(versionString.c_str()), 0);
 	
-	std::string path = getSteamPathFromRegistry();
+	std::wstring path = getSteamPathFromRegistry();
 	
 	QLineEdit *gameDataEdit = this->findChild<QLineEdit *>("gameDataEdit");
 	if (path.length() > 0) {
-		std::string gameDataPath = path;
+		std::wstring gameDataPath = path;
 		if (!boost::ends_with(gameDataPath, "\\")) {
-			gameDataPath += "\\";
+			gameDataPath += L"\\";
 		}
-		gameDataPath += "Data\\";
-		gameDataEdit->setText(gameDataPath.c_str());
+		gameDataPath += L"Data\\";
+		gameDataEdit->setText(QString::fromStdWString(gameDataPath));
 	}
 	
 	std::vector<std::string> splitVector;
@@ -148,16 +160,18 @@ MainWindow::MainWindow(QWidget *parent) :
 	}
 }
 
-std::string MainWindow::getSteamPathFromRegistry() {
-	std::string text = "";
+std::wstring MainWindow::getSteamPathFromRegistry() {
+	std::wstring text = L"";
 	#ifdef _WIN32
 	HKEY hKey;
 	unsigned long returnVal;
 	if ((returnVal = RegOpenKeyExA(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 230230",
 				  0, KEY_READ, &hKey)) == ERROR_SUCCESS) {
 		unsigned long dataSize = MAX_PATH + 1;
-		char buf[dataSize];
-		if ((returnVal = RegQueryValueExA(hKey, "InstallLocation", 0, 0, (LPBYTE) buf, &dataSize)) == ERROR_SUCCESS) {
+		wchar_t buf[dataSize];
+		dataSize *= 2;
+		if ((returnVal = RegQueryValueExW(hKey, L"InstallLocation", 0, 0, (LPBYTE) buf, &dataSize)) == ERROR_SUCCESS) {
+			dataSize /= 2;
 			buf[dataSize] = 0;
 			text = buf;
 		}
@@ -260,20 +274,20 @@ void MainWindow::handleLoadButton() {
 		QLineEdit *currentlyLoadedEdit = this->findChild<QLineEdit *>("currentlyLoadedEdit");
 		currentlyLoadedEdit->setText(text);
 		
-		std::ostringstream stream;
+		std::wstringstream stream;
 		//stream<<"C:\\Users\\"<<username<<"\\Documents\\Larian Studios\\Divinity Original Sin\\PlayerProfiles\\";
 		stream<<this->getSaveLocation();
-		std::string profilesPath = stream.str();
-		std::string listText = text.toStdString();
-		std::vector<std::string> tokens;
-		boost::split(tokens, listText, boost::is_any_of("/"));
+		std::wstring profilesPath = stream.str();
+		std::wstring listText = text.toStdWString();
+		std::vector<std::wstring> tokens;
+		boost::split(tokens, listText, boost::is_any_of(L"/"));
 		if (tokens.size() == 2) {
 			profilesPath += tokens[0];
-			profilesPath += "\\";
-			profilesPath += "SaveGames\\";
+			profilesPath += L"\\";
+			profilesPath += L"SaveGames\\";
 			profilesPath += tokens[1];
-			profilesPath += "\\Globals.lsb";
-			std::ifstream fin(profilesPath.c_str(),
+			profilesPath += L"\\Globals.lsb";
+			boost::filesystem::ifstream fin(profilesPath,
 				std::ios_base::binary);
 			LsbReader reader;
 			globals = reader.loadFile(fin);
@@ -511,7 +525,7 @@ void MainWindow::handleLoadButton() {
 			displayAllItems2(tree, itemList);
 			
 			//load pak resources for textures
-			std::string gameDataPath = this->getGameDataLocation();
+			std::wstring gameDataPath = this->getGameDataLocation();
 			gamePakData.load(gameDataPath);
 			
 			if (gamePakData.getInventoryCellImg() != 0) {
@@ -566,12 +580,12 @@ void MainWindow::handleLoadButton() {
 }
 
 void MainWindow::handleOpenFileButton() {
-	std::ostringstream stream;
+	std::wstringstream stream;
 	stream<<this->getSaveLocation();
 	QString result = QFileDialog::getOpenFileName(this,
-												  QString("Open LSB"), stream.str().c_str(), QString("LSB Files (*.lsb)"));
+												  QString("Open LSB"), QString::fromStdWString(stream.str()), QString("LSB Files (*.lsb)"));
 	if (result.size() != 0) {
-		std::ifstream fin(result.toStdString().c_str(),
+		boost::filesystem::ifstream fin(result.toStdWString(),
 						  std::ios_base::binary);
 		LsbReader reader;
 		std::vector<LsbObject *> directoryList = reader.loadFile(fin);
@@ -605,19 +619,18 @@ void MainWindow::on_loadFileWidget_customContextMenuRequested(const QPoint &pos)
 		contextMenu.addAction("Open File &Location");
 		QAction *result = contextMenu.exec(loadFileWidget->mapToGlobal(pos));
 		if (result) {
-			std::ostringstream stream;
-			//stream<<"C:\\Users\\"<<username<<"\\Documents\\Larian Studios\\Divinity Original Sin\\PlayerProfiles\\";
+			std::wstringstream stream;
 			stream<<this->getSaveLocation();
-			std::string listText = item->text().toStdString();
-			std::vector<std::string> tokens;
-			boost::split(tokens, listText, boost::is_any_of("/"));
+			std::wstring listText = item->text().toStdWString();
+			std::vector<std::wstring> tokens;
+			boost::split(tokens, listText, boost::is_any_of(L"/"));
 			if (tokens.size() == 2) {
-				std::string profilesPath = stream.str();
+				std::wstring profilesPath = stream.str();
 				profilesPath += tokens[0];
-				profilesPath += "\\";
-				profilesPath += "SaveGames\\";
+				profilesPath += L"\\";
+				profilesPath += L"SaveGames\\";
 				profilesPath += tokens[1];
-				ShellExecuteA(NULL, "open", profilesPath.c_str(), NULL, NULL, SW_SHOW);
+				ShellExecuteW(NULL, L"open", profilesPath.c_str(), NULL, NULL, SW_SHOW);
 			}
 		}
 	}
@@ -627,32 +640,31 @@ void MainWindow::on_loadFileWidget_currentItemChanged(QListWidgetItem *current, 
 {
 	QPushButton *loadButton = this->findChild<QPushButton *>("loadButton");
 	loadButton->setEnabled(true);
-	std::ostringstream stream;
-	//stream<<"C:\\Users\\"<<username<<"\\Documents\\Larian Studios\\Divinity Original Sin\\PlayerProfiles\\";
+	std::wstringstream stream;
 	stream<<this->getSaveLocation();
-	std::string profilesPath = stream.str();
+	std::wstring profilesPath = stream.str();
 	if (current != 0) {
-		std::string listText = current->text().toStdString();
-		std::vector<std::string> tokens;
-		boost::split(tokens, listText, boost::is_any_of("/"));
+		std::wstring listText = current->text().toStdWString();
+		std::vector<std::wstring> tokens;
+		boost::split(tokens, listText, boost::is_any_of(L"/"));
 		if (tokens.size() == 2) {
 			profilesPath += tokens[0];
-			profilesPath += "\\";
-			profilesPath += "SaveGames\\";
+			profilesPath += L"\\";
+			profilesPath += L"SaveGames\\";
 			profilesPath += tokens[1];
-			profilesPath += "\\";
-			std::string bitmapPath = profilesPath;
+			profilesPath += L"\\";
+			std::wstring bitmapPath = profilesPath;
 			bitmapPath += tokens[1];
-			bitmapPath += ".bmp";
-			std::string configPath = profilesPath;
+			bitmapPath += L".bmp";
+			std::wstring configPath = profilesPath;
 			configPath += tokens[1];
-			configPath += ".lsb";
-			std::string metaPath = profilesPath;
-			metaPath += "meta.lsb";
-			std::ifstream fin(configPath.c_str(),
+			configPath += L".lsb";
+			std::wstring metaPath = profilesPath;
+			metaPath += L"meta.lsb";
+			boost::filesystem::ifstream fin(configPath,
 				std::ios_base::binary);
 			if (!fin) {
-				fin.open(metaPath.c_str(),
+				fin.open(metaPath,
 						std::ios_base::binary);
 			}
 			if (fin) {
@@ -663,7 +675,7 @@ void MainWindow::on_loadFileWidget_currentItemChanged(QListWidgetItem *current, 
 				LsbObject *saveTime = LsbReader::lookupByUniquePathEntity(metaData, "root/MetaData/SaveTime");
 				LsbObject *module = LsbReader::lookupByUniquePathEntity(metaData, "root/MetaData/ModuleSettings/Mods/ModuleShortDesc");
 				QLabel *previewPicture = this->findChild<QLabel *>("previewPicture");
-				QImage img = QImage(bitmapPath.c_str());
+				QImage img = QImage(QString::fromStdWString(bitmapPath));
 				img = img.scaled(previewPicture->size());
 				previewPicture->setPixmap(QPixmap::fromImage(img));
 				QLineEdit *previewName = this->findChild<QLineEdit *>("previewName");
@@ -686,7 +698,7 @@ void MainWindow::on_loadFileWidget_currentItemChanged(QListWidgetItem *current, 
 				std::string timeText = ssTime.str();
 				QLineEdit *previewModule = this->findChild<QLineEdit *>("previewModule");
 				std::string moduleText = LsbReader::lookupByUniquePathEntity(module, "Name")->getData();
-				previewName->setText(QString(tokens[1].c_str()));
+				previewName->setText(QString::fromStdWString(tokens[1]));
 				previewDate->setText(QString(dateText.c_str()));
 				previewTime->setText(QString(timeText.c_str()));
 				previewModule->setText(QString(moduleText.c_str()));
@@ -850,29 +862,28 @@ void MainWindow::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 
 void MainWindow::on_saveAction_triggered()
 {
-	std::ostringstream stream;
-	//stream<<"C:\\Users\\"<<username<<"\\Documents\\Larian Studios\\Divinity Original Sin\\PlayerProfiles\\";
+	std::wstringstream stream;
 	stream<<this->getSaveLocation();
-	std::string profilesPath = stream.str();
+	std::wstring profilesPath = stream.str();
 	QLineEdit *currentlyLoadedEdit = this->findChild<QLineEdit *>("currentlyLoadedEdit");
-	std::string listText = currentlyLoadedEdit->text().toStdString();;
-	std::vector<std::string> tokens;
-	boost::split(tokens, listText, boost::is_any_of("/"));
+	std::wstring listText = currentlyLoadedEdit->text().toStdWString();
+	std::vector<std::wstring> tokens;
+	boost::split(tokens, listText, boost::is_any_of(L"/"));
 	if (tokens.size() == 2) {
 		profilesPath += tokens[0];
-		profilesPath += "\\";
-		profilesPath += "SaveGames\\";
+		profilesPath += L"\\";
+		profilesPath += L"SaveGames\\";
 		profilesPath += tokens[1];
-		profilesPath += "\\Globals.lsb";
+		profilesPath += L"\\Globals.lsb";
 	
-		std::string bakPath = profilesPath;
-		bakPath += ".bak";
+		std::wstring bakPath = profilesPath;
+		bakPath += L".bak";
 		
 		//create backup
-		std::ifstream src(profilesPath.c_str(), std::ios::binary);
-		std::ifstream dstExists(bakPath.c_str(), std::ios::binary);
+		boost::filesystem::ifstream src(profilesPath, std::ios::binary);
+		boost::filesystem::ifstream dstExists(bakPath, std::ios::binary);
 		if (!dstExists) {
-			std::ofstream dst(bakPath.c_str(),   std::ios::binary);
+			boost::filesystem::ofstream dst(bakPath, std::ios::binary);
 			dst << src.rdbuf();
 			dst.close();
 		}
@@ -880,7 +891,7 @@ void MainWindow::on_saveAction_triggered()
 		src.close();
 		
 		LsbWriter writer;
-		std::ofstream fout(profilesPath.c_str(), std::ios::binary);
+		boost::filesystem::ofstream fout(profilesPath, std::ios::binary);
 		bool result = writer.writeFile(globals, globalTagList, fout);
 		fout.close();
 		
@@ -970,20 +981,26 @@ void MainWindow::on_gameDataButton_released()
 	}
 }
 
-std::string MainWindow::getSaveLocation() {
+std::wstring MainWindow::getSaveLocation() {
 	QLineEdit *savesFolderEdit = this->findChild<QLineEdit *>("savesFolderEdit");
-	std::string result = savesFolderEdit->text().toStdString();
-	if (!boost::ends_with(result, "\\")) {
-		result += "\\";
+	std::wstring result = savesFolderEdit->text().toStdWString();
+	if (boost::contains(result, L"\\") && !boost::ends_with(result, L"\\")) {
+		result += L"\\";
+	}
+	if (boost::contains(result, L"/") && !boost::ends_with(result, L"/")) {
+		result += L"/";
 	}
 	return result;
 }
 
-std::string MainWindow::getGameDataLocation() {
+std::wstring MainWindow::getGameDataLocation() {
 	QLineEdit *gameDataEdit = this->findChild<QLineEdit *>("gameDataEdit");
-	std::string result = gameDataEdit->text().toStdString();
-	if (!boost::ends_with(result, "\\")) {
-		result += "\\";
+	std::wstring result = gameDataEdit->text().toStdWString();
+	if (boost::contains(result, L"\\") && !boost::ends_with(result, L"\\")) {
+		result += L"\\";
+	}
+	if (boost::contains(result, L"/") && !boost::ends_with(result, L"/")) {
+		result += L"/";
 	}
 	return result;
 }
@@ -993,15 +1010,18 @@ void MainWindow::on_savesFolderEdit_textChanged(const QString &text)
 	QListWidget *loadFileWidget = this->findChild<QListWidget *>("loadFileWidget");
 	
 	loadFileWidget->clear();
-	std::ostringstream stream;
-	stream<<text.toStdString();
-	if (!boost::ends_with(stream.str(), "\\")) {
-		stream<<"\\";
+	std::wstringstream stream;
+	stream<<text.toStdWString();
+	if (boost::contains(stream.str(), L"\\") && !boost::ends_with(stream.str(), L"\\")) {
+		stream<<L"\\";
 	}
-	std::string profilesPath = stream.str();
-	stream<<"playerprofiles.lsb";
-	std::string profileLsbPath = stream.str();
-	std::ifstream fin(profileLsbPath.c_str(),
+	if (boost::contains(stream.str(), L"/") && !boost::ends_with(stream.str(), L"/")) {
+		stream<<L"/";
+	}
+	std::wstring profilesPath = stream.str();
+	stream<<L"playerprofiles.lsb";
+	std::wstring profileLsbPath = stream.str();
+	boost::filesystem::ifstream fin(profileLsbPath,
 		std::ios_base::binary);
 	if (fin) {
 		LsbReader reader;
@@ -1011,15 +1031,16 @@ void MainWindow::on_savesFolderEdit_textChanged(const QString &text)
 			std::vector<LsbObject *> profiles = LsbReader::lookupAllEntitiesWithName(profilesDir, "PlayerProfile");
 			std::vector<LsbObject *> profileNames = LsbReader::extractPropertyForEachListItem(profiles, "PlayerProfileName");
 			for (int i=0; i<profileNames.size(); ++i) {
-				char *data = profileNames[i]->getData();
-				long dataSize = profileNames[i]->getDataSize();
-				char *alloc = new char[dataSize / 2];
-				wcstombs(alloc, (const wchar_t*)data, dataSize);
-				std::vector<std::string> saveList = getSaveGameList(profilesPath.c_str(), alloc);
+				wchar_t *data = (wchar_t *)profileNames[i]->getData();
+				//char *data = profileNames[i]->getData();
+				//long dataSize = profileNames[i]->getDataSize();
+				//char *alloc = new char[dataSize / 2];
+				//wcstombs(alloc, (const wchar_t*)data, dataSize);
+				std::vector<std::wstring> saveList = getSaveGameList(profilesPath, data);
 				for (int j=0; j<saveList.size(); ++j) {
-					loadFileWidget->addItem(QString(saveList[j].c_str()));
+					loadFileWidget->addItem(QString::fromStdWString(saveList[j]));
 				}
-				delete []alloc;
+				//delete []alloc;
 			}
 		}
 	}
@@ -1028,12 +1049,12 @@ void MainWindow::on_savesFolderEdit_textChanged(const QString &text)
 
 void MainWindow::on_pakOpenButton_released()
 {
-	std::ostringstream stream;
+	std::wstringstream stream;
 	stream<<this->getGameDataLocation();
 	QString result = QFileDialog::getOpenFileName(this,
-												  QString("Open PAK"), stream.str().c_str(), QString("PAK Files (*.pak)"));
+												  QString("Open PAK"), QString::fromStdWString(stream.str()), QString("PAK Files (*.pak)"));
 	if (result.size() != 0) {
-		userPakFileName = result.toStdString();
+		userPakFileName = result.toStdWString();
 		userPakReader.loadFile(userPakFileName);
 		std::vector<std::string> fileList = userPakReader.getFileList();
 		QListWidget *pakListWidget = this->findChild<QListWidget *>("pakListWidget");
@@ -1065,7 +1086,7 @@ void MainWindow::on_pakListWidget_customContextMenuRequested(const QPoint &pos)
 			fileDialog.setOption(QFileDialog::ShowDirsOnly, true);
 			if (fileDialog.exec()) {
 				if (fileDialog.selectedFiles().size() == 1) {
-					std::string folderName = fileDialog.selectedFiles()[0].toStdString();
+					std::wstring folderName = fileDialog.selectedFiles()[0].toStdWString();
 					QProgressDialog progress("Extracting...", "Cancel", 0, pakListWidget->selectedItems().size(), this);
 					progress.setWindowModality(Qt::WindowModal);
 					QApplication::processEvents();
@@ -1093,12 +1114,12 @@ void MainWindow::on_pakListWidget_customContextMenuRequested(const QPoint &pos)
 
 void MainWindow::on_devSaveFileButton_released()
 {
-	std::ostringstream stream;
+	std::wstringstream stream;
 	stream<<this->getSaveLocation();
 	QString result = QFileDialog::getSaveFileName(this,
-												  QString("Save File"), stream.str().c_str(), QString("LSB Files (*.lsb)"));
+												  QString("Save File"), QString::fromStdWString(stream.str()), QString("LSB Files (*.lsb)"));
 	if (result.size() != 0) {
-		std::ofstream fout(result.toStdString().c_str(),
+		boost::filesystem::ofstream fout(result.toStdWString(),
 						  std::ios_base::binary);
 		if (fout) {
 			QTreeWidget *tree = this->findChild<QTreeWidget *>("treeWidget");

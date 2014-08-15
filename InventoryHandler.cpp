@@ -195,6 +195,34 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 			if (matchCount != 1) {
 				std::cout<<"Mismatch for template ID "<<currentTemplate<<", matchCount = "<<matchCount<<"("<<statsText<<")"<<'\n';
 			}
+			std::string prefix = "";
+			std::string suffix = "";
+			for (int i=0; i<item->getBoosts().size(); ++i) {
+				StatsContainer *boostStats = item->getBoosts()[i];
+				
+				if (boostStats != 0) {
+					long itemRandom = item->getGenerationRandom();
+					if (boostStats->getPrefixList().size() > 0 && prefix.size() == 0) {
+						prefix = boostStats->getPrefixList()[itemRandom % boostStats->getPrefixList().size()];
+					}
+					else if (boostStats->getSuffixList().size() > 0 && suffix.size() == 0) {
+						suffix = boostStats->getSuffixList()[itemRandom % boostStats->getSuffixList().size()];
+					}
+				}
+			}
+			std::string newName = "";
+			if (prefix.size() > 0) {
+				item->setNamePrefix(prefix);
+				newName += prefix;
+				newName += " ";
+			}
+			newName += item->getItemName();
+			if (suffix.size() > 0) {
+				item->setNameSuffix(suffix);
+				newName += " ";
+				newName += suffix;
+			}
+			item->setAffixedName(newName);
 		}
 		else {
 			if (drawBackground) {

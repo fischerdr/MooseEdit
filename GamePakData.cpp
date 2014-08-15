@@ -7,6 +7,7 @@
 #include <QListWidget>
 #include <fstream>
 #include <windows.h>
+#include <boost/filesystem/fstream.hpp>
 
 std::vector<LsbObject *> &GamePakData::getStats()
 {
@@ -153,7 +154,7 @@ void GamePakData::populateModTemplateMap(std::vector<LsbObject *>& modTemplates)
 #define PROCESSING_TYPE_ITEMSTATS		4
 #define PROCESSING_TYPE_SKILLSTATS		5
 #define PROCESSING_TYPE_ITEMLINKS		6
-void GamePakData::parsePakFile(std::string& pakPath, const char *pakExtractPath, std::string& outputDir, int processingType) {
+void GamePakData::parsePakFile(std::wstring& pakPath, const char *pakExtractPath, std::wstring& outputDir, int processingType) {
 	if (pakPath != lastPakPath) {
 		pakReader.loadFile(pakPath);
 		lastPakPath = pakPath;
@@ -171,39 +172,27 @@ void GamePakData::parsePakFile(std::string& pakPath, const char *pakExtractPath,
 	switch (processingType) {
 	
 	case PROCESSING_TYPE_STATS: {
-		//std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
 		stats = lsbReader.loadFile(fileByteStream);
-		//lsbFin.close();
 		
 		buildNameMappings();
 		break;}
 	case PROCESSING_TYPE_ROOTTEMPLATE: {
-//		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
 		std::vector<LsbObject *> rootTemplates = lsbReader.loadFile(fileByteStream);
-//		lsbFin.close();
 		this->addRootTemplates(rootTemplates);
 		break;}
 	case PROCESSING_TYPE_MODTEMPLATE: {
-//		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
 		std::vector<LsbObject *> modTemplates = lsbReader.loadFile(fileByteStream);
-//		lsbFin.close();
 		this->addModTemplates(modTemplates);
 		break;}
 	case PROCESSING_TYPE_ITEMSTATS: {
-//		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
 		std::vector<StatsContainer *> itemStats = genStatsReader.loadFile(fileByteStream);
-//		lsbFin.close();
 		this->addItemStats(itemStats);
 		break;}
 	case PROCESSING_TYPE_SKILLSTATS: {
-//		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
 		skillStats = genStatsReader.loadFile(fileByteStream);
-//		lsbFin.close();
 		break;}
 	case PROCESSING_TYPE_ITEMLINKS: {
-//		std::ifstream lsbFin(extractedPath.c_str(), std::ios::binary);
 		std::vector<StatsContainer *> itemLinks = genStatsReader.loadFile(fileByteStream);
-//		lsbFin.close();
 		this->addItemLinks(itemLinks);
 		break;}
 		
@@ -211,9 +200,9 @@ void GamePakData::parsePakFile(std::string& pakPath, const char *pakExtractPath,
 	delete[] fileBytes;
 }
 
-void GamePakData::load(std::string gameDataPath) {
-	std::string pakMain(gameDataPath + "Main.pak");
-	std::string pakTextures(gameDataPath + "Textures.pak");
+void GamePakData::load(std::wstring gameDataPath) {
+	std::wstring pakMain(gameDataPath + L"Main.pak");
+	std::wstring pakTextures(gameDataPath + L"Textures.pak");
 	std::string iconLsx("Public/Main/GUI/icons.lsx");
 	std::string portraitLsx("Public/Main/GUI/portraits.lsx");
 	
@@ -221,11 +210,11 @@ void GamePakData::load(std::string gameDataPath) {
 	std::string portraitDds("Public/Main/Assets/Textures/Icons/portraits.dds");
 	std::string inventoryCellDds("Public/Main/Assets/Textures/Icons/InventoryCell.dds");
 	
-	std::string tempDirectory = QDir::temp().absolutePath().toStdString();
+	std::wstring tempDirectory = QDir::temp().absolutePath().toStdWString();
 	
-	std::string linkDirectory = tempDirectory;
-	linkDirectory += "\\links";
-	mkdir(linkDirectory.c_str());
+	std::wstring linkDirectory = tempDirectory;
+	linkDirectory += L"\\links";
+	_wmkdir(linkDirectory.c_str());
 	
 	parsePakFile(pakMain, "Public/Main/Localization/Stats.lsb", tempDirectory, PROCESSING_TYPE_STATS);
 //	parsePakFile(pakMain, "Public/Main/RootTemplates/Armors.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
@@ -241,10 +230,10 @@ void GamePakData::load(std::string gameDataPath) {
 	std::string modTemplatesPath2 = "Mods/Main/Levels/";
 	std::string itemPathText = "/Items/";
 	std::vector<std::string> allMainFiles = pakReader.getFileList();
-	std::string rootTemplateTemp = tempDirectory + "\\RootTemplates";
-	std::string modTemplateTemp = tempDirectory + "\\ModTemplates";
-	mkdir(rootTemplateTemp.c_str());
-	mkdir(modTemplateTemp.c_str());
+	std::wstring rootTemplateTemp = tempDirectory + L"\\RootTemplates";
+	std::wstring modTemplateTemp = tempDirectory + L"\\ModTemplates";
+	_wmkdir(rootTemplateTemp.c_str());
+	_wmkdir(modTemplateTemp.c_str());
 	for (int i=0; i<allMainFiles.size(); ++i) {
 		std::string &mainFile = allMainFiles[i];
 		if (boost::contains(mainFile, itemPathText)) {
@@ -288,16 +277,16 @@ void GamePakData::load(std::string gameDataPath) {
 	pakReader.extractFile(pakTextures, inventoryCellDds, tempDirectory, false);
 	
 	boost::replace_all(tempDirectory, "/", "\\");
-	std::string iconsLsxPath = tempDirectory;
-	iconsLsxPath += "\\icons.lsx";
-	std::string iconsDdsPath = tempDirectory;
-	iconsDdsPath += "\\icons.dds";
-	std::string inventoryCellDdsPath = tempDirectory;
-	inventoryCellDdsPath += "\\inventoryCell.dds";
-	std::string portraitsLsbPath = tempDirectory;
-	portraitsLsbPath += "\\portraits.dds";
+	std::wstring iconsLsxPath = tempDirectory;
+	iconsLsxPath += L"\\icons.lsx";
+	std::wstring iconsDdsPath = tempDirectory;
+	iconsDdsPath += L"\\icons.dds";
+	std::wstring inventoryCellDdsPath = tempDirectory;
+	inventoryCellDdsPath += L"\\inventoryCell.dds";
+	std::wstring portraitsLsbPath = tempDirectory;
+	portraitsLsbPath += L"\\portraits.dds";
 	
-	std::ifstream iconDdsFin(iconsDdsPath.c_str(), std::ios::binary);
+	boost::filesystem::ifstream iconDdsFin(iconsDdsPath, std::ios::binary);
 	int start = iconDdsFin.tellg();
 	iconDdsFin.seekg(0, std::ios_base::end);
 	int fileLengthDds = iconDdsFin.tellg() - start;
@@ -306,7 +295,7 @@ void GamePakData::load(std::string gameDataPath) {
 	iconDdsFin.read(fileBytesDds, fileLengthDds);
 	iconDdsFin.close();
 	
-	std::ifstream iconLsxFin(iconsLsxPath.c_str(), std::ios::binary);
+	boost::filesystem::ifstream iconLsxFin(iconsLsxPath, std::ios::binary);
 	start = iconLsxFin.tellg();
 	iconLsxFin.seekg(0, std::ios_base::end);
 	int fileLengthLsx = iconLsxFin.tellg() - start;
@@ -316,7 +305,7 @@ void GamePakData::load(std::string gameDataPath) {
 	iconLsxFin.close();
 	std::string lsxBytes(fileBytesLsx);
 	
-	std::ifstream inventoryCellDdsFin(inventoryCellDdsPath.c_str(), std::ios::binary);
+	boost::filesystem::ifstream inventoryCellDdsFin(inventoryCellDdsPath, std::ios::binary);
 	start = inventoryCellDdsFin.tellg();
 	inventoryCellDdsFin.seekg(0, std::ios_base::end);
 	int fileLengthInventoryCellDds = inventoryCellDdsFin.tellg() - start;

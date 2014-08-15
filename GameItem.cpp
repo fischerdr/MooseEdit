@@ -556,6 +556,36 @@ void GameItem::setMiscSlot(unsigned long value)
 {
 	miscSlot = value;
 }
+
+std::string GameItem::getNamePrefix() const
+{
+	return namePrefix;
+}
+
+void GameItem::setNamePrefix(const std::string &value)
+{
+	namePrefix = value;
+}
+
+std::string GameItem::getNameSuffix() const
+{
+	return nameSuffix;
+}
+
+void GameItem::setNameSuffix(const std::string &value)
+{
+	nameSuffix = value;
+}
+
+std::string GameItem::getAffixedName() const
+{
+	return affixedName;
+}
+
+void GameItem::setAffixedName(const std::string &value)
+{
+	affixedName = value;
+}
 GameItem::GameItem(std::vector<TAG_LSB *> *tagList) : tagList(tagList)
 {
 	this->itemName = "?";

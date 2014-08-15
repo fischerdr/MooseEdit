@@ -30,11 +30,11 @@ class GamePakData
 	LsbReader lsbReader;
 	PakReader pakReader;
 	GenStatsReader genStatsReader;
-	std::string lastPakPath = "";
+	std::wstring lastPakPath = L"";
 
 	void populateRootTemplateMap(std::vector<LsbObject *>& rootTemplates);
 	void populateModTemplateMap(std::vector<LsbObject *>& modTemplates);
-	void parsePakFile(std::string& pakPath, const char *pakExtractPath, std::string& outputDir, int processingType);
+	void parsePakFile(std::wstring &pakPath, const char *pakExtractPath, std::wstring &outputDir, int processingType);
 	void buildNameMappings();
 	void addRootTemplates(std::vector<LsbObject *>& rootTemplates) {
 		for (int i=0; i<rootTemplates.size(); ++i) {
@@ -58,7 +58,7 @@ class GamePakData
 	}
 public:
 	GamePakData();
-	void load(std::string gameDataPath);
+	void load(std::wstring gameDataPath);
 	QImage *getInventoryCellImg() {
 		return inventoryCellPtr;
 	}

@@ -11,8 +11,11 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = MooseEdit
 TEMPLATE = app
 
-QT += opengl
 INCLUDEPATH = C:\boost\boost_1_55_0
+
+LIBS += "-LC:\boost\boost_1_55_0\stage\lib"
+LIBS += "-LC:\boost\stage\lib" -lboost_filesystem-mgw48-mt-1_55
+LIBS += "-LC:\boost\stage\lib" -lboost_system-mgw48-mt-1_55
 
 win32:RC_ICONS += cogMoose.ico
 

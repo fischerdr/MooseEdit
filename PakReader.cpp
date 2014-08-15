@@ -4,6 +4,7 @@
 #include <boost/tokenizer.hpp>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <boost/filesystem/fstream.hpp>
 
 long PakReader::getNextBlock(long offset) {
 	return offset - (offset % BLOCK_SIZE) + BLOCK_SIZE;
@@ -26,13 +27,13 @@ long PakReader::getStreamLength(std::istream& input) {
 	return streamSize;
 }
 
-std::string PakReader::getFileNameByPakNumber(std::string& fileName, long pakNumber) {
+std::wstring PakReader::getFileNameByPakNumber(std::wstring& fileName, long pakNumber) {
 	if (pakNumber == 0) {
 		return fileName;
 	}
-	long lastDot = fileName.find_last_of(".");
-	std::ostringstream result;
-	result<<fileName.substr(0, lastDot)<<"_"<<pakNumber<<".pak";
+	long lastDot = fileName.find_last_of(L".");
+	std::wstringstream result;
+	result<<fileName.substr(0, lastDot)<<L"_"<<pakNumber<<L".pak";
 	return result.str();
 }
 
@@ -44,15 +45,15 @@ HEADER_PAK_FILEINFO *PakReader::getHeaderForFile(std::string& filePath) {
 	}
 	return 0;
 }
-std::string PakReader::getLastExtractPath() const
+std::wstring PakReader::getLastExtractPath() const
 {
 	return lastExtractPath;
 }
 
 
-bool PakReader::loadFile(std::string fileName) {
+bool PakReader::loadFile(std::wstring fileName) {
 	fileInfo.clear();
-	std::ifstream input(fileName.c_str(), std::ios_base::binary);
+	boost::filesystem::ifstream input(fileName, std::ios_base::binary);
 	HEADER_PAK pakHeader;
 	if (input) {
 		input.read((char *)&pakHeader, sizeof(HEADER_PAK));
@@ -89,14 +90,14 @@ std::vector<std::string> PakReader::getFileList() {
 	return fileList;
 }
 
-bool PakReader::extractFile(std::string fileName, std::string& filePath, std::string& destination, bool preservePath) {
+bool PakReader::extractFile(std::wstring fileName, std::string& filePath, std::wstring& destination, bool preservePath) {
 	unsigned long fileSize;
 	char *fileBytes = extractFileIntoMemory(fileName, filePath, destination, preservePath, &fileSize);
 	if (fileBytes == 0) {
 		return false;
 	}
 	
-	std::ofstream outFile(lastExtractPath.c_str(), std::ios_base::binary);
+	boost::filesystem::ofstream outFile(lastExtractPath, std::ios_base::binary);
 	outFile.write(fileBytes, fileSize);
 	delete[] fileBytes;
 	if (!outFile) {
@@ -108,13 +109,13 @@ bool PakReader::extractFile(std::string fileName, std::string& filePath, std::st
 	return true;
 }
 	
-char *PakReader::extractFileIntoMemory(std::string fileName, std::string& filePath, std::string& destination, bool preservePath, unsigned long *fileSize) {
+char *PakReader::extractFileIntoMemory(std::wstring fileName, std::string& filePath, std::wstring& destination, bool preservePath, unsigned long *fileSize) {
 	if (fileSize == 0) {
 		return 0;
 	}
 	HEADER_PAK_FILEINFO *info = getHeaderForFile(filePath);
 	if (info != 0) {
-		std::ifstream input(getFileNameByPakNumber(fileName, info->pakNumber).c_str(), std::ios_base::binary);
+		boost::filesystem::ifstream input(getFileNameByPakNumber(fileName, info->pakNumber).c_str(), std::ios_base::binary);
 		long fileStart = dataOffsetToAbsolute(info->dataSectionOffset, info->pakNumber);
 		input.seekg(fileStart);
 		char *alloc = new char[info->fileSize];
@@ -124,32 +125,45 @@ char *PakReader::extractFileIntoMemory(std::string fileName, std::string& filePa
 			input.close();
 			return 0;
 		}
-		char cwd[1024];
-		getcwd(cwd, sizeof(cwd));
-		std::ostringstream ss;
+		long cwdSize = 1024;
+		wchar_t cwd[cwdSize];
+		_wgetcwd(cwd, cwdSize);
+		std::wstringstream ss;
 		if (!preservePath) {
-			std::string extractFileName = info->fileName;
-			long lastPathDelimiter = extractFileName.find_last_of('/');
+			long fileNameSize = strlen(info->fileName) + 1;
+			std::wstring extractFileName;
+			{
+				wchar_t alloc[fileNameSize];
+				mbstowcs(alloc, info->fileName, fileNameSize);
+				extractFileName = alloc;
+			}
+			long lastPathDelimiter = extractFileName.find_last_of(L'/');
 			if (lastPathDelimiter == std::string::npos) {
-				ss<<destination<<(destination[destination.size() - 1] == '/' ? "" : "/")<<extractFileName;
+				ss<<destination<<(destination[destination.size() - 1] == L'/' ? L"" : L"/")<<extractFileName;
 			}
 			else {
-				ss<<destination<<(destination[destination.size() - 1] == '/' ? "" : "/")<<extractFileName.substr(lastPathDelimiter + 1);
+				ss<<destination<<(destination[destination.size() - 1] == L'/' ? L"" : L"/")<<extractFileName.substr(lastPathDelimiter + 1);
 			}
 		} else {
-			boost::char_separator<char> sep("\\/");
-			typedef boost::tokenizer<boost::char_separator<char> > PathTokenizer;
-			std::string name = info->fileName;
+			boost::char_separator<wchar_t> sep(L"\\/");
+			typedef boost::tokenizer<boost::char_separator<wchar_t> , std::wstring::const_iterator, std::wstring> PathTokenizer;
+			long fileNameSize = strlen(info->fileName) + 1;
+			std::wstring name;
+			{
+				wchar_t alloc[fileNameSize];
+				mbstowcs(alloc, info->fileName, fileNameSize);
+				name = alloc;
+			}
 			PathTokenizer tok(name, sep);
-			std::string lastToken = "";
-			chdir(destination.c_str());
+			std::wstring lastToken = L"";
+			_wchdir(destination.c_str());
 			ss<<destination<<(destination[destination.size() - 1] == '/' ? "" : "/");
 			for (PathTokenizer::iterator it = tok.begin(); it != tok.end(); ++it) {
-				std::string token = *it;
+				std::wstring token = *it;
 				if (lastToken.length() != 0) {
-					mkdir(lastToken.c_str());
-					chdir(lastToken.c_str());
-					ss<<lastToken<<"/";
+					_wmkdir(lastToken.c_str());
+					_wchdir(lastToken.c_str());
+					ss<<lastToken<<L"/";
 				}
 				lastToken = token;
 			}
@@ -157,17 +171,9 @@ char *PakReader::extractFileIntoMemory(std::string fileName, std::string& filePa
 		}
 		lastExtractPath = ss.str();
 		*fileSize = info->fileSize;
-//		std::ofstream outFile(ss.str().c_str(), std::ios_base::binary);
-//		outFile.write(alloc, info->fileSize);
-//		delete []alloc;
-//		if (!outFile) {
-//			outFile.close();
-//			input.close();
-//			return false;
-//		}
-		//outFile.close();
+
 		input.close();
-		chdir(cwd);
+		_wchdir(cwd);
 		return alloc;
 	}
 	return 0;

@@ -19,6 +19,9 @@ class GameItem
 	unsigned long keysSlot = 0;
 	unsigned long miscSlot = 0;
 	std::string itemName;
+	std::string namePrefix;
+	std::string nameSuffix;
+	std::string affixedName;
 	std::string body;
 	StatsContainer *itemStats = 0;
 	std::vector<StatsContainer *> boosts;
@@ -144,6 +147,12 @@ public:
 	void setKeysSlot(unsigned long value);
 	unsigned long getMiscSlot() const;
 	void setMiscSlot(unsigned long value);
+	std::string getNamePrefix() const;
+	void setNamePrefix(const std::string &value);
+	std::string getNameSuffix() const;
+	void setNameSuffix(const std::string &value);
+	std::string getAffixedName() const;
+	void setAffixedName(const std::string &value);
 };
 
 #endif // GAMEITEM_H

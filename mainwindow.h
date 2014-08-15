@@ -74,11 +74,11 @@ private:
 	std::vector<LsbObject *> playerProfiles;
 	CharacterGroup characters;
 	InventoryHandler *editItemHandler;
-	std::string getSteamPathFromRegistry();
-	std::string getSaveLocation();
-	std::string getGameDataLocation();
+	std::wstring getSteamPathFromRegistry();
+	std::wstring getSaveLocation();
+	std::wstring getGameDataLocation();
 	PakReader userPakReader;
-	std::string userPakFileName;
+	std::wstring userPakFileName;
 	GamePakData gamePakData;
 	std::vector<TAG_LSB *> openFileButtonTagList;
 };

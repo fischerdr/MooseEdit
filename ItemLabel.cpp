@@ -314,8 +314,8 @@ void ItemLabel::setupTooltip()
 				ss.clear();
 				ss.str("");
 				
-				std::string prefix = "";
-				std::string suffix = "";
+				//std::string prefix = "";
+				//std::string suffix = "";
 				std::map<std::string, long> elementalMinMap;
 				std::map<std::string, long> elementalMaxMap;
 				for (int i=0; i<boosts.size(); ++i) {
@@ -323,13 +323,13 @@ void ItemLabel::setupTooltip()
 					
 					StatsContainer *itemBoost = 0;
 					if (boostStats != 0) {
-						long itemRandom = item->getGenerationRandom();
-						if (boostStats->getPrefixList().size() > 0 && prefix.size() == 0) {
-							prefix = boostStats->getPrefixList()[itemRandom % boostStats->getPrefixList().size()];
-						}
-						else if (boostStats->getSuffixList().size() > 0 && suffix.size() == 0) {
-							suffix = boostStats->getSuffixList()[itemRandom % boostStats->getSuffixList().size()];
-						}
+//						long itemRandom = item->getGenerationRandom();
+//						if (boostStats->getPrefixList().size() > 0 && prefix.size() == 0) {
+//							prefix = boostStats->getPrefixList()[itemRandom % boostStats->getPrefixList().size()];
+//						}
+//						else if (boostStats->getSuffixList().size() > 0 && suffix.size() == 0) {
+//							suffix = boostStats->getSuffixList()[itemRandom % boostStats->getSuffixList().size()];
+//						}
 						itemBoost = GenStatsReader::getContainer(allItemStats, boostStats->getBoostName());
 					}
 					if (itemBoost != 0) {
@@ -360,17 +360,18 @@ void ItemLabel::setupTooltip()
 					contentHtml<<"<font color=#DBDBDB size=5>"<<it->first<<": "<<it->second<<"-"<<elementalMaxMap[it->first]<<"</font><br/>";
 				}
 				
-				std::string newHeader = "";
-				if (prefix.size() > 0) {
-					newHeader += prefix;
-					newHeader += " ";
-				}
-				newHeader += item->getItemName();
-				if (suffix.size() > 0) {
-					newHeader += " ";
-					newHeader += suffix;
-				}
-				headerLabel->setText(newHeader.c_str());
+//				std::string newHeader = "";
+//				if (prefix.size() > 0) {
+//					newHeader += prefix;
+//					newHeader += " ";
+//				}
+//				newHeader += item->getItemName();
+//				if (suffix.size() > 0) {
+//					newHeader += " ";
+//					newHeader += suffix;
+//				}
+//				headerLabel->setText(newHeader.c_str());
+				headerLabel->setText(item->getAffixedName().c_str());
 
 				contentHtml<<"<font color=#008000 size=2>Attack: "<<getSummedStat("AttackAPCost")<<" Action Point(s)</font><br/>";
 				float critDamage = (1 + getSummedItemStat("CriticalDamage")/2.0f + getPermBoostStatValue("CriticalDamage")/10.0f);

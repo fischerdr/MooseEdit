@@ -9,6 +9,7 @@
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 #include "LsbWriter.h"
+#include <boost/filesystem/fstream.hpp>
 
 class BaseStatsViewSelectCallback : public StatsButtonCallback {
 	ItemEditFrame *itemEditFrame;
@@ -585,7 +586,7 @@ void ItemEditFrame::on_exportButton_released()
 {
 	QFileDialog saveDialog(this);
 	saveDialog.setNameFilter("Item Files (*.lsb)");
-	std::string defaultName = item->getItemName() + ".lsb";
+	std::string defaultName = item->getAffixedName() + ".lsb";
 	boost::replace_all(defaultName, " ", "_");
 	saveDialog.selectFile(defaultName.c_str());
 	saveDialog.setDirectory(currentDir.c_str());
@@ -593,8 +594,8 @@ void ItemEditFrame::on_exportButton_released()
 	if (saveDialog.exec()) {
 		if (saveDialog.selectedFiles().size() == 1) {
 			currentDir = saveDialog.directory().path().toStdString();
-			std::string fileName = saveDialog.selectedFiles().at(0).toStdString();
-			std::ofstream fout(fileName.c_str(), std::ios_base::binary);
+			std::wstring fileName = saveDialog.selectedFiles().at(0).toStdWString();
+			boost::filesystem::ofstream fout(fileName, std::ios_base::binary);
 			bool success = false;
 			if (fout) {
 				LsbWriter writer;
@@ -636,7 +637,7 @@ void ItemEditFrame::on_importButton_released()
 		if (openDialog.selectedFiles().size() == 1) {
 			currentDir = openDialog.directory().path().toStdString();
 			std::string fileName = openDialog.selectedFiles().at(0).toStdString();
-			std::ifstream fin(fileName.c_str(), std::ios_base::binary);
+			boost::filesystem::ifstream fin(fileName.c_str(), std::ios_base::binary);
 			bool success = false;
 			if (fin) {
 				LsbReader reader;
