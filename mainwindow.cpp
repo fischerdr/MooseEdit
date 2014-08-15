@@ -126,34 +126,40 @@ MainWindow::MainWindow(QWidget *parent) :
 		gameDataEdit->setText(QString::fromStdWString(gameDataPath));
 	}
 	
-	std::vector<std::string> splitVector;
-	boost::split(splitVector, path, boost::is_any_of("\\"));
-	if (splitVector.size() > 0) {
-		std::string &first = splitVector[0];
-		if (first.length() != 0) {
-			QLineEdit *savesFolderEdit = this->findChild<QLineEdit *>("savesFolderEdit");
-			
-			CHAR my_documents[MAX_PATH + 1];
-			HRESULT result = SHGetFolderPathA(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents);
-			if (result == S_OK) {
-				std::string saveFolderPath = my_documents;
-				if (!boost::ends_with(saveFolderPath, "\\")) {
-					saveFolderPath += "\\";
-				}
-				saveFolderPath += "Larian Studios\\Divinity Original Sin\\PlayerProfiles\\";
-				savesFolderEdit->setText(saveFolderPath.c_str());
-			}
-			else {
-				std::string saveFolderPath = first;
-				saveFolderPath += "\\Users\\";
+	QLineEdit *savesFolderEdit = this->findChild<QLineEdit *>("savesFolderEdit");
+	
+	wchar_t my_documents[MAX_PATH + 1];
+	HRESULT result = SHGetFolderPathW(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents);
+	if (result == S_OK) {
+		std::wstring saveFolderPath = my_documents;
+		if (!boost::ends_with(saveFolderPath, L"\\")) {
+			saveFolderPath += L"\\";
+		}
+		saveFolderPath += L"Larian Studios\\Divinity Original Sin\\PlayerProfiles\\";
+		savesFolderEdit->setText(QString::fromStdWString(saveFolderPath));
+	} else {
+		std::vector<std::wstring> splitVector;
+		boost::split(splitVector, path, boost::is_any_of(L"\\"));
+		if (splitVector.size() > 0) {
+			std::wstring &first = splitVector[0];
+			if (first.length() != 0) {
+				std::wstring saveFolderPath = first;
+				saveFolderPath += L"\\Users\\";
 				const char *username = std::getenv("USER");
 				if (username == 0) {
 					username = std::getenv("USERNAME");
 				}
 				if (username != 0) {
-					saveFolderPath += username;
-					saveFolderPath += "\\Documents\\Larian Studios\\Divinity Original Sin\\PlayerProfiles\\";
-					savesFolderEdit->setText(saveFolderPath.c_str());
+					std::wstring wUsername = L"";
+					{
+						long usernameSize = strlen(username) + 1;
+						wchar_t alloc[usernameSize];
+						mbstowcs(alloc, username, usernameSize);
+						wUsername = alloc;
+					}
+					saveFolderPath += wUsername;
+					saveFolderPath += L"\\Documents\\Larian Studios\\Divinity Original Sin\\PlayerProfiles\\";
+					savesFolderEdit->setText(QString::fromStdWString(saveFolderPath));
 				}
 			}
 		}
