@@ -12,18 +12,28 @@
 #include "LsbReader.h"
 #include "PakReader.h"
 
+struct ItemTemplateData {
+	std::string templateId;
+	LsbObject *gameObject;
+	bool isRootTemplate;
+};
+
+typedef std::map<std::string, std::vector<ItemTemplateData> > StatTemplateMap;
+
 class GamePakData
 {
 	TextureAtlas iconAtlas;
 	std::vector<LsbObject *> stats;
 	std::map<std::string, LsbObject *> rootTemplateMap;
 	std::map<std::string, LsbObject *> modTemplateMap;
+	std::map<std::string, std::vector<std::string > > rootTemplateMods;
 	std::vector<LsbObject *> rootTemplates;
 	std::vector<LsbObject *> modTemplates;
 	std::vector<StatsContainer *> itemStats;
 	std::vector<StatsContainer *> itemLinks;
 	std::vector<StatsContainer *> skillStats;
 	std::map<std::string, std::string> nameMappings;
+	StatTemplateMap statToTemplateMap;
 	QImage inventoryCellImg;
 	QImage *inventoryCellPtr = 0;
 	
@@ -32,6 +42,11 @@ class GamePakData
 	GenStatsReader genStatsReader;
 	std::wstring lastPakPath = L"";
 
+	void addModLookupsToStatTemplateMap();
+	void addModsToRootModsList();
+	void addItemLinksToStatTemplateMap(std::vector<StatsContainer *> &itemLinks);
+	void addTemplatesToStatTemplateMap(std::vector<LsbObject *> &templatesObjects, bool isRootTemplate);
+	void addTemplateToStatTemplateMap(LsbObject *gameObject, bool isRootTemplate);
 	void populateRootTemplateMap(std::vector<LsbObject *>& rootTemplates);
 	void populateModTemplateMap(std::vector<LsbObject *>& modTemplates);
 	void parsePakFile(std::wstring &pakPath, const char *pakExtractPath, std::wstring &outputDir, int processingType);
@@ -82,6 +97,8 @@ public:
 	void setRootTemplateMap(const std::map<std::string, LsbObject *> &value);
 	std::map<std::string, LsbObject *> &getModTemplateMap();
 	void setModTemplateMap(const std::map<std::string, LsbObject *> &value);
+	StatTemplateMap &getStatToTemplateMap();
+	void setStatToTemplateMap(const StatTemplateMap &value);
 };
 
 #endif // GAMEPAKDATA_H

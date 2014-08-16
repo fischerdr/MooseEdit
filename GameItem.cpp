@@ -336,7 +336,7 @@ LsbObject *GameItem::createGenerationDirectory() {
 		
 		TAG_LSB *itemTypeTag = LsbObject::createTagIfNeeded("ItemType", tagList);
 		LsbObject *newItemType = new LsbObject(false, itemTypeTag->index, itemTypeTag->tag, 0x16, generationObject, tagList);
-		std::string itemTypeDefault = "Magic";
+		std::string itemTypeDefault = "Common";
 		newItemType->setData(itemTypeDefault.c_str(), itemTypeDefault.length() + 1);
 		if (statsDirectory != 0) {
 			LsbObject *itemTypeObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "ItemType");
@@ -392,7 +392,7 @@ LsbObject *GameItem::createStatsDirectory() {
 	
 	TAG_LSB *thisTypeTag = LsbObject::createTagIfNeeded("ItemType", tagList);
 	LsbObject *newthisType = new LsbObject(false, thisTypeTag->index, thisTypeTag->tag, 0x16, newStatsDir, tagList);
-	std::string thisType = "Magic";
+	std::string thisType = "Common";
 	newthisType->setData(thisType.c_str(), thisType.length() + 1);
 	
 	TAG_LSB *levelTag = LsbObject::createTagIfNeeded("Level", tagList);

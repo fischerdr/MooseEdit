@@ -8,6 +8,8 @@
 #include "ItemGeneral.h"
 #include "GameItem.h"
 #include "InventoryHandler.h"
+#include "ItemTemplateWidget.h"
+#include "GamePakData.h"
 
 namespace Ui {
 class ItemEditFrame;
@@ -28,7 +30,7 @@ class PermBoostPickerCancelCallback;
 class PermBoostViewRemoveCallback;
 class ModsViewRemoveCallback;
 
-class ItemEditFrame : public QFrame, GeneralEditCallback, TableEditCallback
+class ItemEditFrame : public QFrame, GeneralEditCallback, TableEditCallback, TemplateEditCallback
 {
 	Q_OBJECT
 	
@@ -43,9 +45,11 @@ class ItemEditFrame : public QFrame, GeneralEditCallback, TableEditCallback
 	friend class ModsViewRemoveCallback;
 public:
 	explicit ItemEditFrame(std::vector<StatsContainer *> &allItemStats, std::vector<StatsContainer *> &itemLinks, GameItem *item, InventoryHandler *itemEditHandler, 
-						   ItemEditCallback *itemEditCallback, std::vector<TAG_LSB *> *tagList, std::map<std::string, std::string> &nameMappings, QWidget *parent = 0);
+						   ItemEditCallback *itemEditCallback, std::vector<TAG_LSB *> *tagList, std::map<std::string, std::string> &nameMappings, 
+						   StatTemplateMap &statToTemplateMap, QWidget *parent = 0);
 	void onEdit();
 	void onEdit(DataContainerTreeItem *&selectedItem, QTreeWidget *statsTree, QTableWidgetItem *editedItem, QTableWidget *table);
+	void onTemplateEdit(std::string &newTemplate);
 	~ItemEditFrame();
 	
 private slots:
@@ -65,7 +69,10 @@ private slots:
 	
 	void on_importButton_released();
 	
+	void on_templateButton_released();
+	
 private:
+	StatTemplateMap &statToTemplateMap;
 	std::string currentDir = ".";
 	Ui::ItemEditFrame *ui;
 	ItemGeneral *generalView;
@@ -74,6 +81,7 @@ private:
 	StatsView *modsPicker;
 	StatsView *permBoostView;
 	StatsView *permBoostPicker;
+	ItemTemplateWidget *itemTemplateWidget;
 	std::vector<StatsContainer *> &allItemStats;
 	std::vector<StatsContainer *> &itemLinks;
 	std::vector<TAG_LSB *> *tagList;

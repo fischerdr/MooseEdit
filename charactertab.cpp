@@ -12,8 +12,8 @@
 #include "ExpandableGroupBox.h"
 #include "TraitWidget.h"
 
-characterTab::characterTab(std::vector<TAG_LSB *> *tagList, LsbObject *itemsObject, QWidget *parent) :
-	QWidget(parent), tagList(tagList), itemsObject(itemsObject),
+characterTab::characterTab(std::vector<TAG_LSB *> *tagList, LsbObject *itemsObject, QTabWidget *tabWidget, QWidget *parent) :
+	QWidget(parent), tagList(tagList), itemsObject(itemsObject), tabWidget(tabWidget), statToTemplateMap(statToTemplateMap),
 	ui(new Ui::characterTab)
 {
 	ui->setupUi(this);
@@ -300,12 +300,15 @@ characterTab::~characterTab()
 void characterTab::on_nameEdit_textEdited(const QString &text)
 {
 	LsbObject *nameObject = LsbReader::lookupByUniquePathEntity(character->getObject(), "PlayerData/PlayerCustomData/Name");
-	std::string newName = text.toStdString();
-	long allocBytes = (newName.length() + 1) * 2;
-	char *alloc = new char[allocBytes];
-	mbstowcs((wchar_t *)alloc, newName.c_str(), newName.length());
-	nameObject->setData(alloc, allocBytes);
-	delete []alloc;
+	std::wstring newName = text.toStdWString();
+	nameObject->setData((char *)newName.c_str(), (newName.length() + 1) * 2);
+	if (tabWidget != 0) {
+		for (int i=0; i<tabWidget->count(); ++i) {
+			if (tabWidget->widget(i) == this->getCharacter()->getWidget()) {
+				tabWidget->setTabText(i, QString::fromStdWString(newName));
+			}
+		}
+	}
 }
 
 void characterTab::on_prevCharButton_released()
@@ -503,13 +506,13 @@ void characterTab::on_inventoryScrollArea_customContextMenuRequested(const QPoin
 	QAction *result = contextMenu.exec(inventoryScrollArea->mapToGlobal(pos));
 	if (result) {
 		if (item != 0) {
-			ItemEditFrame *itemEditFrame = new ItemEditFrame(allItemStats, itemLinks, item, itemEditHandler, this, tagList, *nameMappings);
+			ItemEditFrame *itemEditFrame = new ItemEditFrame(allItemStats, itemLinks, item, itemEditHandler, this, tagList, *nameMappings, *statToTemplateMap);
 		} else {
 			LsbObject *itemObject = GameItem::createNewItem(tagList, itemsObject, character->getInventoryId(), character->getCreatorId());
 			GameItem *newItem = new GameItem(tagList);
 			newItem->setObject(itemObject);
 			newItem->setRenderSlot(character->getInventoryHandler()->slotAtPoint(itemPos));
-			ItemEditFrame *itemEditFrame = new ItemEditFrame(allItemStats, itemLinks, newItem, itemEditHandler, this, tagList, *nameMappings);
+			ItemEditFrame *itemEditFrame = new ItemEditFrame(allItemStats, itemLinks, newItem, itemEditHandler, this, tagList, *nameMappings, *statToTemplateMap);
 		}
 	}
 }
@@ -573,6 +576,14 @@ void characterTab::showEvent(QShowEvent *)
 	}
 	QTimer::singleShot(0, this, SLOT(redraw_inventory()));
 }
+StatTemplateMap *characterTab::getStatToTemplateMap() const {
+	return statToTemplateMap;
+}
+
+void characterTab::setStatToTemplateMap(StatTemplateMap *value) {
+	statToTemplateMap = value;
+}
+
 
 void characterTab::on_talentList_itemClicked(QListWidgetItem *item)
 {

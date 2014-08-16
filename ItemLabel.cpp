@@ -60,7 +60,6 @@ long ItemLabel::getPermBoostStatValue(std::string statName) {
 	for (int i=0; i<item->getPermBoosts().size(); ++i) {
 		LsbObject *permBoost = item->getPermBoosts()[i];
 		if (permBoost->getName() == statName) {
-			std::string permBoostData = permBoost->getData();
 			value += *((long*)permBoost->getData());
 		}
 	}

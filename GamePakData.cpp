@@ -147,6 +147,145 @@ void GamePakData::populateModTemplateMap(std::vector<LsbObject *>& modTemplates)
 	}
 }
 
+
+StatTemplateMap &GamePakData::getStatToTemplateMap() {
+	return statToTemplateMap;
+}
+
+void GamePakData::setStatToTemplateMap(const StatTemplateMap &value) {
+	statToTemplateMap = value;
+}
+
+void GamePakData::addTemplatesToStatTemplateMap(std::vector<LsbObject *> &templatesObjects, bool isRootTemplate) {
+	if (templatesObjects.size() == 1) {
+		LsbObject *templatesObject = LsbReader::lookupByUniquePath(templatesObjects, "Templates");
+		if (templatesObject != 0) {
+			LsbObject *rootObject = LsbReader::lookupByUniquePathEntity(templatesObject, "root");
+			if (rootObject != 0) {
+				for (int i=0; i<rootObject->getChildren().size(); ++i) {
+					LsbObject *gameObject = rootObject->getChildren()[i];
+					addTemplateToStatTemplateMap(gameObject, isRootTemplate);
+				}
+			}
+		}
+	}
+}
+
+void GamePakData::addTemplateToStatTemplateMap(LsbObject *gameObject, bool isRootTemplate) {
+	if (gameObject != 0) {
+		LsbObject *mapKeyObject = LsbReader::lookupByUniquePathEntity(gameObject, "MapKey");
+		LsbObject *statsObject = LsbReader::lookupByUniquePathEntity(gameObject, "Stats");
+		if (mapKeyObject != 0 && statsObject != 0) {
+			std::string templateId = mapKeyObject->getData();
+			std::string statId = statsObject->getData();
+//			if (statToTemplateMap.find(statId) == statToTemplateMap.end()) {
+//				statToTemplateMap[statId] = std::vector<ItemTemplateData>();
+//			}
+			std::vector<ItemTemplateData> &templateList = statToTemplateMap[statId];
+			templateList.push_back(ItemTemplateData());
+			ItemTemplateData &templateData = templateList.back();
+			templateData.gameObject = gameObject;
+			templateData.templateId = templateId;
+			templateData.isRootTemplate = isRootTemplate;
+		}
+	}
+}
+
+void GamePakData::addItemLinksToStatTemplateMap(std::vector<StatsContainer *> &itemLinks) {
+	for (int i=0; i<itemLinks.size(); ++i) {
+		StatsContainer *link = itemLinks[i];
+		std::string statId = link->getArg(0);
+		std::string templateId = link->getArg(1);
+//		if (statToTemplateMap.find(statId) == statToTemplateMap.end()) {
+//			statToTemplateMap[statId] = std::vector<ItemTemplateData>();
+//		}
+		std::vector<ItemTemplateData> &templateList = statToTemplateMap[statId];
+		bool found = false;
+		for (int i=0; i<templateList.size(); ++i) {
+			ItemTemplateData &templateData = templateList[i];
+			if (templateData.templateId == templateId) {
+				found = true;
+				break;
+			}
+		}
+		if (!found && rootTemplateMap.find(templateId) != rootTemplateMap.end()) {
+			LsbObject *gameObject = rootTemplateMap[templateId];
+			templateList.push_back(ItemTemplateData());
+			ItemTemplateData &templateData = templateList.back();
+			templateData.gameObject = gameObject;
+			templateData.templateId = templateId;
+			templateData.isRootTemplate = true;
+		}
+		if (!found && modTemplateMap.find(templateId) != modTemplateMap.end()) {
+			LsbObject *gameObject = modTemplateMap[templateId];
+			templateList.push_back(ItemTemplateData());
+			ItemTemplateData &templateData = templateList.back();
+			templateData.gameObject = gameObject;
+			templateData.templateId = templateId;
+			templateData.isRootTemplate = false;
+		}
+	}
+}
+
+void GamePakData::addModLookupsToStatTemplateMap() {
+	for (StatTemplateMap::iterator it = statToTemplateMap.begin(); it != statToTemplateMap.end(); ++it) {
+		std::vector<ItemTemplateData> &templateList = it->second;
+		for (int i=0; i<templateList.size(); ++i) {
+			ItemTemplateData &templateData = templateList[i];
+			if (templateData.isRootTemplate) {
+				std::string rootTemplateId = templateData.templateId;
+				if (rootTemplateMods.find(rootTemplateId) != rootTemplateMods.end()) {
+					std::vector<std::string > &modTemplateIds = rootTemplateMods[rootTemplateId];
+					for (int j=0; j<modTemplateIds.size(); ++j) {
+						std::string modTemplateId = modTemplateIds[j];
+						bool found = false;
+						for (int k=0; k<templateList.size(); ++k) {
+							ItemTemplateData &templateData = templateList[k];
+							if (templateData.templateId == modTemplateId) {
+								found = true;
+								break;
+							}
+						}
+						if (!found && modTemplateMap.find(modTemplateId) != modTemplateMap.end()) {
+							LsbObject *gameObject = modTemplateMap[modTemplateId];
+							templateList.push_back(ItemTemplateData());
+							ItemTemplateData &templateData = templateList.back();
+							templateData.gameObject = gameObject;
+							templateData.templateId = modTemplateId;
+							templateData.isRootTemplate = false;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void GamePakData::addModsToRootModsList() {
+	for (int i=0; i<modTemplates.size(); ++i) {
+		LsbObject *modTemplate = modTemplates[i];
+		LsbObject *rootObject = LsbReader::lookupByUniquePathEntity(modTemplate, "root");
+		if (rootObject != 0) {
+			for (int j=0; j<rootObject->getChildren().size(); ++j) {
+				LsbObject *gameObject = rootObject->getChildren()[j];
+				if (gameObject != 0) {
+					LsbObject *mapKeyObject = LsbReader::lookupByUniquePathEntity(gameObject, "MapKey");
+					LsbObject *templateNameObject = LsbReader::lookupByUniquePathEntity(gameObject, "TemplateName");
+					if (mapKeyObject != 0 && templateNameObject != 0) {
+						std::string modTemplateId = mapKeyObject->getData();
+						std::string rootTemplateId = templateNameObject->getData();
+//						if (rootTemplateMods.find(rootTemplateId) == rootTemplateMods.end()) {
+//							rootTemplateMods[rootTemplateId] = std::vector<std::string >();
+//						}
+						std::vector<std::string > &templateList = rootTemplateMods[rootTemplateId];
+						templateList.push_back(modTemplateId);
+					}
+				}
+			}
+		}
+	}
+}
+
 #define PROCESSING_TYPE_NONE			0
 #define PROCESSING_TYPE_STATS			1
 #define PROCESSING_TYPE_ROOTTEMPLATE	2
@@ -178,6 +317,7 @@ void GamePakData::parsePakFile(std::wstring& pakPath, const char *pakExtractPath
 		break;}
 	case PROCESSING_TYPE_ROOTTEMPLATE: {
 		std::vector<LsbObject *> rootTemplates = lsbReader.loadFile(fileByteStream);
+		addTemplatesToStatTemplateMap(rootTemplates, true);
 		this->addRootTemplates(rootTemplates);
 		break;}
 	case PROCESSING_TYPE_MODTEMPLATE: {
@@ -267,6 +407,11 @@ void GamePakData::load(std::wstring gameDataPath) {
 	parsePakFile(pakMain, "Public/Main/Stats/Generated/Links/Object.txt", linkDirectory, PROCESSING_TYPE_ITEMLINKS);
 	parsePakFile(pakMain, "Public/Main/Stats/Generated/Links/Potion.txt", linkDirectory, PROCESSING_TYPE_ITEMLINKS);
 	parsePakFile(pakMain, "Public/Main/Stats/Generated/Links/Shield.txt", linkDirectory, PROCESSING_TYPE_ITEMLINKS);
+	
+	addItemLinksToStatTemplateMap(itemLinks);
+	
+	addModsToRootModsList();
+	addModLookupsToStatTemplateMap();
 	
 	pakReader.loadFile(pakMain);
 	pakReader.extractFile(pakMain, iconLsx, tempDirectory, false);

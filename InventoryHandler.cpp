@@ -114,6 +114,7 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 			LsbObject *displayNameObject = 0;
 			LsbObject *match = 0;
 			char *iconName = 0;
+			char *description = 0;
 //			for (int j=0; j<modTemplates.size(); ++j) {
 //				LsbObject *templateRoot = LsbReader::lookupByUniquePathEntity(modTemplates[j], "root");
 //				std::vector<LsbObject *> matches = LsbReader::findItemsByAttribute(templateRoot->getChildren(), "MapKey", currentTemplate, dataSize);
@@ -137,6 +138,10 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 					if (displayNameObject != 0) {
 						item->setItemName(displayNameObject->getData());
 					}
+					LsbObject *descriptionObject = LsbReader::lookupByUniquePathEntity(match, "Description");
+					if (descriptionObject != 0) {
+						description = descriptionObject->getData();
+					}
 					//break;
 				}
 //			}
@@ -155,15 +160,23 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 				}
 				if (match != 0) {
 					if (iconName == 0) {
-						iconName = LsbReader::lookupByUniquePathEntity(match, "Icon")->getData();
+						LsbObject *iconObject = LsbReader::lookupByUniquePathEntity(match, "Icon");
+						if (iconObject != 0) {
+							iconName = iconObject->getData();
+						}
 					}
-					LsbObject *descriptionObject = LsbReader::lookupByUniquePathEntity(match, "Description");
-					if (descriptionObject != 0) {
-						char *description = descriptionObject->getData();
+					if (description == 0) {
+						LsbObject *descriptionObject = LsbReader::lookupByUniquePathEntity(match, "Description");
+						if (descriptionObject != 0) {
+							description = descriptionObject->getData();
+						}
+					}
+					if (description != 0) {
 						item->setBody(description);
 					} else {
 						item->setBody("");
 					}
+					
 					if (displayNameObject == 0) {
 						displayNameObject = LsbReader::lookupByUniquePathEntity(match, "DisplayName");
 						if (displayNameObject != 0) {

@@ -315,10 +315,10 @@ void ItemEditFrame::redraw() {
 }
 
 ItemEditFrame::ItemEditFrame(std::vector<StatsContainer *> &allItemStats, std::vector<StatsContainer *> &itemLinks, GameItem *originalItem, InventoryHandler *itemEditHandler, 
-							 ItemEditCallback *itemEditCallback, std::vector<TAG_LSB *> *tagList, std::map<std::string, std::string> &nameMappings,
+							 ItemEditCallback *itemEditCallback, std::vector<TAG_LSB *> *tagList, std::map<std::string, std::string> &nameMappings, StatTemplateMap &statToTemplateMap,
 							 QWidget *parent) :
 	QFrame(parent), allItemStats(allItemStats), itemLinks(itemLinks), oldItem(originalItem), itemEditHandler(itemEditHandler), itemEditCallback(itemEditCallback),
-	tagList(tagList), nameMappings(nameMappings),
+	tagList(tagList), nameMappings(nameMappings), statToTemplateMap(statToTemplateMap),
 	ui(new Ui::ItemEditFrame)
 {
 	this->item = new GameItem(*originalItem); //make a copy of the item
@@ -385,6 +385,10 @@ ItemEditFrame::ItemEditFrame(std::vector<StatsContainer *> &allItemStats, std::v
 	baseStatsViewSelectCallback = new BaseStatsViewSelectCallback(this);
 	baseStatsView->enableSelectButton(baseStatsViewSelectCallback);
 	dataGroupBox->layout()->addWidget(baseStatsView);
+	
+	itemTemplateWidget = new ItemTemplateWidget(item, statToTemplateMap, this);
+	itemTemplateWidget->registerCallback(this);
+	dataGroupBox->layout()->addWidget(itemTemplateWidget);
 	
 	modsPicker = new StatsView(allItemStats, nameMappings, dataGroupBox);
 	modsPicker->addBoostDirectory("Weapon", "Weapon Mods");
@@ -526,6 +530,7 @@ ItemEditFrame::~ItemEditFrame()
 	delete permBoostPickerSelectCallback;
 	delete permBoostPickerCancelCallback;
 	
+	delete itemTemplateWidget;
 	delete generalView;
 	delete baseStatsView;
 	delete modsPicker;
@@ -540,26 +545,40 @@ ItemEditFrame::~ItemEditFrame()
 void ItemEditFrame::hideAllViews() {
 	generalView->hide();
 	baseStatsView->hide();
+	itemTemplateWidget->hide();
 	modsPicker->hide();
 	modsView->hide();
 	permBoostView->hide();
 	permBoostPicker->hide();
 }
 
+void ItemEditFrame::onTemplateEdit(std::string &newTemplate) {
+	LsbObject *itemObject = this->item->getObject();
+	LsbObject *currentTemplateObject = LsbReader::lookupByUniquePathEntity(itemObject, "CurrentTemplate");
+	currentTemplateObject->setData(newTemplate.c_str(), newTemplate.length() + 1);
+	this->redraw();
+}
+
 void ItemEditFrame::on_baseStatsButton_released()
 {
+	QGroupBox *dataGroupBox = this->findChild<QGroupBox *>("dataGroupBox");
+	dataGroupBox->setTitle("Base Item");
     hideAllViews();
 	baseStatsView->show();
 }
 
 void ItemEditFrame::on_modsButton_released()
 {
+	QGroupBox *dataGroupBox = this->findChild<QGroupBox *>("dataGroupBox");
+	dataGroupBox->setTitle("Mods");
 	hideAllViews();
 	modsView->show();
 }
 
 void ItemEditFrame::on_generalButton_released()
 {
+	QGroupBox *dataGroupBox = this->findChild<QGroupBox *>("dataGroupBox");
+	dataGroupBox->setTitle("General");
     hideAllViews();
 	generalView->refreshGeneralData();
 	generalView->show();
@@ -578,6 +597,8 @@ void ItemEditFrame::on_acceptButton_released()
 
 void ItemEditFrame::on_permBoostButton_released()
 {
+	QGroupBox *dataGroupBox = this->findChild<QGroupBox *>("dataGroupBox");
+	dataGroupBox->setTitle("Permanent Boosts");
 	hideAllViews();
     permBoostView->show();
 }
@@ -669,6 +690,7 @@ void ItemEditFrame::on_importButton_released()
 							this->item->setKeysSlot(toDelete->getKeysSlot());
 							this->item->setMiscSlot(toDelete->getMiscSlot());
 							generalView->setItem(this->item);
+							itemTemplateWidget->setItem(this->item);
 							delete toDelete;
 							this->item->setObject(new LsbObject(*importedItem));
 							delete importedObject;
@@ -686,4 +708,13 @@ void ItemEditFrame::on_importButton_released()
 			}
 		}
 	}
+}
+
+void ItemEditFrame::on_templateButton_released()
+{
+	QGroupBox *dataGroupBox = this->findChild<QGroupBox *>("dataGroupBox");
+	dataGroupBox->setTitle("Item Template");
+	itemTemplateWidget->populate();
+    hideAllViews();
+	itemTemplateWidget->show();
 }

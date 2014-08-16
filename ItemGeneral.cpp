@@ -165,6 +165,11 @@ void ItemGeneral::on_itemTypeCombo_currentIndexChanged(const QString &text)
 		itemTypeObject->setData(value.c_str(), value.length() + 1);
 	}
 	LsbObject *generationObject = LsbReader::lookupByUniquePathEntity(item->getObject(), "Generation");
+	if (generationObject == 0) {
+		if (value != "Common") {
+			generationObject = item->createGenerationDirectory();
+		}
+	}
 	if (generationObject != 0) {
 		LsbObject *generationItemTypeObject = LsbReader::lookupByUniquePathEntity(generationObject, "ItemType");
 		generationItemTypeObject->setData(value.c_str(), value.length() + 1);

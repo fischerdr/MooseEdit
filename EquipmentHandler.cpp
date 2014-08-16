@@ -5,10 +5,10 @@ EquipmentHandler::EquipmentHandler(QImage emptySlotImage, std::vector<LsbObject 
 								   std::vector<LsbObject *> &modTemplates, TextureAtlas &iconAtlas, std::vector<StatsContainer *> &itemStats, 
 								   std::map<std::string, std::string> &nameMappings, QWidget *parentWidget, QWidget *mainWindow, 
 								   std::vector<StatsContainer *> &itemLinks, std::vector<TAG_LSB *> &tagList,
-								   LsbObject *itemsObject, GameCharacter *character, std::map<std::string, LsbObject *> &rootTemplateMap, std::map<std::string, LsbObject *> &modTemplateMap) :
+								   LsbObject *itemsObject, GameCharacter *character, std::map<std::string, LsbObject *> &rootTemplateMap, std::map<std::string, LsbObject *> &modTemplateMap, StatTemplateMap &statToTemplateMap) :
 	emptySlotImage(emptySlotImage), stats(stats), rootTemplates(rootTemplates), modTemplates(modTemplates), iconAtlas(iconAtlas), itemStats(itemStats),
 	nameMappings(nameMappings), parentWidget(parentWidget), mainWindow(mainWindow), itemLinks(itemLinks), tagList(tagList), itemsObject(itemsObject), character(character),
-	rootTemplateMap(rootTemplateMap), modTemplateMap(modTemplateMap)
+	rootTemplateMap(rootTemplateMap), modTemplateMap(modTemplateMap), statToTemplateMap(statToTemplateMap)
 {
 	initInventoryHandlers();
 }
@@ -101,7 +101,7 @@ void EquipmentHandler::customContextRequested(const QPoint& pos) {
 																		rootTemplateMap, modTemplateMap);
 					if (item != 0) {
 						ItemEditFrame *itemEditFrame = new ItemEditFrame(itemStats, itemLinks, item, newHandler,
-																		 this, &tagList, nameMappings);
+																		 this, &tagList, nameMappings, statToTemplateMap);
 					} else {
 						LsbObject *itemObject = GameItem::createNewItem(&tagList, itemsObject, character->getInventoryId(), character->getCreatorId());
 						LsbObject *slotObject = LsbReader::lookupByUniquePathEntity(itemObject, "Slot");
@@ -112,7 +112,7 @@ void EquipmentHandler::customContextRequested(const QPoint& pos) {
 						newItem->setObject(itemObject);
 						newItem->setRenderSlot(character->getInventoryHandler()->slotAtPoint(pos));
 						ItemEditFrame *itemEditFrame = new ItemEditFrame(itemStats, itemLinks, newItem, newHandler, 
-																		 this, &tagList, nameMappings);
+																		 this, &tagList, nameMappings, statToTemplateMap);
 					}
 				}
 			}

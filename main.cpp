@@ -15,10 +15,10 @@ int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 	a.setStyle("windowsxp");
-	MainWindow w;
-	w.show();
-	QTreeWidget *tree = w.findChild<QTreeWidget *>("treeWidget");
-	//std::cout.rdbuf(0);
+	MainWindow *w = new MainWindow();
+	w->show();
 	
-	return a.exec();
+	int exec = a.exec();
+	delete w;
+	return exec;
 }

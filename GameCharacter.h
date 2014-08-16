@@ -16,7 +16,7 @@
 class GameCharacter
 {
 	LsbObject *object;
-	std::string name;
+	std::wstring name;
 	QWidget *widget;
 	ItemGroup inventory;
 	std::vector<TAG_LSB *> &tagList;
@@ -33,10 +33,10 @@ public:
 	ItemGroup& getInventory() {
 		return inventory;
 	}
-	std::string& getName() {
+	std::wstring& getName() {
 		return name;
 	}
-	void setName(std::string& name) {
+	void setName(std::wstring& name) {
 		this->name = name;
 	}
 	LsbObject *getObject() {

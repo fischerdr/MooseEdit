@@ -18,7 +18,7 @@ class characterTab : public QWidget, ItemEditCallback
 	Q_OBJECT
 	
 public:
-	explicit characterTab(std::vector<TAG_LSB *> *tagList, LsbObject *itemsObject, QWidget *parent = 0);
+	explicit characterTab(std::vector<TAG_LSB *> *tagList, LsbObject *itemsObject, QTabWidget *tabWidget = 0, QWidget *parent = 0);
 	~characterTab();
 	void setCharacter(GameCharacter *character);
 	GameCharacter *getCharacter() {
@@ -41,6 +41,9 @@ public:
 	
 	EquipmentHandler *getEquipmentHandler() const;
 	void setEquipmentHandler(EquipmentHandler *handler);
+	
+	StatTemplateMap *getStatToTemplateMap() const;
+	void setStatToTemplateMap(StatTemplateMap *value);
 	
 private slots:
 	
@@ -86,7 +89,9 @@ protected:
 	void showEvent(QShowEvent *);
 
 private:
+	StatTemplateMap *statToTemplateMap;
 	std::vector<long> experienceRequired;
+	QTabWidget *tabWidget;
 	bool loadExperienceData();
 	LsbObject *itemsObject;
 	Ui::characterTab *ui;

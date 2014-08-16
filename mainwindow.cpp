@@ -339,38 +339,31 @@ void MainWindow::handleLoadButton() {
 				std::ostringstream ss;
 				ss<<"charTab"<<i;
 				LsbObject *itemsObject = LsbReader::lookupByUniquePath(globals, "Items/root/ItemFactory/Items");
-				QWidget *widget = new characterTab(&globalTagList, itemsObject, this);
+				QWidget *widget = new characterTab(&globalTagList, itemsObject, tabWidget, this);
 				widget->setObjectName(QString(ss.str().c_str()));
 				
 				LsbObject *origTemplate = LsbReader::lookupByUniquePathEntity(character, "OriginalTemplate");
 				LsbObject *playerName = LsbReader::lookupByUniquePathEntity(character, "PlayerData/PlayerCustomData/Name");
 				std::string origTemplateId = origTemplate->getData();
-				std::string charName;
+				std::wstring charName;
 				if (origTemplateId == "5c5447e5-c1cf-4677-b84b-006d9be3f075") {
-					charName = "Madora";
+					charName = L"Madora";
 				}
 				else if (origTemplateId == "80240f83-778e-4753-850b-48b05729589c") {
-					charName = "Jahan";
+					charName = L"Jahan";
 				}
 				else {
-					char *data = playerName->getData();
-					long dataSize = playerName->getDataSize();
-					char *alloc = new char[dataSize / 2];
-					wcstombs(alloc, (const wchar_t*)data, dataSize);
-					charName = alloc;
-					delete []alloc;
+					charName = (wchar_t *)playerName->getData();
 				}
-				//tabWidget->addTab(widget, "CharTab");
-				std::string charNameStr = charName;
 				this->getCharacterGroup().getCharacters().insert(this->getCharacterGroup().getCharacters().begin(), new GameCharacter(globals, globalTagList));
 				GameCharacter *gameCharacter = this->getCharacterGroup().getCharacters()[0];
-				gameCharacter->setName(charNameStr);
+				gameCharacter->setName(charName);
 				gameCharacter->setObject(character);
 				gameCharacter->setWidget(widget);
 				((characterTab *)widget)->setCharacter(gameCharacter);
 				QLineEdit *nameEdit = widget->findChild<QLineEdit *>(QString("nameEdit"));
-				nameEdit->setText(QString(charName.c_str()));
-				tabWidget->insertTab(1, widget, QString(charName.c_str()));
+				nameEdit->setText(QString::fromStdWString(charName));
+				tabWidget->insertTab(1, widget, QString::fromStdWString(charName));
 			}
 			
 			//compile item list
@@ -561,6 +554,7 @@ void MainWindow::handleLoadButton() {
 					charTab->setAllItemStats(gamePakData.getItemStats());
 					charTab->setItemEditHandler(editItemHandler);
 					charTab->setSkillStats(&gamePakData.getSkillStats());
+					charTab->setStatToTemplateMap(&gamePakData.getStatToTemplateMap());
 					
 					QWidget *equipmentWidget = charTab->findChild<QWidget *>("equipmentWidget");
 					LsbObject *itemsObject = LsbReader::lookupByUniquePath(globals, "Items/root/ItemFactory/Items");
@@ -568,7 +562,7 @@ void MainWindow::handleLoadButton() {
 							new EquipmentHandler(*gamePakData.getInventoryCellImg(), gamePakData.getStats(), gamePakData.getRootTemplates(), 
 												gamePakData.getModTemplates(), gamePakData.getIconAtlas(), gamePakData.getItemStats(), gamePakData.getNameMappings(),
 												equipmentWidget, this, gamePakData.getItemLinks(), globalTagList, itemsObject, character,
-												 gamePakData.getRootTemplateMap(), gamePakData.getModTemplateMap());
+												 gamePakData.getRootTemplateMap(), gamePakData.getModTemplateMap(), gamePakData.getStatToTemplateMap());
 					
 					std::vector<GameItem *> &equipmentSet = equipmentSets[i];
 					for (int j=0; j<equipmentSet.size(); ++j) {

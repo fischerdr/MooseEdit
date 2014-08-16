@@ -49,7 +49,8 @@ SOURCES += main.cpp\
     TraitWidget.cpp \
     SkillEditFrame.cpp \
     EquipmentHandler.cpp \
-    GamePakData.cpp
+    GamePakData.cpp \
+    ItemTemplateWidget.cpp
 
 HEADERS  += mainwindow.h \
     LsbReader.h \
@@ -79,7 +80,8 @@ HEADERS  += mainwindow.h \
     TraitWidget.h \
     SkillEditFrame.h \
     EquipmentHandler.h \
-    GamePakData.h
+    GamePakData.h \
+    ItemTemplateWidget.h
 
 FORMS    += mainwindow.ui \
     charactertab.ui \
@@ -90,7 +92,8 @@ FORMS    += mainwindow.ui \
     ItemGeneral.ui \
     AbilityGroupItem.ui \
     TraitWidget.ui \
-    SkillEditFrame.ui
+    SkillEditFrame.ui \
+    ItemTemplateWidget.ui
 
 RESOURCES += \
     resources.qrc
