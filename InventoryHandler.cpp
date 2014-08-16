@@ -185,7 +185,7 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 					}
 					
 					QImage *imagePtr;
-					if ((imagePtr = iconAtlas.getNamedTexture(iconName)) != 0) {
+					if (iconName != 0 && ((imagePtr = iconAtlas.getNamedTexture(iconName)) != 0)) {
 						QImage image = *imagePtr;
 						QPixmap result(image.size());
 						if (!drawBackground) {
@@ -200,7 +200,11 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 						painter.end();
 					}
 					else {
-						std::cout<<"Failed to find texture "<<iconName<<'\n';
+						if (iconName == 0) {
+							std::cout<<"No icon name defined!\n";
+						} else {
+							std::cout<<"Failed to find texture "<<iconName<<'\n';
+						}
 					}
 					//break;
 				}
