@@ -163,6 +163,17 @@ void StatsView::addBoostDirectory(std::string modifierType, std::string text) {
 
 StatsView::~StatsView()
 {
+	QTreeWidget *statsTree = this->findChild<QTreeWidget *>("statsTree");
+	QTableWidget *modTable = this->findChild<QTableWidget *>("modTable");
+	for (int i=0; i<statsTree->topLevelItemCount(); ++i) {
+		delete statsTree->topLevelItem(i);
+		--i;
+	}
+	for (int i=0; i<modTable->rowCount(); ++i) {
+		for (int j=0; j<modTable->columnCount(); ++j) {
+			delete modTable->item(i, j);
+		}
+	}
 	delete ui;
 }
 

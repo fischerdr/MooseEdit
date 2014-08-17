@@ -1089,6 +1089,7 @@ void MainWindow::on_pakListWidget_customContextMenuRequested(const QPoint &pos)
 					std::wstring folderName = fileDialog.selectedFiles()[0].toStdWString();
 					QProgressDialog progress("Extracting...", "Cancel", 0, pakListWidget->selectedItems().size(), this);
 					progress.setWindowModality(Qt::WindowModal);
+					progress.show();
 					QApplication::processEvents();
 					for (int i=0; i<pakListWidget->selectedItems().size(); ++i) {
 						if (progress.wasCanceled()) {

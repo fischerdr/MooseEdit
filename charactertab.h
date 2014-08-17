@@ -13,7 +13,7 @@ namespace Ui {
 class characterTab;
 }
 
-class characterTab : public QWidget, ItemEditCallback
+class characterTab : public QWidget, ItemEditCallback, ItemEditorCloseCallback
 {
 	Q_OBJECT
 	
@@ -44,6 +44,10 @@ public:
 	
 	StatTemplateMap *getStatToTemplateMap() const;
 	void setStatToTemplateMap(StatTemplateMap *value);
+	
+	void onClose(ItemEditFrame *itemEditFrame) {
+		delete itemEditFrame;
+	}
 	
 private slots:
 	

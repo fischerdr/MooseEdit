@@ -22,7 +22,7 @@
 #define SLOT_AMULET		9
 #define SLOT_RING_RIGHT	11
 
-class EquipmentHandler : public QObject, public ItemEditCallback
+class EquipmentHandler : public QObject, public ItemEditCallback, ItemEditorCloseCallback
 {
 	Q_OBJECT
 	
@@ -61,6 +61,9 @@ public:
 	void drawAll();
 	void onItemEdited(GameItem *newItem, GameItem *oldItem);
 	GameItem *getItemAtSlot(unsigned short slot);
+	void onClose(ItemEditFrame *itemEditFrame) {
+		delete itemEditFrame;
+	}
 };
 
 #endif // EQUIPMENTHANDLER_H

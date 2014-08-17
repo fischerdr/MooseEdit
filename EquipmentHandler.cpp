@@ -108,6 +108,7 @@ void EquipmentHandler::customContextRequested(const QPoint& pos) {
 					if (item != 0) {
 						ItemEditFrame *itemEditFrame = new ItemEditFrame(itemStats, itemLinks, item, newHandler,
 																		 this, &tagList, nameMappings, statToTemplateMap);
+						itemEditFrame->registerCloseCallback(this);
 					} else {
 						LsbObject *itemObject = GameItem::createNewItem(&tagList, itemsObject, character->getInventoryId(), character->getCreatorId());
 						LsbObject *slotObject = LsbReader::lookupByUniquePathEntity(itemObject, "Slot");
@@ -119,6 +120,7 @@ void EquipmentHandler::customContextRequested(const QPoint& pos) {
 						newItem->setRenderSlot(character->getInventoryHandler()->slotAtPoint(pos));
 						ItemEditFrame *itemEditFrame = new ItemEditFrame(itemStats, itemLinks, newItem, newHandler, 
 																		 this, &tagList, nameMappings, statToTemplateMap);
+						itemEditFrame->registerCloseCallback(this);
 					}
 				}
 			}

@@ -262,6 +262,13 @@ unsigned long InventoryHandler::slotAtPoint(const QPoint &pt) {
 	return row * itemsPerRow + column;
 }
 
+InventoryHandler::~InventoryHandler() {
+	for (int i=0; i<itemLabels.size(); ++i) {
+		delete itemLabels[i];
+	}
+	itemLabels.clear();
+}
+
 GameItem *InventoryHandler::getItemAtPoint(const QPoint &pt)
 {
 	for (int i=0; i<items.getItems().size(); ++i) {

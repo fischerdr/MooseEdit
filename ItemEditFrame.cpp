@@ -522,8 +522,16 @@ void ItemEditFrame::onEdit(DataContainerTreeItem *&selectedItem, QTreeWidget *st
 	this->redraw();
 }
 
+void ItemEditFrame::closeEvent(QCloseEvent *) {
+	if (this->closeCallback != 0) {
+		this->closeCallback->onClose(this);
+	}
+}
+
 ItemEditFrame::~ItemEditFrame()
 {
+	itemEditHandler->clearItemLabels();
+	
 	delete modsPickerSelectCallback;
 	delete modsPickerCancelCallback;
 	delete baseStatsViewSelectCallback;
@@ -531,14 +539,6 @@ ItemEditFrame::~ItemEditFrame()
 	delete permBoostViewAddCallback;
 	delete permBoostPickerSelectCallback;
 	delete permBoostPickerCancelCallback;
-	
-	delete itemTemplateWidget;
-	delete generalView;
-	delete baseStatsView;
-	delete modsPicker;
-	delete modsView;
-	delete permBoostPicker;
-	delete permBoostView;
 	
 	delete item;
 	delete ui;

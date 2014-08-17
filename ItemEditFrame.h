@@ -19,6 +19,7 @@ class ItemEditCallback {
 public:
 	virtual void onItemEdited(GameItem *newItem, GameItem *oldItem) = 0;
 };
+class ItemEditorCloseCallback;
 
 class BaseStatsViewSelectCallback;
 class ModsViewAddCallback;
@@ -50,6 +51,10 @@ public:
 	void onEdit();
 	void onEdit(DataContainerTreeItem *&selectedItem, QTreeWidget *statsTree, QTableWidgetItem *editedItem, QTableWidget *table);
 	void onTemplateEdit(std::string &newTemplate);
+	void registerCloseCallback(ItemEditorCloseCallback *closeCallback) {
+		this->closeCallback = closeCallback;
+	}
+
 	~ItemEditFrame();
 	
 private slots:
@@ -70,6 +75,9 @@ private slots:
 	void on_importButton_released();
 	
 	void on_templateButton_released();
+	
+protected:
+	void closeEvent(QCloseEvent *);
 	
 private:
 	StatTemplateMap &statToTemplateMap;
@@ -95,6 +103,7 @@ private:
 	PermBoostPickerCancelCallback *permBoostPickerCancelCallback;
 	PermBoostViewRemoveCallback *permBoostViewRemoveCallback;
 	ModsViewRemoveCallback *modsViewRemoveCallback;
+	ItemEditorCloseCallback *closeCallback = 0;
 	std::map<std::string, std::string> &nameMappings;
 	GameItem *item;
 	GameItem *oldItem;
@@ -102,6 +111,11 @@ private:
 	void redraw();
 	void hideAllViews();
 	void refreshViewData();
+};
+
+class ItemEditorCloseCallback {
+public:
+	virtual void onClose(ItemEditFrame *itemEditFrame) = 0;
 };
 
 #endif // ITEMEDITFRAME_H

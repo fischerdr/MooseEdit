@@ -16,6 +16,16 @@ ItemTemplateWidget::ItemTemplateWidget(GameItem *item, StatTemplateMap &statToTe
 
 ItemTemplateWidget::~ItemTemplateWidget()
 {
+	QTreeWidget *templateTree = this->findChild<QTreeWidget *>("templateTree");
+	QTreeWidget *templateInfoTree = this->findChild<QTreeWidget *>("templateInfoTree");
+	for (int i=0; i<templateTree->topLevelItemCount(); ++i) {
+		delete templateTree->topLevelItem(i);
+		--i;
+	}
+	for (int i=0; i<templateInfoTree->topLevelItemCount(); ++i) {
+		delete templateInfoTree->topLevelItem(i);
+		--i;
+	}
 	delete ui;
 }
 
