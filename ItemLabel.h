@@ -19,6 +19,12 @@ public:
 	void setItem(GameItem *item) {
 		this->item = item;
 	}
+	~ItemLabel() {
+		if (tooltip != 0) {
+			tooltip->hide();
+			delete tooltip;
+		}
+	}
 
 protected:
 	void enterEvent(QEvent *event);
@@ -26,7 +32,7 @@ protected:
 
 private:
 	bool ignoreEnterEvent = false;
-	TooltipFrame *tooltip;
+	TooltipFrame *tooltip = 0;
 	GameItem *item = 0;
 	void setupTooltip();
 	std::vector<StatsContainer *>& allItemStats;

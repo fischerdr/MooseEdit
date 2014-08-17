@@ -173,13 +173,13 @@ LsbObject *GameItem::createNewItem(std::vector<TAG_LSB*> *tagList, LsbObject *_p
 	ownerObject->setData((char *)&owner, sizeof(owner));
 	
 	TAG_LSB *itemMachineTag = LsbObject::createTagIfNeeded("ItemMachine", tagList);
-	LsbObject *itemMachineObject = new LsbObject(true, itemMachineTag->index, itemMachineTag->tag, 0, _parent, tagList);
+	LsbObject *itemMachineObject = new LsbObject(true, itemMachineTag->index, itemMachineTag->tag, 0, itemObject, tagList);
 	
 	TAG_LSB *statusManagerTag = LsbObject::createTagIfNeeded("StatusManager", tagList);
-	LsbObject *statusManagerObject = new LsbObject(true, statusManagerTag->index, statusManagerTag->tag, 0, _parent, tagList);
+	LsbObject *statusManagerObject = new LsbObject(true, statusManagerTag->index, statusManagerTag->tag, 0, itemObject, tagList);
 	
 	TAG_LSB *variableManagerTag = LsbObject::createTagIfNeeded("VariableManager", tagList);
-	LsbObject *variableManagerObject = new LsbObject(true, variableManagerTag->index, variableManagerTag->tag, 0, _parent, tagList);
+	LsbObject *variableManagerObject = new LsbObject(true, variableManagerTag->index, variableManagerTag->tag, 0, itemObject, tagList);
 	
 	itemObject->addChild(amountObject);
 	itemObject->addChild(currentTemplateObject);

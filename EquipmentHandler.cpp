@@ -25,6 +25,7 @@ GameItem *EquipmentHandler::getItemAtSlot(unsigned short slot) {
 #include <windows.h>
 void EquipmentHandler::onItemEdited(GameItem *newItem, GameItem *oldItem) {
 	InventoryHandler *handler = 0;
+	GameItem *copy = new GameItem(*newItem);
 	int i;
 	for (i=0; i<EQUIP_SLOTS; ++i) {
 		GameItem *equipItem = getItemAtSlot(i);
@@ -33,9 +34,11 @@ void EquipmentHandler::onItemEdited(GameItem *newItem, GameItem *oldItem) {
 			break;
 		}
 	}
+	bool isAddedItem = false;
 	if (handler == 0) {
+		isAddedItem = true;
 		//item is newly added
-		LsbObject *itemObject = newItem->getObject();
+		LsbObject *itemObject = copy->getObject();
 		itemsObject->addChild(itemObject);
 		LsbObject *slotObject = LsbReader::lookupByUniquePathEntity(itemObject, "Slot");
 		unsigned short slot = EQUIP_SLOTS;
@@ -54,8 +57,11 @@ void EquipmentHandler::onItemEdited(GameItem *newItem, GameItem *oldItem) {
 	if (handler != 0 && i < EQUIP_SLOTS) {
 		LsbObject *parent = oldItem->getObject()->getParent();
 		handler->getItems()->removeItem(oldItem);
-		GameItem *copy = new GameItem(*newItem);
-		parent->replaceChild(oldItem->getObject(), copy->getObject());
+		if (!parent->replaceChild(oldItem->getObject(), copy->getObject())) {
+			if (!isAddedItem) {
+				MessageBoxA(0, "Child replace failed!", 0, 0);
+			}
+		}
 		delete oldItem;
 		handler->getItems()->addItem(copy);
 		

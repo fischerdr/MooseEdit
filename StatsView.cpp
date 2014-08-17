@@ -286,9 +286,17 @@ void StatsView::on_statsTree_currentItemChanged(QTreeWidgetItem *current, QTreeW
 		modTable->resizeRowsToContents();
 		modTable->resizeColumnsToContents();
 	} else if (current->childCount() == 0) {
+		bool canEdit = true;
+		if (current->text(0) == "Abilities") {
+			canEdit = false;
+		}
 		QStringList headerList;
 		headerList.push_back("Name");
-		headerList.push_back("Editable Value");
+		if (canEdit) {
+			headerList.push_back("Editable Value");
+		} else {
+			headerList.push_back("Value");
+		}
 		modTable->setHorizontalHeaderLabels(headerList);
 		for (int i=0; i<modTable->rowCount(); ++i) {
 			for (int j=0; j<modTable->columnCount(); ++j) {
@@ -303,6 +311,9 @@ void StatsView::on_statsTree_currentItemChanged(QTreeWidgetItem *current, QTreeW
 		nameItem->setFlags(nameItem->flags() & ~Qt::ItemIsEditable);
 		modTable->setItem(row, 0, nameItem);
 		QTableWidgetItem *valueItem = new QTableWidgetItem();
+		if (!canEdit) {
+			valueItem->setFlags(nameItem->flags() & ~Qt::ItemIsEditable);
+		}
 		valueItem->setText(data.c_str());
 		modTable->setItem(row, 1, valueItem);
 		

@@ -467,6 +467,8 @@ void ItemEditFrame::refreshViewData() {
 		baseStatsView->selectNodeByName(item->getStatsText().c_str());
 	}
 	
+	itemTemplateWidget->populate();
+	
 	modsView->clearTree();
 	if (item->getItemStats() != 0) {
 		std::vector<StatsContainer *> boosts = item->getBoosts();

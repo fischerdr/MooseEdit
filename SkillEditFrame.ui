@@ -31,6 +31,9 @@
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
        <widget class="QTreeWidget" name="skillTree">
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
         <property name="sortingEnabled">
          <bool>true</bool>
         </property>
@@ -71,6 +74,9 @@
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
        <widget class="QTableWidget" name="skillTable">
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
         <property name="alternatingRowColors">
          <bool>true</bool>
         </property>
@@ -115,7 +121,11 @@
        </widget>
       </item>
       <item>
-       <widget class="QListWidget" name="skillList"/>
+       <widget class="QListWidget" name="skillList">
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="removeButton">

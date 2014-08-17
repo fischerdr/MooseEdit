@@ -428,7 +428,9 @@ void characterTab::on_perEdit_textEdited(const QString &text)
 void characterTab::onItemEdited(GameItem *newItem, GameItem *oldItem) {
 	LsbObject *parent = oldItem->getObject()->getParent();
 	GameItem *copy = new GameItem(*newItem);
+	bool isAddedItem = false;
 	if (!this->character->getInventoryHandler()->getItems()->removeItem(oldItem)) {
+		isAddedItem = true;
 		//item did not exist in inventoryHandler: item is newly added to inventory
 		itemsObject->addChild(copy->getObject());
 		LsbObject *slotObject = LsbReader::lookupByUniquePathEntity(copy->getObject(), "Slot");
@@ -483,7 +485,11 @@ void characterTab::onItemEdited(GameItem *newItem, GameItem *oldItem) {
 		
 		character->addItemToInventoryObject(newCreatorObject, copy->getRenderSlot(), extraInventoryTab, extraViewSlot, false);
 	}
-	parent->replaceChild(oldItem->getObject(), copy->getObject());
+	if (!parent->replaceChild(oldItem->getObject(), copy->getObject())) {
+		if (!isAddedItem) {
+			MessageBoxA(0, "Child replace failed!", 0, 0);
+		}
+	}
 	delete oldItem;
 	this->character->getInventoryHandler()->getItems()->addItem(copy);
 	this->character->getInventoryHandler()->draw(this->findChild<QWidget *>("inventoryContents"), this->parentWidget(), true);

@@ -322,6 +322,7 @@ void GamePakData::parsePakFile(std::wstring& pakPath, const char *pakExtractPath
 		break;}
 	case PROCESSING_TYPE_MODTEMPLATE: {
 		std::vector<LsbObject *> modTemplates = lsbReader.loadFile(fileByteStream);
+		addTemplatesToStatTemplateMap(modTemplates, false);
 		this->addModTemplates(modTemplates);
 		break;}
 	case PROCESSING_TYPE_ITEMSTATS: {

@@ -110,7 +110,7 @@ public:
 		this->dataSize = other.dataSize;
 		for (int i=0; i<other.children.size(); ++i) {
 			LsbObject *newChild = new LsbObject(*other.children[i]);
-			children.push_back(newChild);
+			this->addChild(newChild);
 		}
 		this->childId = other.childId;
 		this->itemsLeft = other.itemsLeft;
@@ -229,9 +229,10 @@ public:
 			if (children[i] == oldChild) {
 				children[i] = newChild;
 				delete oldChild;
-				break;
+				return true;
 			}
 		}
+		return false;
 	}
 	
 	bool removeChild(LsbObject *targetChild) {
@@ -370,7 +371,8 @@ public:
 	
 	LsbObject *addChild(LsbObject *obj) {
 		children.push_back(obj);
-		return children[children.size() - 1];
+		obj->setParent(this);
+		return children.back();
 	}
 	
 	LsbObject *insertChild(LsbObject *obj, unsigned index) {
