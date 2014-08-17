@@ -5,6 +5,7 @@
 #include <QListWidgetItem>
 #include <QTreeWidgetItem>
 #include "LsbReader.h"
+#include "LsbWriter.h"
 #include "LsbObject.h"
 #include "CharacterGroup.h"
 #include "ItemGroup.h"
@@ -12,6 +13,7 @@
 #include "GenStatsReader.h"
 #include "PakReader.h"
 #include "GamePakData.h"
+#include <QProgressDialog>
 
 #define PRG_VERSION	"alpha16"
 
@@ -19,7 +21,7 @@ namespace Ui {
 class MainWindow;
 }
 
-class MainWindow : public QMainWindow
+class MainWindow : public QMainWindow, ExtractQueueCallback, ReaderProgressCallback, WriterProgressCallback
 {
 	Q_OBJECT
 	
@@ -34,6 +36,16 @@ public:
 	}
 	QTreeWidgetItem *findInTree(QTreeWidgetItem *item, QString text, int column, QTreeWidgetItem *position, bool wrapAround);
 	void resizeEvent(QResizeEvent* event);
+	void onExtractBegin(std::queue<GameDataQueueObject>& extractQueue);
+	void onExtractUpdate(std::queue<GameDataQueueObject>& extractQueue);
+	void onExtractEnd();
+	void onLoadBegin(int dirCount);
+	void onLoadUpdate(int dirsLeft);
+	void onLoadEnd();
+	void onSaveBegin(int dirCount);
+	void onSaveUpdate(int dirsLeft);
+	void onSaveEnd();
+	void closeEvent(QCloseEvent *);
 	
 private slots:
 	void handleOpenFileButton();
@@ -64,22 +76,31 @@ private slots:
 	
 	void on_devSaveFileButton_released();
 	
+	void on_unloadButton_released();
+	
 private:
+	long initialLsbSaveCount;
+	QProgressDialog *lsbSaveProgress = 0;
+	long initialLsbLoadCount;
+	QProgressDialog *lsbLoadProgress = 0;
+	long initialGameDataCount;
+	QProgressDialog *gameDataProgressDialog = 0;
 	float aspect;
 	QTreeWidgetItem *findInTreeHelper(QTreeWidgetItem *item, QString text, int column, QTreeWidgetItem *position, bool& valid, QTreeWidgetItem *& firstItem);
 	void recursiveExpandAll(QTreeWidgetItem *item);
+	void unload();
 	std::vector<TAG_LSB *> globalTagList;
 	std::vector<LsbObject *> globals;
 	Ui::MainWindow *ui;
 	std::vector<LsbObject *> playerProfiles;
 	CharacterGroup characters;
-	InventoryHandler *editItemHandler;
+	InventoryHandler *editItemHandler = 0;
 	std::wstring getSteamPathFromRegistry();
 	std::wstring getSaveLocation();
 	std::wstring getGameDataLocation();
 	PakReader userPakReader;
 	std::wstring userPakFileName;
-	GamePakData gamePakData;
+	GamePakData *gamePakData = 0;
 	std::vector<TAG_LSB *> openFileButtonTagList;
 };
 

@@ -29,6 +29,7 @@ public:
 	GameCharacter(std::vector<LsbObject *> &globals, std::vector<TAG_LSB *> &tagList);
 	~GameCharacter() {
 		delete widget;
+		delete inventoryHandler;
 	}
 	ItemGroup& getInventory() {
 		return inventory;

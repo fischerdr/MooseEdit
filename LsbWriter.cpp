@@ -81,6 +81,9 @@ bool LsbWriter::writeFile(std::vector<LsbObject *>& objects, std::vector<TAG_LSB
 		bytesWritten += sizeof(tagList[i]->index);
 	}
 	long dirCount = objects.size();
+	if (writerProgressCallback != 0) {
+		writerProgressCallback->onSaveBegin(dirCount);
+	}
 	output.write((char *)&dirCount, sizeof(dirCount));
 	bytesWritten += sizeof(dirCount);
 	long dirHeaderOffset = output.tellp();
@@ -110,6 +113,9 @@ bool LsbWriter::writeFile(std::vector<LsbObject *>& objects, std::vector<TAG_LSB
 				dirStack.push(dirs[j]);
 			}
 		}
+		if (writerProgressCallback != 0) {
+			writerProgressCallback->onSaveUpdate(objects.size() - (i + 1));
+		}
 	}
 	output.seekp((long)&header.fileLength - (long)&header, std::ios_base::beg);
 	header.fileLength = bytesWritten;
@@ -121,6 +127,9 @@ bool LsbWriter::writeFile(std::vector<LsbObject *>& objects, std::vector<TAG_LSB
 		dirHeader.id = objects[i]->getIndex();
 		dirHeader.dataOffset = headerOffsets[i];
 		output.write((char *)&dirHeader, sizeof(ENTITY_HEADER_LSB));
+	}
+	if (writerProgressCallback != 0) {
+		writerProgressCallback->onSaveEnd();
 	}
 	return true;
 }

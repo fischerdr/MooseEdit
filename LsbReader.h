@@ -10,8 +10,16 @@
 #include <stack>
 #include "LsbObject.h"
 
+class ReaderProgressCallback {
+public:
+	virtual void onLoadBegin(int dirCount) = 0;
+	virtual void onLoadUpdate(int dirsLeft) = 0;
+	virtual void onLoadEnd() = 0;
+};
+
 class LsbReader
 {
+	ReaderProgressCallback *readerProgressCallback = 0;
 	bool loanedTagList = false;
 	std::vector<TAG_LSB *> tagList;
 	HEADER_LSB cachedHeader;
@@ -42,6 +50,9 @@ public:
 			}
 		}
 		tagList.clear();
+	}
+	void registerProgressCallback(ReaderProgressCallback *readerProgressCallback) {
+		this->readerProgressCallback = readerProgressCallback;
 	}
 	std::vector<LsbObject *> loadFile(std::istream& input);
 	HEADER_LSB *getHeader();

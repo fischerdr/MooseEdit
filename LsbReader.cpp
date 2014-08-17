@@ -554,6 +554,9 @@ std::vector<LsbObject *> LsbReader::loadFile(std::istream& input) {
 		//            //std::cout<<"Offset "<<(i+1)<<": "<<(void*)entityHeaderList[i].dataOffset<<
 		//                       "   id="<<entityHeaderList[i].id<<'\n';
 		//        }
+		if (readerProgressCallback != 0) {
+			readerProgressCallback->onLoadBegin(entityHeaderList.size());
+		}
 		for (int i=0; i<entityHeaderList.size(); ++i) {
 			ENTITY_HEADER_LSB *entityHeaderPtr = 0;
 			if ((i+1) < entityHeaderList.size()) {
@@ -585,6 +588,9 @@ std::vector<LsbObject *> LsbReader::loadFile(std::istream& input) {
 			//if ((i+1) == 15)
 				//std::system("pause");
 			readTagData(input, bytesNext, arrayStack, cachedHeader.tagCount, bytesLeft, tagList, alloc);
+			if (readerProgressCallback != 0) {
+				readerProgressCallback->onLoadUpdate(entityHeaderList.size() - (i + 1));
+			}
 		}
 		if (bytesLeft > 0) {
 			//std::cout<<"Warning: extra bytes leftover: "<<bytesLeft<<'\n';
@@ -592,7 +598,13 @@ std::vector<LsbObject *> LsbReader::loadFile(std::istream& input) {
 		////freeTagList(tagList);
 	}
 	else {
+		if (readerProgressCallback != 0) {
+			readerProgressCallback->onLoadEnd();
+		}
 		return std::vector<LsbObject *>();
+	}
+	if (readerProgressCallback != 0) {
+		readerProgressCallback->onLoadEnd();
 	}
 	return objects;
 }

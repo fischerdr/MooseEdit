@@ -264,7 +264,7 @@ unsigned long InventoryHandler::slotAtPoint(const QPoint &pt) {
 
 InventoryHandler::~InventoryHandler() {
 	for (int i=0; i<itemLabels.size(); ++i) {
-		delete itemLabels[i];
+		//delete itemLabels[i];
 	}
 	itemLabels.clear();
 }

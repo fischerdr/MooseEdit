@@ -8,9 +8,17 @@
 #include "GenStatsReader.h"
 #include <QImage>
 #include <map>
+#include <queue>
 
 #include "LsbReader.h"
 #include "PakReader.h"
+
+struct GameDataQueueObject {
+	std::wstring pakFile;
+	std::string toExtract;
+	std::wstring extractDir;
+	int processingType;
+};
 
 struct ItemTemplateData {
 	std::string templateId;
@@ -18,10 +26,18 @@ struct ItemTemplateData {
 	bool isRootTemplate;
 };
 
+class ExtractQueueCallback {
+public:
+	virtual void onExtractBegin(std::queue<GameDataQueueObject>& extractQueue) = 0;
+	virtual void onExtractUpdate(std::queue<GameDataQueueObject>& extractQueue) = 0;
+	virtual void onExtractEnd() = 0;
+};
+
 typedef std::map<std::string, std::vector<ItemTemplateData> > StatTemplateMap;
 
 class GamePakData
 {
+	ExtractQueueCallback *extractQueueCallback = 0;
 	TextureAtlas iconAtlas;
 	std::vector<LsbObject *> stats;
 	std::map<std::string, LsbObject *> rootTemplateMap;
@@ -42,6 +58,7 @@ class GamePakData
 	GenStatsReader genStatsReader;
 	std::wstring lastPakPath = L"";
 
+	void processExtractQueue(std::queue<GameDataQueueObject>& extractQueue);
 	void addModLookupsToStatTemplateMap();
 	void addModsToRootModsList();
 	void addItemLinksToStatTemplateMap(std::vector<StatsContainer *> &itemLinks);
@@ -73,7 +90,11 @@ class GamePakData
 	}
 public:
 	GamePakData();
+	~GamePakData();
 	void load(std::wstring gameDataPath);
+	void registerExtractQueueCallback(ExtractQueueCallback *extractQueueCallback) {
+		this->extractQueueCallback = extractQueueCallback;
+	}
 	QImage *getInventoryCellImg() {
 		return inventoryCellPtr;
 	}

@@ -341,6 +341,23 @@ void GamePakData::parsePakFile(std::wstring& pakPath, const char *pakExtractPath
 	delete[] fileBytes;
 }
 
+void GamePakData::processExtractQueue(std::queue<GameDataQueueObject>& extractQueue) {
+	if (extractQueueCallback != 0) {
+		extractQueueCallback->onExtractBegin(extractQueue);
+	}
+	while (!extractQueue.empty()) {
+		GameDataQueueObject &queueObject = extractQueue.front();
+		parsePakFile(queueObject.pakFile, queueObject.toExtract.c_str(), queueObject.extractDir, queueObject.processingType);
+		extractQueue.pop();
+		if (extractQueueCallback != 0) {
+			extractQueueCallback->onExtractUpdate(extractQueue);
+		}
+	}
+	if (extractQueueCallback != 0) {
+		extractQueueCallback->onExtractEnd();
+	}
+}
+#include <windows.h>
 void GamePakData::load(std::wstring gameDataPath) {
 	std::wstring pakMain(gameDataPath + L"Main.pak");
 	std::wstring pakTextures(gameDataPath + L"Textures.pak");
@@ -355,16 +372,12 @@ void GamePakData::load(std::wstring gameDataPath) {
 	
 	std::wstring linkDirectory = tempDirectory;
 	linkDirectory += L"\\links";
-	_wmkdir(linkDirectory.c_str());
+	//_wmkdir(linkDirectory.c_str());
 	
-	parsePakFile(pakMain, "Public/Main/Localization/Stats.lsb", tempDirectory, PROCESSING_TYPE_STATS);
-//	parsePakFile(pakMain, "Public/Main/RootTemplates/Armors.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
-//	parsePakFile(pakMain, "Public/Main/RootTemplates/Loot.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
-//	parsePakFile(pakMain, "Public/Main/RootTemplates/Unique.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
-//	parsePakFile(pakMain, "Public/Main/RootTemplates/Consumables.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
-//	parsePakFile(pakMain, "Public/Main/RootTemplates/Equipment.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
-//	parsePakFile(pakMain, "Public/Main/RootTemplates/Tools.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
-//	parsePakFile(pakMain, "Public/Main/RootTemplates/Books_Scrolls.lsb", tempDirectory, PROCESSING_TYPE_ROOTTEMPLATE);
+	pakReader.loadFile(pakMain);
+	
+	std::queue<GameDataQueueObject> extractQueue;
+	extractQueue.push({pakMain, "Public/Main/Localization/Stats.lsb", tempDirectory, PROCESSING_TYPE_STATS});
 	
 	std::string rootTemplatesPath = "Public/Main/RootTemplates/";
 	std::string modTemplatesPath = "Mods/Main/Globals/";
@@ -373,41 +386,40 @@ void GamePakData::load(std::wstring gameDataPath) {
 	std::vector<std::string> allMainFiles = pakReader.getFileList();
 	std::wstring rootTemplateTemp = tempDirectory + L"\\RootTemplates";
 	std::wstring modTemplateTemp = tempDirectory + L"\\ModTemplates";
-	_wmkdir(rootTemplateTemp.c_str());
-	_wmkdir(modTemplateTemp.c_str());
+	//_wmkdir(rootTemplateTemp.c_str());
+	//_wmkdir(modTemplateTemp.c_str());
 	for (int i=0; i<allMainFiles.size(); ++i) {
 		std::string &mainFile = allMainFiles[i];
 		if (boost::contains(mainFile, itemPathText)) {
 			 if (boost::starts_with(mainFile, modTemplatesPath) || boost::starts_with(mainFile, modTemplatesPath2)) {
-				parsePakFile(pakMain, mainFile.c_str(), modTemplateTemp, PROCESSING_TYPE_MODTEMPLATE);
+				extractQueue.push({pakMain, mainFile.c_str(), modTemplateTemp, PROCESSING_TYPE_MODTEMPLATE});
 			}
 		} else {
 			if (boost::starts_with(mainFile, rootTemplatesPath)) {
-				parsePakFile(pakMain, mainFile.c_str(), rootTemplateTemp, PROCESSING_TYPE_ROOTTEMPLATE);
+				extractQueue.push({pakMain, mainFile.c_str(), rootTemplateTemp, PROCESSING_TYPE_ROOTTEMPLATE});
 			}
 		}
 	}
 	
+	extractQueue.push({pakMain, "Public/Main/Stats/Generated/Data/Weapon.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS});
+	extractQueue.push({pakMain, "Public/Main/Stats/Generated/DeltaModifier.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS});
+	extractQueue.push({pakMain, "Public/Main/Stats/Generated/Data/Armor.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS});
+	extractQueue.push({pakMain, "Public/Main/Stats/Generated/Data/Object.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS});
+	extractQueue.push({pakMain, "Public/Main/Stats/Generated/Data/Potion.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS});
+	extractQueue.push({pakMain, "Public/Main/Stats/Generated/Data/Shield.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS});
+	extractQueue.push({pakMain, "Public/Main/Stats/Generated/Structure/Modifiers.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS});
+	extractQueue.push({pakMain, "Public/Main/Stats/Generated/Data/SkillData.txt", tempDirectory, PROCESSING_TYPE_SKILLSTATS});
+		
+	extractQueue.push({pakMain, "Public/Main/Stats/Generated/Links/Weapon.txt", linkDirectory, PROCESSING_TYPE_ITEMLINKS});
+	extractQueue.push({pakMain, "Public/Main/Stats/Generated/Links/Armor.txt", linkDirectory, PROCESSING_TYPE_ITEMLINKS});
+	extractQueue.push({pakMain, "Public/Main/Stats/Generated/Links/Object.txt", linkDirectory, PROCESSING_TYPE_ITEMLINKS});
+	extractQueue.push({pakMain, "Public/Main/Stats/Generated/Links/Potion.txt", linkDirectory, PROCESSING_TYPE_ITEMLINKS});
+	extractQueue.push({pakMain, "Public/Main/Stats/Generated/Links/Shield.txt", linkDirectory, PROCESSING_TYPE_ITEMLINKS});
+
+	processExtractQueue(extractQueue);
+
 	populateRootTemplateMap(this->getRootTemplates());
 	populateModTemplateMap(this->getModTemplates());
-
-//	parsePakFile(pakMain, "Mods/Main/Globals/Homestead/Items/items-LS2011_AXEL.lsb", tempDirectory, PROCESSING_TYPE_MODTEMPLATE);
-//	parsePakFile(pakMain, "Mods/Main/Globals/Cyseal/Items/items.lsb", tempDirectory, PROCESSING_TYPE_MODTEMPLATE);
-//	parsePakFile(pakMain, "Mods/Main/Globals/Cyseal/Items/items-LS2012_JORIS.lsb", tempDirectory, PROCESSING_TYPE_MODTEMPLATE);
-	parsePakFile(pakMain, "Public/Main/Stats/Generated/Data/Weapon.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS);
-	parsePakFile(pakMain, "Public/Main/Stats/Generated/DeltaModifier.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS);
-	parsePakFile(pakMain, "Public/Main/Stats/Generated/Data/Armor.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS);
-	parsePakFile(pakMain, "Public/Main/Stats/Generated/Data/Object.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS);
-	parsePakFile(pakMain, "Public/Main/Stats/Generated/Data/Potion.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS);
-	parsePakFile(pakMain, "Public/Main/Stats/Generated/Data/Shield.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS);
-	parsePakFile(pakMain, "Public/Main/Stats/Generated/Structure/Modifiers.txt", tempDirectory, PROCESSING_TYPE_ITEMSTATS);
-	parsePakFile(pakMain, "Public/Main/Stats/Generated/Data/SkillData.txt", tempDirectory, PROCESSING_TYPE_SKILLSTATS);
-		
-	parsePakFile(pakMain, "Public/Main/Stats/Generated/Links/Weapon.txt", linkDirectory, PROCESSING_TYPE_ITEMLINKS);
-	parsePakFile(pakMain, "Public/Main/Stats/Generated/Links/Armor.txt", linkDirectory, PROCESSING_TYPE_ITEMLINKS);
-	parsePakFile(pakMain, "Public/Main/Stats/Generated/Links/Object.txt", linkDirectory, PROCESSING_TYPE_ITEMLINKS);
-	parsePakFile(pakMain, "Public/Main/Stats/Generated/Links/Potion.txt", linkDirectory, PROCESSING_TYPE_ITEMLINKS);
-	parsePakFile(pakMain, "Public/Main/Stats/Generated/Links/Shield.txt", linkDirectory, PROCESSING_TYPE_ITEMLINKS);
 	
 	addItemLinksToStatTemplateMap(itemLinks);
 	
@@ -476,4 +488,32 @@ void GamePakData::load(std::wstring gameDataPath) {
 GamePakData::GamePakData()
 {
 	
+}
+
+GamePakData::~GamePakData()
+{
+	for (int i=0; i<stats.size(); ++i) {
+		delete stats[i];
+	}
+	stats.clear();
+	for (int i=0; i<rootTemplates.size(); ++i) {
+		delete rootTemplates[i];
+	}
+	rootTemplates.clear();
+	for (int i=0; i<modTemplates.size(); ++i) {
+		delete modTemplates[i];
+	}
+	modTemplates.clear();
+	for (int i=0; i<itemStats.size(); ++i) {
+		delete itemStats[i];
+	}
+	itemStats.clear();
+	for (int i=0; i<skillStats.size(); ++i) {
+		delete skillStats[i];
+	}
+	skillStats.clear();
+	for (int i=0; i<itemLinks.size(); ++i) {
+		delete itemLinks[i];
+	}
+	itemLinks.clear();
 }
