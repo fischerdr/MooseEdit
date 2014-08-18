@@ -50,7 +50,8 @@ SOURCES += main.cpp\
     SkillEditFrame.cpp \
     EquipmentHandler.cpp \
     GamePakData.cpp \
-    ItemTemplateWidget.cpp
+    ItemTemplateWidget.cpp \
+    EditorSettings.cpp
 
 HEADERS  += mainwindow.h \
     LsbReader.h \
@@ -81,7 +82,8 @@ HEADERS  += mainwindow.h \
     SkillEditFrame.h \
     EquipmentHandler.h \
     GamePakData.h \
-    ItemTemplateWidget.h
+    ItemTemplateWidget.h \
+    EditorSettings.h
 
 FORMS    += mainwindow.ui \
     charactertab.ui \

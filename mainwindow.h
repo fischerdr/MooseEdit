@@ -14,6 +14,7 @@
 #include "PakReader.h"
 #include "GamePakData.h"
 #include <QProgressDialog>
+#include "EditorSettings.h"
 
 #define PRG_VERSION	"alpha16"
 
@@ -79,6 +80,7 @@ private slots:
 	void on_unloadButton_released();
 	
 private:
+	EditorSettings settings;
 	long initialLsbSaveCount;
 	QProgressDialog *lsbSaveProgress = 0;
 	long initialLsbLoadCount;

@@ -37,12 +37,12 @@
 
 std::vector<std::wstring> getSaveGameList(std::wstring fullPath, std::wstring profileName) {
 	std::vector<std::wstring> saveList;
-	DIR *dir;
-	dirent *ent;
 	fullPath += L"\\";
 	fullPath += profileName;
 	fullPath += L"\\";
 	fullPath += L"SaveGames";
+	wchar_t cwd[MAX_PATH + 1];
+	_wgetcwd(cwd, MAX_PATH + 1);
 	_wchdir(fullPath.c_str());
 	boost::filesystem::path dirPath(fullPath);
 	boost::filesystem::directory_iterator it(dirPath);
@@ -59,27 +59,12 @@ std::vector<std::wstring> getSaveGameList(std::wstring fullPath, std::wstring pr
 			}
 		}
 	}
-//	if ((dir = opendir (fullPath.c_str())) != 0) {
-//		while ((ent = readdir (dir)) != 0) {
-//			struct stat st;
-//			stat(ent->d_name, &st);
-//			if (S_ISDIR(st.st_mode)) {
-//				std::string entName = ent->d_name;
-//				if (entName != "." && entName != "..") {
-//					std::string saveText = profileName;
-//					saveText += "/";
-//					saveText += entName;
-//					saveList.push_back(saveText);
-//				}
-//			}
-//		}
-//		closedir (dir);
-//	}
+	_wchdir(cwd);
 	return saveList;
 }
 
 MainWindow::MainWindow(QWidget *parent) :
-	QMainWindow(parent),
+	QMainWindow(parent), settings(L"moose_settings.ini"),
 	ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
@@ -117,52 +102,61 @@ MainWindow::MainWindow(QWidget *parent) :
 	std::wstring path = getSteamPathFromRegistry();
 	
 	QLineEdit *gameDataEdit = this->findChild<QLineEdit *>("gameDataEdit");
-	if (path.length() > 0) {
-		std::wstring gameDataPath = path;
-		if (!boost::ends_with(gameDataPath, "\\")) {
-			gameDataPath += L"\\";
+	std::wstring savedDataPath = settings.getProperty(L"dataPath");
+	if (savedDataPath.length() == 0) {
+		if (path.length() > 0) {
+			std::wstring gameDataPath = path;
+			if (!boost::ends_with(gameDataPath, "\\")) {
+				gameDataPath += L"\\";
+			}
+			gameDataPath += L"Data\\";
+			gameDataEdit->setText(QString::fromStdWString(gameDataPath));
 		}
-		gameDataPath += L"Data\\";
-		gameDataEdit->setText(QString::fromStdWString(gameDataPath));
+	} else {
+		gameDataEdit->setText(QString::fromStdWString(savedDataPath));
 	}
 	
 	QLineEdit *savesFolderEdit = this->findChild<QLineEdit *>("savesFolderEdit");
-	
-	wchar_t my_documents[MAX_PATH + 1];
-	HRESULT result = SHGetFolderPathW(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents);
-	if (result == S_OK) {
-		std::wstring saveFolderPath = my_documents;
-		if (!boost::ends_with(saveFolderPath, L"\\")) {
-			saveFolderPath += L"\\";
-		}
-		saveFolderPath += L"Larian Studios\\Divinity Original Sin\\PlayerProfiles\\";
-		savesFolderEdit->setText(QString::fromStdWString(saveFolderPath));
-	} else {
-		std::vector<std::wstring> splitVector;
-		boost::split(splitVector, path, boost::is_any_of(L"\\"));
-		if (splitVector.size() > 0) {
-			std::wstring &first = splitVector[0];
-			if (first.length() != 0) {
-				std::wstring saveFolderPath = first;
-				saveFolderPath += L"\\Users\\";
-				const char *username = std::getenv("USER");
-				if (username == 0) {
-					username = std::getenv("USERNAME");
-				}
-				if (username != 0) {
-					std::wstring wUsername = L"";
-					{
-						long usernameSize = strlen(username) + 1;
-						wchar_t alloc[usernameSize];
-						mbstowcs(alloc, username, usernameSize);
-						wUsername = alloc;
+	std::wstring savedSavePath = settings.getProperty(L"savePath");
+	if (savedSavePath.length() == 0) {
+		wchar_t my_documents[MAX_PATH + 1];
+		HRESULT result = SHGetFolderPathW(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents);
+		if (result == S_OK) {
+			std::wstring saveFolderPath = my_documents;
+			if (!boost::ends_with(saveFolderPath, L"\\")) {
+				saveFolderPath += L"\\";
+			}
+			saveFolderPath += L"Larian Studios\\Divinity Original Sin\\PlayerProfiles\\";
+			savesFolderEdit->setText(QString::fromStdWString(saveFolderPath));
+		} else {
+			std::vector<std::wstring> splitVector;
+			boost::split(splitVector, path, boost::is_any_of(L"\\"));
+			if (splitVector.size() > 0) {
+				std::wstring &first = splitVector[0];
+				if (first.length() != 0) {
+					std::wstring saveFolderPath = first;
+					saveFolderPath += L"\\Users\\";
+					const char *username = std::getenv("USER");
+					if (username == 0) {
+						username = std::getenv("USERNAME");
 					}
-					saveFolderPath += wUsername;
-					saveFolderPath += L"\\Documents\\Larian Studios\\Divinity Original Sin\\PlayerProfiles\\";
-					savesFolderEdit->setText(QString::fromStdWString(saveFolderPath));
+					if (username != 0) {
+						std::wstring wUsername = L"";
+						{
+							long usernameSize = strlen(username) + 1;
+							wchar_t alloc[usernameSize];
+							mbstowcs(alloc, username, usernameSize);
+							wUsername = alloc;
+						}
+						saveFolderPath += wUsername;
+						saveFolderPath += L"\\Documents\\Larian Studios\\Divinity Original Sin\\PlayerProfiles\\";
+						savesFolderEdit->setText(QString::fromStdWString(saveFolderPath));
+					}
 				}
 			}
 		}
+	} else {
+		savesFolderEdit->setText(QString::fromStdWString(savedSavePath));
 	}
 }
 
@@ -290,6 +284,11 @@ void MainWindow::handleLoadButton() {
 	if (item != 0) {
 		loadButton->setEnabled(false);
 		unloadButton->setEnabled(true);
+		
+		settings.setProperty(L"savePath", this->getSaveLocation());
+		settings.setProperty(L"dataPath", this->getGameDataLocation());
+		settings.saveFile(PRG_VERSION);
+		
 		QString text = item->text();
 		QLineEdit *currentlyLoadedEdit = this->findChild<QLineEdit *>("currentlyLoadedEdit");
 		currentlyLoadedEdit->setText(text);
@@ -322,6 +321,7 @@ void MainWindow::handleLoadButton() {
 			std::vector<LsbObject *> matchingCharacterCreators;
 			int characterLoadCounter = characterCreatorHandles.size() * 5 - 1;
 			QProgressDialog characterProgress("Processing character data...", QString(), 0, characterLoadCounter, this);
+			characterProgress.setWindowFlags(characterProgress.windowFlags() & ~(Qt::WindowCloseButtonHint | Qt::WindowContextHelpButtonHint));
 			characterProgress.setWindowModality(Qt::WindowModal);
 			characterProgress.show();
 			QApplication::processEvents();
@@ -759,6 +759,7 @@ void MainWindow::onExtractBegin(std::queue<GameDataQueueObject> &extractQueue)
 	}
 	initialGameDataCount = extractQueue.size();
 	gameDataProgressDialog = new QProgressDialog("Loading game data...", QString(), 0, initialGameDataCount, this);
+	gameDataProgressDialog->setWindowFlags(gameDataProgressDialog->windowFlags() & ~(Qt::WindowCloseButtonHint | Qt::WindowContextHelpButtonHint));
 	gameDataProgressDialog->setWindowModality(Qt::WindowModal);
 	gameDataProgressDialog->show();
 	QApplication::processEvents();
@@ -782,6 +783,7 @@ void MainWindow::onLoadBegin(int dirCount)
 	}
 	initialLsbLoadCount = dirCount;
 	lsbLoadProgress = new QProgressDialog("Loading save data...", QString(), 0, initialLsbLoadCount, this);
+	lsbLoadProgress->setWindowFlags(lsbLoadProgress->windowFlags() & ~(Qt::WindowCloseButtonHint | Qt::WindowContextHelpButtonHint));
 	lsbLoadProgress->setWindowModality(Qt::WindowModal);
 	lsbLoadProgress->show();
 	QApplication::processEvents();
@@ -805,6 +807,7 @@ void MainWindow::onSaveBegin(int dirCount)
 	}
 	initialLsbSaveCount = dirCount;
 	lsbSaveProgress = new QProgressDialog("Saving game data...", QString(), 0, initialLsbSaveCount, this);
+	lsbSaveProgress->setWindowFlags(lsbSaveProgress->windowFlags() & ~(Qt::WindowCloseButtonHint | Qt::WindowContextHelpButtonHint));
 	lsbSaveProgress->setWindowModality(Qt::WindowModal);
 	lsbSaveProgress->show();
 	QApplication::processEvents();
