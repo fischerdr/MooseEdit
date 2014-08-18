@@ -17,7 +17,7 @@
 #include <QTimer>
 #include "EditorSettings.h"
 
-#define PRG_VERSION	"alpha16"
+#define PRG_VERSION	"alpha17"
 
 namespace Ui {
 class MainWindow;
