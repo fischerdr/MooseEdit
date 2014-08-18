@@ -46,8 +46,9 @@ bool EditorSettings::loadFile() {
 			std::getline(fin, line, '\n');
 			char oneByte[1];
 			fin.read(oneByte, sizeof(oneByte));
-			if (line.length() > 0) {
-				line.resize(line.length() - 1);
+			if (line.length() > 0 && line[line.length() - 1] == '\0') {
+				line += '\0';
+				line += '\0';
 			} else {
 				break;
 			}
