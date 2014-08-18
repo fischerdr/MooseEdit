@@ -110,105 +110,87 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 			}
 			item->setItemStats(GenStatsReader::getContainer(itemStats, statsText));
 			long dataSize = currentTemplateObject->getDataSize();
+			
 			long matchCount = 0;
 			LsbObject *displayNameObject = 0;
 			LsbObject *match = 0;
 			char *iconName = 0;
 			char *description = 0;
-//			for (int j=0; j<modTemplates.size(); ++j) {
-//				LsbObject *templateRoot = LsbReader::lookupByUniquePathEntity(modTemplates[j], "root");
-//				std::vector<LsbObject *> matches = LsbReader::findItemsByAttribute(templateRoot->getChildren(), "MapKey", currentTemplate, dataSize);
-//				LsbObject *match = 0;
-//				if (matches.size() == 1) {
-//					++matchCount;
-//					match = matches[0];
-//				}
-				match = 0;
-				if (modTemplateMap.find(currentTemplate) != modTemplateMap.end()) {
-					match = modTemplateMap[currentTemplate];
+			
+			match = 0;
+			if (modTemplateMap.find(currentTemplate) != modTemplateMap.end()) {
+				match = modTemplateMap[currentTemplate];
+			}
+			if (match != 0) {
+				std::cout<<"mod match for "<<currentTemplate<<'\n';
+				LsbObject *iconObject = LsbReader::lookupByUniquePathEntity(match, "Icon");
+				if (iconObject != 0) {
+					iconName = iconObject->getData();
 				}
-				if (match != 0) {
-					std::cout<<"mod match for "<<currentTemplate<<'\n';
+				currentTemplate = LsbReader::lookupByUniquePathEntity(match, "TemplateName")->getData();
+				displayNameObject = LsbReader::lookupByUniquePathEntity(match, "DisplayName");
+				if (displayNameObject != 0) {
+					item->setItemName(displayNameObject->getData());
+				}
+				LsbObject *descriptionObject = LsbReader::lookupByUniquePathEntity(match, "Description");
+				if (descriptionObject != 0) {
+					description = descriptionObject->getData();
+				}
+			}
+			matchCount = 0;
+
+			match = 0;
+			if (rootTemplateMap.find(currentTemplate) != rootTemplateMap.end()) {
+				match = rootTemplateMap[currentTemplate];
+			}
+			if (match != 0) {
+				if (iconName == 0) {
 					LsbObject *iconObject = LsbReader::lookupByUniquePathEntity(match, "Icon");
 					if (iconObject != 0) {
 						iconName = iconObject->getData();
 					}
-					currentTemplate = LsbReader::lookupByUniquePathEntity(match, "TemplateName")->getData();
-					displayNameObject = LsbReader::lookupByUniquePathEntity(match, "DisplayName");
-					if (displayNameObject != 0) {
-						item->setItemName(displayNameObject->getData());
-					}
+				}
+				if (description == 0) {
 					LsbObject *descriptionObject = LsbReader::lookupByUniquePathEntity(match, "Description");
 					if (descriptionObject != 0) {
 						description = descriptionObject->getData();
 					}
-					//break;
 				}
-//			}
-			matchCount = 0;
-//			for (int j=0; j<rootTemplates.size(); ++j) {
-//				LsbObject *templateRoot = LsbReader::lookupByUniquePathEntity(rootTemplates[j], "root");
-//				std::vector<LsbObject *> matches = LsbReader::findItemsByAttribute(templateRoot->getChildren(), "MapKey", currentTemplate, dataSize);
-//				LsbObject *match = 0;
-//				if (matches.size() == 1) {
-//					++matchCount;
-//					match = matches[0];
-//				}
-				match = 0;
-				if (rootTemplateMap.find(currentTemplate) != rootTemplateMap.end()) {
-					match = rootTemplateMap[currentTemplate];
+				if (description != 0) {
+					item->setBody(description);
+				} else {
+					item->setBody("");
 				}
-				if (match != 0) {
+				
+				if (displayNameObject == 0) {
+					displayNameObject = LsbReader::lookupByUniquePathEntity(match, "DisplayName");
+					if (displayNameObject != 0) {
+						item->setItemName(displayNameObject->getData());
+					}
+				}
+				
+				QImage image;
+				if (iconName != 0 && iconAtlas.getNamedTexture(iconName, &image)) {
+					QPixmap result(image.size());
+					if (!drawBackground) {
+						result.fill(Qt::transparent);
+					}
+					QPainter painter(&result);
+					if (drawBackground) {
+						painter.drawImage(QPoint(0, 0), emptySlotImage);
+					}
+					painter.drawImage(QPoint(0, 0), image);
+					label->setPixmap(result);
+					painter.end();
+				}
+				else {
 					if (iconName == 0) {
-						LsbObject *iconObject = LsbReader::lookupByUniquePathEntity(match, "Icon");
-						if (iconObject != 0) {
-							iconName = iconObject->getData();
-						}
-					}
-					if (description == 0) {
-						LsbObject *descriptionObject = LsbReader::lookupByUniquePathEntity(match, "Description");
-						if (descriptionObject != 0) {
-							description = descriptionObject->getData();
-						}
-					}
-					if (description != 0) {
-						item->setBody(description);
+						std::cout<<"No icon name defined!\n";
 					} else {
-						item->setBody("");
+						std::cout<<"Failed to find texture "<<iconName<<'\n';
 					}
-					
-					if (displayNameObject == 0) {
-						displayNameObject = LsbReader::lookupByUniquePathEntity(match, "DisplayName");
-						if (displayNameObject != 0) {
-							item->setItemName(displayNameObject->getData());
-						}
-					}
-					
-					QImage *imagePtr;
-					if (iconName != 0 && ((imagePtr = iconAtlas.getNamedTexture(iconName)) != 0)) {
-						QImage image = *imagePtr;
-						QPixmap result(image.size());
-						if (!drawBackground) {
-							result.fill(Qt::transparent);
-						}
-						QPainter painter(&result);
-						if (drawBackground) {
-							painter.drawImage(QPoint(0, 0), emptySlotImage);
-						}
-						painter.drawImage(QPoint(0, 0), image);
-						label->setPixmap(result);
-						painter.end();
-					}
-					else {
-						if (iconName == 0) {
-							std::cout<<"No icon name defined!\n";
-						} else {
-							std::cout<<"Failed to find texture "<<iconName<<'\n';
-						}
-					}
-					//break;
 				}
-//			}
+			}
 			if (matchCount != 1) {
 				std::cout<<"Mismatch for template ID "<<currentTemplate<<", matchCount = "<<matchCount<<"("<<statsText<<")"<<'\n';
 			}

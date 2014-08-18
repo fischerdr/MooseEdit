@@ -13,7 +13,7 @@ class TextureAtlas
 public:
 	TextureAtlas();
 	bool loadTextureAtlas(char *atlasBytes, int atlasSize, std::string& atlasDescriptor);
-	QImage *getNamedTexture(const char *textureName);
+	bool getNamedTexture(const char *textureName, QImage *img);
 	std::vector<std::string> getTextureNames();
 	
 	void setAbsoluteSize(long absoluteSize) {

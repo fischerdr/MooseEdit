@@ -76,22 +76,26 @@ std::vector<std::string> TextureAtlas::getTextureNames() {
 	return textureNames;
 }
 
-QImage *TextureAtlas::getNamedTexture(const char *textureName) {
+bool TextureAtlas::getNamedTexture(const char *textureName, QImage *img) {
 	std::string texture = textureName;
 	if (atlasMap.find(texture) != atlasMap.end()) {
+		QImage toReturn;
 		if (absoluteSize != 0) {
-			atlasMap[texture] = atlasMap[texture].scaled(absoluteSize, absoluteSize);
+			toReturn = atlasMap[texture].scaled(absoluteSize, absoluteSize);
 		}
 		else {
 			if (scale != 1.0f) {
 				int w = atlasMap[texture].width();
 				int h = atlasMap[texture].height();
-				atlasMap[texture] = atlasMap[texture].scaled(w * scale, h * scale);
+				toReturn = atlasMap[texture].scaled(w * scale, h * scale);
+			} else {
+				toReturn = atlasMap[texture];
 			}
 		}
-		return &atlasMap[texture];
+		*img = toReturn;
+		return true;
 	}
-	return 0;
+	return false;
 }
 
 TextureAtlas::TextureAtlas()
