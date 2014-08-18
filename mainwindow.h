@@ -14,6 +14,7 @@
 #include "PakReader.h"
 #include "GamePakData.h"
 #include <QProgressDialog>
+#include <QTimer>
 #include "EditorSettings.h"
 
 #define PRG_VERSION	"alpha16"
@@ -49,6 +50,7 @@ public:
 	void closeEvent(QCloseEvent *);
 	
 private slots:
+	void refreshCurrentCharacterTab();
 	void handleOpenFileButton();
 	void handleLoadButton();
 	void handleExpandCollapseButton();
@@ -80,6 +82,7 @@ private slots:
 	void on_unloadButton_released();
 	
 private:
+	QTimer characterTabRefreshTimer;
 	EditorSettings settings;
 	long initialLsbSaveCount;
 	QProgressDialog *lsbSaveProgress = 0;

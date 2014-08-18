@@ -158,6 +158,10 @@ MainWindow::MainWindow(QWidget *parent) :
 	} else {
 		savesFolderEdit->setText(QString::fromStdWString(savedSavePath));
 	}
+	
+	characterTabRefreshTimer.setSingleShot(false);
+	this->connect(&characterTabRefreshTimer, SIGNAL(timeout()), this, SLOT(refreshCurrentCharacterTab()));
+	characterTabRefreshTimer.start(200);
 }
 
 std::wstring MainWindow::getSteamPathFromRegistry() {
@@ -828,6 +832,14 @@ void MainWindow::closeEvent(QCloseEvent *)
 {
 	this->unload();
 	QApplication::quit();
+}
+
+void MainWindow::refreshCurrentCharacterTab() {
+	QTabWidget *tabWidget = this->findChild<QTabWidget *>("tabWidget");
+	if (boost::starts_with(tabWidget->currentWidget()->objectName().toStdString(), "charTab")) {
+		characterTab *charTab = ((characterTab *)tabWidget->currentWidget());
+		charTab->refreshIconSizes();
+	}
 }
 
 void MainWindow::treeFindAction() {

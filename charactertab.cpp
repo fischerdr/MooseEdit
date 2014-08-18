@@ -550,6 +550,10 @@ void characterTab::redraw_inventory()
 	}
 }
 
+void characterTab::refreshIconSizes() {
+	this->redraw_inventory();
+}
+
 void characterTab::showEvent(QShowEvent *)
 {
 	if (relPosLayout == 0) {
@@ -566,13 +570,11 @@ void characterTab::showEvent(QShowEvent *)
 		
 		QFrame *frame = this->findChild<QFrame *>("frame");
 		relPosLayout = new RelativePositionLayout(frame);
-		//addWidgetsToLayout(frame, relPosLayout);
 		for (int i=0; i<frame->children().size(); ++i) {
 			QObject *object = frame->children()[i];
 			if (object->isWidgetType()) {
 				QWidget *widget = (QWidget *)object;
 				relPosLayout->addWidget(widget);
-				//addWidgetsToLayout(widget, relPosLayout);
 			}
 		}
 		frame->setLayout(relPosLayout);
