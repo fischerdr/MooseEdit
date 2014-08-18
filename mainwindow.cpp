@@ -826,6 +826,7 @@ void MainWindow::onSaveEnd()
 
 void MainWindow::closeEvent(QCloseEvent *)
 {
+	this->unload();
 	QApplication::quit();
 }
 
