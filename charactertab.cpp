@@ -12,8 +12,8 @@
 #include "ExpandableGroupBox.h"
 #include "TraitWidget.h"
 
-characterTab::characterTab(std::vector<TAG_LSB *> *tagList, LsbObject *itemsObject, QTabWidget *tabWidget, QWidget *parent) :
-	QWidget(parent), tagList(tagList), itemsObject(itemsObject), tabWidget(tabWidget), statToTemplateMap(statToTemplateMap),
+characterTab::characterTab(std::vector<TAG_LSB *> *tagList, LsbObject *itemsObject, CharacterLoader *characterLoader, QTabWidget *tabWidget, QWidget *parent) :
+	QWidget(parent), tagList(tagList), itemsObject(itemsObject), tabWidget(tabWidget), statToTemplateMap(statToTemplateMap), characterLoader(characterLoader),
 	ui(new Ui::characterTab)
 {
 	ui->setupUi(this);
@@ -313,12 +313,12 @@ void characterTab::on_nameEdit_textEdited(const QString &text)
 
 void characterTab::on_prevCharButton_released()
 {
-	mainWindow->getCharacterGroup().getTabWidget()->setCurrentWidget(mainWindow->getCharacterGroup().getPreviousCharacter(this->getCharacter())->getWidget());
+	characterLoader->getCharacterGroup().getTabWidget()->setCurrentWidget(characterLoader->getCharacterGroup().getPreviousCharacter(this->getCharacter())->getWidget());
 }
 
 void characterTab::on_nextCharButton_released()
 {
-    mainWindow->getCharacterGroup().getTabWidget()->setCurrentWidget(mainWindow->getCharacterGroup().getNextCharacter(this->getCharacter())->getWidget());
+    characterLoader->getCharacterGroup().getTabWidget()->setCurrentWidget(characterLoader->getCharacterGroup().getNextCharacter(this->getCharacter())->getWidget());
 }
 
 void characterTab::adjustAttribute(long attribId, long newValue) {

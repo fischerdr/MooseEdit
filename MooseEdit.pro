@@ -51,7 +51,8 @@ SOURCES += main.cpp\
     EquipmentHandler.cpp \
     GamePakData.cpp \
     ItemTemplateWidget.cpp \
-    EditorSettings.cpp
+    EditorSettings.cpp \
+    CharacterLoader.cpp
 
 HEADERS  += mainwindow.h \
     LsbReader.h \
@@ -83,7 +84,8 @@ HEADERS  += mainwindow.h \
     EquipmentHandler.h \
     GamePakData.h \
     ItemTemplateWidget.h \
-    EditorSettings.h
+    EditorSettings.h \
+    CharacterLoader.h
 
 FORMS    += mainwindow.ui \
     charactertab.ui \

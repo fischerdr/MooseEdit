@@ -8,6 +8,7 @@
 #include "RelativePositionLayout.h"
 #include "SkillEditFrame.h"
 #include "EquipmentHandler.h"
+#include "CharacterLoader.h"
 
 namespace Ui {
 class characterTab;
@@ -18,7 +19,7 @@ class characterTab : public QWidget, ItemEditCallback, ItemEditorCloseCallback
 	Q_OBJECT
 	
 public:
-	explicit characterTab(std::vector<TAG_LSB *> *tagList, LsbObject *itemsObject, QTabWidget *tabWidget = 0, QWidget *parent = 0);
+	explicit characterTab(std::vector<TAG_LSB *> *tagList, LsbObject *itemsObject, CharacterLoader *characterLoader, QTabWidget *tabWidget = 0, QWidget *parent = 0);
 	~characterTab();
 	void refreshIconSizes();
 	void setCharacter(GameCharacter *character);
@@ -94,6 +95,7 @@ protected:
 	void showEvent(QShowEvent *);
 
 private:
+	CharacterLoader *characterLoader;
 	StatTemplateMap *statToTemplateMap;
 	std::vector<long> experienceRequired;
 	QTabWidget *tabWidget;

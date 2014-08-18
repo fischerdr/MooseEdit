@@ -16,6 +16,7 @@
 #include <QProgressDialog>
 #include <QTimer>
 #include "EditorSettings.h"
+#include "CharacterLoader.h"
 
 #define PRG_VERSION	"alpha17"
 
@@ -33,9 +34,7 @@ public:
 	std::vector<LsbObject *>& getGlobals() {
 		return globals;
 	}
-	CharacterGroup& getCharacterGroup() {
-		return characters;
-	}
+	
 	QTreeWidgetItem *findInTree(QTreeWidgetItem *item, QString text, int column, QTreeWidgetItem *position, bool wrapAround);
 	void resizeEvent(QResizeEvent* event);
 	void onExtractBegin(std::queue<GameDataQueueObject>& extractQueue);
@@ -82,6 +81,7 @@ private slots:
 	void on_unloadButton_released();
 	
 private:
+	CharacterLoader *characterLoader = 0;
 	QTimer characterTabRefreshTimer;
 	EditorSettings settings;
 	long initialLsbSaveCount;
@@ -98,7 +98,6 @@ private:
 	std::vector<LsbObject *> globals;
 	Ui::MainWindow *ui;
 	std::vector<LsbObject *> playerProfiles;
-	CharacterGroup characters;
 	InventoryHandler *editItemHandler = 0;
 	std::wstring getSteamPathFromRegistry();
 	std::wstring getSaveLocation();
