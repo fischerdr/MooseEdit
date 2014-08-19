@@ -79,7 +79,12 @@ void TraitWidget::editTextChanged(const QString &text, QLabel *label) {
 			if (id != -1 && id < traitObjects.size()) {
 				LsbObject *traitObject = traitObjects[id];
 				if (traitObject != 0) {
-					traitObject->setData((char *)&value, sizeof(short));
+					if (traitObject->getType() == 0x02) {
+						traitObject->setData((char *)&value, sizeof(short));
+					} else {
+						unsigned long longValue = value;
+						traitObject->setData((char *)&longValue, sizeof(longValue));
+					}
 				}
 			}
 		}

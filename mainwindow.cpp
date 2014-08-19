@@ -275,6 +275,10 @@ void MainWindow::unload() {
 		delete globals[i];
 	}
 	globals.clear();
+	for (int i=0; i<globalTagList.size(); ++i) {
+		delete globalTagList[i];
+	}
+	globalTagList.clear();
 }
 
 void MainWindow::handleLoadButton() {
@@ -368,6 +372,11 @@ void MainWindow::handleLoadButton() {
 						equipHandler->addItem(item);
 					}
 					charTab->setEquipmentHandler(equipHandler);
+					
+					QTreeWidget *tree = this->findChild<QTreeWidget *>("treeWidget");
+					std::vector<LsbObject *> one;
+					one.push_back(character->getObject());
+					displayAllItems2(tree, one);
 				}
 			}
 			else {
