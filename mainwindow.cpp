@@ -325,6 +325,14 @@ void MainWindow::handleLoadButton() {
 			
 			//load pak resources for textures
 			std::wstring gameDataPath = this->getGameDataLocation();
+			std::wstring mainPak = L"Main.pak";
+			boost::filesystem::path mainPakPath(gameDataPath);
+			mainPakPath /= mainPak;
+			if (!boost::filesystem::exists(mainPakPath)) {
+				QMessageBox msgBox;
+				msgBox.setText("Unable to locate Main.pak: check Game Data path");
+				msgBox.exec();
+			}
 			gamePakData = new GamePakData();
 			gamePakData->registerExtractQueueCallback(this);
 			gamePakData->load(gameDataPath);
@@ -935,6 +943,10 @@ void MainWindow::on_savesFolderEdit_textChanged(const QString &text)
 				}
 				//delete []alloc;
 			}
+		} else {
+			QMessageBox msgBox;
+			msgBox.setText("Failed to read playerProfiles.lsb contents");
+			msgBox.exec();
 		}
 	}
 	fin.close();

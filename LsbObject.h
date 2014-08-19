@@ -378,6 +378,7 @@ public:
 	LsbObject *insertChild(LsbObject *obj, unsigned index) {
 		if (index < children.size()) {
 			children.insert(children.begin() + index, obj);
+			obj->setParent(this);
 			return obj;
 		} else {
 			return addChild(obj);
@@ -396,6 +397,9 @@ public:
 			if (child->getName() == objectType) {
 				found = true;
 			}
+		}
+		if (!found) {
+			this->addChild(object);
 		}
 		return false;
 	}
