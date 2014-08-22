@@ -1310,9 +1310,9 @@ color: rgb(255, 255, 255);</string>
    <widget class="QLineEdit" name="levelEdit">
     <property name="geometry">
      <rect>
-      <x>307</x>
+      <x>311</x>
       <y>52</y>
-      <width>20</width>
+      <width>30</width>
       <height>20</height>
      </rect>
     </property>

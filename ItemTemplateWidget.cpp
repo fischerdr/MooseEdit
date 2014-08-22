@@ -194,6 +194,7 @@ void ItemTemplateWidget::on_templateTree_currentItemChanged(QTreeWidgetItem *cur
 }
 
 void ItemTemplateWidget::selectItem(QTreeWidgetItem *item) {
+	QTreeWidget *templateTree = this->findChild<QTreeWidget *>("templateTree");
 	if (item != 0 && item->childCount() == 0) {
 		TemplateTreeWidgetItem *templateItem = (TemplateTreeWidgetItem *)item;
 		if (selectedItem != 0) {
@@ -202,6 +203,7 @@ void ItemTemplateWidget::selectItem(QTreeWidgetItem *item) {
 		templateItem->setTextColor(0, QColor::fromRgb(255, 0, 0));
 		updateItemTemplate(templateItem->getTemplateData().templateId);
 		selectedItem = templateItem;
+		templateTree->setFocus();
 	}
 }
 

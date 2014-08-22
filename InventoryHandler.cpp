@@ -47,6 +47,9 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 			std::cout<<"Processing item "<<i<<'\n';
 			label->setItem(item);
 			LsbObject *itemObject = item->getObject();
+			if (itemObject == 0) {
+				continue;
+			}
 			LsbObject *statsObject = LsbReader::lookupByUniquePathEntity(itemObject, "Stats");
 			std::vector<LsbObject *> statsObjects = LsbReader::lookupAllEntitiesWithName(itemObject, "Stats");
 			LsbObject *statsDirObject = 0;

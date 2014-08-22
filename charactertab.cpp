@@ -92,7 +92,9 @@ bool characterTab::populateTraitsView() {
 				QLineEdit *leftEdit = item->findChild<QLineEdit *>("leftEdit");
 				QLineEdit *rightEdit = item->findChild<QLineEdit *>("rightEdit");
 				leftLabel->setText(last->getArg(0).c_str());
+				leftLabel->setToolTip(last->getData("tip").c_str());
 				rightLabel->setText(trait->getArg(0).c_str());
+				rightLabel->setToolTip(trait->getData("tip").c_str());
 				std::string idText = "";
 				
 				idText = last->getData("id");
@@ -119,9 +121,10 @@ bool characterTab::populateTraitsView() {
 					std::ostringstream ssRight;
 					ssRight<<rightValue;
 					leftEdit->setText(ssLeft.str().c_str());
+					leftEdit->setToolTip(last->getData("tip").c_str());
 					rightEdit->setText(ssRight.str().c_str());
+					rightEdit->setToolTip(trait->getData("tip").c_str());
 				}
-				item->setToolTip(trait->getData("tip").c_str());
 				traitsGroup->layout()->addWidget(item);
 			}
 		}

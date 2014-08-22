@@ -446,7 +446,7 @@ bool LsbReader::readTagData(std::istream& input, long readSize, std::stack<LsbOb
 						object->setTagList(&tagList);
 						delete []readBuf;
 						
-						if (type == 0x1C) {
+						if (!currentNodeIsDirectory && type == 0x1C) {
 							long strSize;
 							if (input && bytesLeft >= sizeof(long)) {
 								input.read((char *)&strSize, sizeof(long));

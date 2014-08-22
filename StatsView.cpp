@@ -112,6 +112,7 @@ void StatsView::selectNodeByName(const char *name)
 		statsTree->setCurrentItem(selectedNode);
 		selectedNode->setTextColor(0, QColor(255, 0, 0));
 		selectedItem = selectedNode;
+		statsTree->setFocus();
 	}
 }
 

@@ -1,54 +1,71 @@
-new entry "Forgiving"
-data "id" "0"
-
-new entry "Vindictive"
-data "id" "1"
-
-new entry "Bold"
-data "id" "2"
-
-new entry "Cautious"
-data "id" "3"
-
 new entry "Altruistic"
 data "id" "4"
+data "tip" "+2 Reputation"
 
 new entry "Egotistical"
 data "id" "5"
+data "tip" "+1 Bartering"
 
 new entry "Independent"
 data "id" "6"
+data "tip" "+1 Willpower"
 
 new entry "Obedient"
 data "id" "7"
-
-new entry "Pragmatic"
-data "id" "8"
-
-new entry "Romantic"
-data "id" "9"
-
-new entry "Spiritual"
-data "id" "10"
-
-new entry "Materialistic"
-data "id" "11"
+data "tip" "+1 Willpower when an ally with Leadership is in sight"
 
 new entry "Righteous"
 data "id" "12"
+data "tip" "+1 Leadership"
 
 new entry "Renegade"
 data "id" "13"
+data "tip" "+1 Pickpocketing"
 
 new entry "Blunt"
 data "id" "14"
+data "tip" "Immune to Charmed"
 
 new entry "Considerate"
 data "id" "15"
+data "tip" "+1 Charisma"
+
+new entry "Spiritual"
+data "id" "10"
+data "tip" "Immune to Fear"
+
+new entry "Materialistic"
+data "id" "11"
+data "tip" "+1 Loremaster"
 
 new entry "Compassionate"
 data "id" "16"
+data "tip" "+3% Critical Chance"
 
 new entry "Heartless"
 data "id" "17"
+data "tip" "+20% chance to hit when backstabbing"
 
+new entry "Bold"
+data "id" "2"
+data "tip" "+1 Initiative"
+
+new entry "Cautious"
+data "id" "3"
+data "tip" "+1 Sneaking"
+
+new entry "Pragmatic"
+data "id" "8"
+data "tip" "+1 Crafting"
+
+new entry "Romantic"
+data "id" "9"
+data "tip" "+1 Lucky Charm"
+
+new entry "Forgiving"
+data "id" "0"
+data "tip" "Immune to Cursed"
+
+new entry "Vindictive"
+data "id" "1"
+data "tip" "+20% chance to hit on attacks of opportunity"
