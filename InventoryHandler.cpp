@@ -233,7 +233,7 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 							painter.setFont(font);
 						}
 						QRect textRect = painter.boundingRect(0, 0, iconSize, iconSize, 0, ss.str().c_str());
-						QPoint drawPoint((iconSize - textRect.right()), iconSize);
+						QPoint drawPoint((iconSize - textRect.right()) - 3, iconSize - 3);
 						
 						QPainterPath path;
 						path.addText(drawPoint, font, ss.str().c_str());
