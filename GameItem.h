@@ -32,6 +32,7 @@ class GameItem
 	std::string statsText;
 	bool statsDirectory = false;
 	long generationRandom;
+	long itemAmount;
 	std::vector<TAG_LSB*> *tagList;
 public:
 	GameItem(std::vector<TAG_LSB*> *tagList);
@@ -153,6 +154,8 @@ public:
 	void setNameSuffix(const std::string &value);
 	std::string getAffixedName() const;
 	void setAffixedName(const std::string &value);
+	long getItemAmount() const;
+	void setItemAmount(long value);
 };
 
 #endif // GAMEITEM_H

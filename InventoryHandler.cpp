@@ -4,6 +4,7 @@
 #include <QPainter>
 #include "ItemLabel.h"
 #include <QScrollArea>
+#include <QTextItem>
 
 long InventoryHandler::getItemX(long slotNumber) {
 	return (slotNumber * iconSize) % (iconSize * itemsPerRow);
@@ -12,6 +13,13 @@ long InventoryHandler::getItemX(long slotNumber) {
 long InventoryHandler::getItemY(long slotNumber) {
 	return slotNumber/itemsPerRow * iconSize;
 }
+
+struct RarityRectRGB {
+	int r;
+	int g;
+	int b;
+	int a;
+};
 
 /**
  * @brief InventoryHandler::draw
@@ -49,6 +57,10 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 			LsbObject *itemObject = item->getObject();
 			if (itemObject == 0) {
 				continue;
+			}
+			LsbObject *amountObject = LsbReader::lookupByUniquePathEntity(itemObject, "Amount");
+			if (amountObject != 0) {
+				item->setItemAmount(*((long *)amountObject->getData()));
 			}
 			LsbObject *statsObject = LsbReader::lookupByUniquePathEntity(itemObject, "Stats");
 			std::vector<LsbObject *> statsObjects = LsbReader::lookupAllEntitiesWithName(itemObject, "Stats");
@@ -182,7 +194,74 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 					if (drawBackground) {
 						painter.drawImage(QPoint(0, 0), emptySlotImage);
 					}
+					
+					if (item->getItemRarity() != "Common") {
+						static std::map<std::string, RarityRectRGB> rarityRgbMap;
+						if (rarityRgbMap.size() == 0) {
+							int alpha = 0x40;
+							rarityRgbMap["Magic"] = RarityRectRGB({0x18, 0x8E, 0xDE, alpha});
+							rarityRgbMap["Rare"] = RarityRectRGB({0x00, 0xAA, 0x00, alpha});
+							rarityRgbMap["Legendary"] = RarityRectRGB({0xFF, 0x96, 0x00, alpha});
+							rarityRgbMap["Unique"] = RarityRectRGB({0xC7, 0xA7, 0x58, alpha});
+						}
+						if (rarityRgbMap.find(item->getItemRarity()) != rarityRgbMap.end()) {
+							RarityRectRGB& rarityRectRgb = rarityRgbMap[item->getItemRarity()];
+							QPainterPath path;
+							QRect iconRect(0, 0, iconSize, iconSize);
+							path.addRect(iconRect);
+							QBrush brush;
+							brush.setStyle(Qt::SolidPattern);
+							brush.setColor(QColor::fromRgb(rarityRectRgb.r, rarityRectRgb.g, rarityRectRgb.b, rarityRectRgb.a));
+							painter.setBrush(brush);
+							QPen pen;
+							pen.setColor(QColor::fromRgb(rarityRectRgb.r, rarityRectRgb.g, rarityRectRgb.b));
+							pen.setStyle(Qt::SolidLine);
+							pen.setWidth(3);
+							painter.setPen(pen);
+							painter.drawPath(path);
+						}
+					}
+					
 					painter.drawImage(QPoint(0, 0), image);
+					
+//					if (item->getItemAmount() > 1) {
+//						std::ostringstream ss;
+//						ss<<item->getItemAmount();
+						
+//						QFont font("Copperplate Gothic", 10, 0, false);
+//						{
+//							painter.setFont(font);
+//						}
+//						QRect textRect = painter.boundingRect(0, 0, iconSize, iconSize, 0, ss.str().c_str());
+//						QPoint drawPoint((iconSize - textRect.right()), iconSize);
+						
+//						QPainterPath path;
+//						path.addText(drawPoint, font, ss.str().c_str());
+						
+//						QPainterPath path2;
+//						path2.addText(drawPoint, font, ss.str().c_str());
+						
+//						QPen pen;
+//						pen.setWidth(1);
+//						pen.setStyle(Qt::SolidLine);
+//						pen.setColor(Qt::black);
+//						painter.setPen(pen);
+//						painter.setPen(Qt::NoPen);
+						 
+//						QBrush brush;
+//						brush.setColor(Qt::white);
+//						brush.setStyle(Qt::SolidPattern);
+//						painter.setBrush(brush);
+//						//painter.scale(1.2, 1.2);
+//						painter.drawPath(path);
+						
+////						brush.setColor(Qt::white);
+////						brush.setStyle(Qt::SolidPattern);
+////						painter.setBrush(brush);
+////						painter.scale(1.0, 1.0);
+////						painter.drawPath(path);
+//					}
+					
 					label->setPixmap(result);
 					painter.end();
 				}

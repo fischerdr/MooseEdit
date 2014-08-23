@@ -645,8 +645,7 @@ void MainWindow::onSaveEnd()
 
 void MainWindow::closeEvent(QCloseEvent *)
 {
-	this->unload();
-	QApplication::quit();
+	exit(0);
 }
 
 void MainWindow::refreshCurrentCharacterTab() {
@@ -849,7 +848,7 @@ void MainWindow::on_treeWidget_itemChanged(QTreeWidgetItem *item, int column)
 
 void MainWindow::on_actionE_xit_triggered()
 {
-    QApplication::quit();
+    exit(0);
 }
 
 void MainWindow::on_savesFolderButton_released()

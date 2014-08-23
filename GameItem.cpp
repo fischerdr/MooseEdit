@@ -586,6 +586,16 @@ void GameItem::setAffixedName(const std::string &value)
 {
 	affixedName = value;
 }
+
+long GameItem::getItemAmount() const
+{
+	return itemAmount;
+}
+
+void GameItem::setItemAmount(long value)
+{
+	itemAmount = value;
+}
 GameItem::GameItem(std::vector<TAG_LSB *> *tagList) : tagList(tagList)
 {
 	this->itemName = "?";
