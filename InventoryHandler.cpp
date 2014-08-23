@@ -224,43 +224,34 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 					
 					painter.drawImage(QPoint(0, 0), image);
 					
-//					if (item->getItemAmount() > 1) {
-//						std::ostringstream ss;
-//						ss<<item->getItemAmount();
+					if (item->getItemAmount() > 1) {
+						std::ostringstream ss;
+						ss<<item->getItemAmount();
 						
-//						QFont font("Copperplate Gothic", 10, 0, false);
-//						{
-//							painter.setFont(font);
-//						}
-//						QRect textRect = painter.boundingRect(0, 0, iconSize, iconSize, 0, ss.str().c_str());
-//						QPoint drawPoint((iconSize - textRect.right()), iconSize);
+						QFont font("Copperplate Gothic", 13, 80, false);
+						{
+							painter.setFont(font);
+						}
+						QRect textRect = painter.boundingRect(0, 0, iconSize, iconSize, 0, ss.str().c_str());
+						QPoint drawPoint((iconSize - textRect.right()), iconSize);
 						
-//						QPainterPath path;
-//						path.addText(drawPoint, font, ss.str().c_str());
+						QPainterPath path;
+						path.addText(drawPoint, font, ss.str().c_str());
 						
-//						QPainterPath path2;
-//						path2.addText(drawPoint, font, ss.str().c_str());
-						
-//						QPen pen;
-//						pen.setWidth(1);
-//						pen.setStyle(Qt::SolidLine);
-//						pen.setColor(Qt::black);
-//						painter.setPen(pen);
-//						painter.setPen(Qt::NoPen);
+						QPen pen;
+						pen.setWidth(1);
+						pen.setStyle(Qt::SolidLine);
+						pen.setColor(Qt::black);
+						painter.setPen(pen);
+						//painter.setPen(Qt::NoPen);
 						 
-//						QBrush brush;
-//						brush.setColor(Qt::white);
-//						brush.setStyle(Qt::SolidPattern);
-//						painter.setBrush(brush);
-//						//painter.scale(1.2, 1.2);
-//						painter.drawPath(path);
-						
-////						brush.setColor(Qt::white);
-////						brush.setStyle(Qt::SolidPattern);
-////						painter.setBrush(brush);
-////						painter.scale(1.0, 1.0);
-////						painter.drawPath(path);
-//					}
+						QBrush brush;
+						brush.setColor(Qt::white);
+						brush.setStyle(Qt::SolidPattern);
+						painter.setBrush(brush);
+						//painter.scale(1.2, 1.2);
+						painter.drawPath(path);
+					}
 					
 					label->setPixmap(result);
 					painter.end();
