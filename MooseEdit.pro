@@ -58,7 +58,6 @@ SOURCES += main.cpp\
     AppearanceEditorFrame.cpp \
     zgranny.cpp \
     GlContextWidget.cpp \
-    dds.cpp \
     nv_dds.cpp
 
 HEADERS  += mainwindow.h \
