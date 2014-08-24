@@ -21,6 +21,7 @@ public:
 	//ZGrannyScene *getGrannyScene() const;
 	//void setGrannyScene(ZGrannyScene *value);
 	void addGrannyScene(ZGrannyScene *scene, int texture);
+	void addGrannyScene(ZGrannyScene *scene, int texture, VertexRGB *vertexRgb);
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);
 	void mousePressEvent(QMouseEvent *event);
@@ -75,6 +76,8 @@ private:
 	QTimer frameTimer;
 	std::vector<ZGrannyScene *> grannyScenes;
 	std::vector<int> textureIds;
+	char x[50];
+	std::vector<VertexRGB *> vertexRGBs;
 	//ZGrannyScene *grannyScene = 0;
 	double posX;
 	double posY;

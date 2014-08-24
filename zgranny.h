@@ -9,6 +9,13 @@
 
 void loadTexture(const GLubyte *pixelBuffer, int bufferSize, int width, int height, GLuint format);
 
+struct VertexRGB {
+	int r;
+	int g;
+	int b;
+	int a;
+};
+
 struct ZGrannyTexture {
 	char *name;
 		// The name used for this textures when meshes reference it
@@ -80,13 +87,13 @@ void zGrannyCreateTexture( ZGrannyTexture *texture, granny_texture *grannyTextur
 void zGrannyCreateModel( ZGrannyModel *model, ZGrannyScene *inScene, granny_model *grannyModel );
 void zGrannyCreateMesh( ZGrannyMesh *mesh, granny_mesh *grannyMesh, granny_model_instance *inModel, ZGrannyScene *inScene );
 
-void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model );
-void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices );
+void zGrannyRenderModel(ZGrannyScene *inScene, ZGrannyModel *model , VertexRGB *vertexRgb );
+void zGrannyRenderMesh(ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices , VertexRGB *rgbData );
 void zGrannyRenderSkeleton( granny_skeleton *skeleton, granny_world_pose *worldPose );
 
 ZGrannyScene *zGrannyCreateScene( char *filename );
 void zGrannyShutdownScene( ZGrannyScene *scene );
 
-void zGrannyRenderScene( ZGrannyScene *scene );
+void zGrannyRenderScene(ZGrannyScene *scene , VertexRGB *vertexRgb);
 
 #endif

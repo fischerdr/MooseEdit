@@ -32,6 +32,8 @@
 
 granny_data_type_definition *GrannyPNT332VertexType = *(granny_data_type_definition **)GetProcAddress(LoadLibraryW(L"granny2.dll"), "GrannyPNT332VertexType");
 granny_data_type_definition *GrannyPWNGBT343332VertexType = *(granny_data_type_definition **)GetProcAddress(LoadLibraryW(L"granny2.dll"), "GrannyPWNGBT343332VertexType");
+granny_data_type_definition *GrannyPNGBT33332VertexType = *(granny_data_type_definition **)GetProcAddress(LoadLibraryW(L"granny2.dll"), "GrannyPNGBT33332VertexType");
+
 //typedef void (*glCompressedTexImage2D_t)(GLenum target, 	GLint level, 	GLenum internalformat, 	GLsizei width, 	GLsizei height, 	GLint border, 	GLsizei imageSize, 	const GLvoid * data);
 //glCompressedTexImage2D_t glCompressedTexImage2D = (glCompressedTexImage2D_t)wglGetProcAddress("glCompressedTexImage2D");
 
@@ -235,7 +237,7 @@ void zGrannyCreateMesh( ZGrannyMesh *mesh, granny_mesh *grannyMesh, granny_model
 		   glEnableClientState( GL_NORMAL_ARRAY );
 		   glEnableClientState( GL_TEXTURE_COORD_ARRAY );
 
-		   zGrannyRenderMesh( mesh, tempVertices );
+		   zGrannyRenderMesh( mesh, tempVertices, 0 );
 		   
 		   glDisableClientState( GL_VERTEX_ARRAY );
 		   glDisableClientState( GL_NORMAL_ARRAY );
@@ -262,7 +264,7 @@ void zGrannyCreateMesh( ZGrannyMesh *mesh, granny_mesh *grannyMesh, granny_model
 
 	   mesh->grannyDeformer = GrannyNewMeshDeformer(
 		   GrannyGetMeshVertexType(grannyMesh), GrannyPWNGBT343332VertexType,
-		   GrannyDeformPositionNormalTangentBinormal, GrannyAllowUncopiedTail
+		   GrannyDeformPosition, GrannyAllowUncopiedTail
 	   );
 
 	   if( !mesh->grannyDeformer ) {
@@ -292,7 +294,7 @@ ZGrannyTexture *zGrannyFindTexture( ZGrannyScene *scene, granny_material *granny
 }
 
 bool shown2 = false;
-void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model ) {
+void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model, VertexRGB *vertexRgb ) {
    /* Before I do any rendering, I enable the arrays for the vertex
       format I'm using.  You could do this once for the entire app,
       since I never render anything else, but I figured it'd me more
@@ -300,6 +302,9 @@ void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model ) {
    glEnableClientState(GL_VERTEX_ARRAY);
    glEnableClientState(GL_NORMAL_ARRAY);
    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+   if (vertexRgb != 0) {
+	   glEnableClientState(GL_COLOR_ARRAY);
+   }
 
    /* Since I'm going to need it constantly, I dereference the composite
       transform buffer for the ZGrannyModel's current world-space pose.  This
@@ -336,8 +341,18 @@ void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model ) {
 		   // current world pose of the ZGrannyModel, and dump the results
 		   // into the mutable vertex buffer.
 		   
+		   VertexRGB *rgbData = 0;
+		   if (vertexRgb != 0) {
+			   rgbData = new VertexRGB[sizeof(VertexRGB) * vertexCount];
+			   for (int i=0; i<vertexCount; ++i) {
+				   rgbData[i].r = vertexRgb->r;
+				   rgbData[i].g = vertexRgb->g;
+				   rgbData[i].b = vertexRgb->b;
+				   rgbData[i].a = vertexRgb->a;
+			   }
+		   }
 		   if (mesh.grannyDeformer) {
-			   granny_pwngbt343332_vertex *vertices = new granny_pwngbt343332_vertex[sizeof(granny_pwngbt343332_vertex) * vertexCount];
+			   granny_pwngbt343332_vertex *vertices = new granny_pwngbt343332_vertex[vertexCount];
 			   GrannyDeformVertices(
 				   mesh.grannyDeformer, 
 				   toBoneIndices, (float *)compositeBuffer,
@@ -346,34 +361,31 @@ void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model ) {
 				   vertices
 			   );
 	
-			   zGrannyRenderMesh( &mesh, vertices );
+			   zGrannyRenderMesh( &mesh, vertices, rgbData );
 			   delete[] vertices;
 		   } else {
 			   granny_pwngbt343332_vertex *vertices2 = (granny_pwngbt343332_vertex *)GrannyGetMeshVertices( mesh.grannyMesh );
-			   if (!shown2) {
-				   shown2 = true;
-				std::cout<<"vertex type = "<<GrannyGetMeshVertexType(mesh.grannyMesh)->Type<<'\n';
-				std::cout<<"vertices2:\n";
-				for (int i=0; i<20; ++i) {
-					   std::cout<<"p = "<<vertices2[i].Position[0]<<' '<<vertices2[i].Position[1]<<' '<<vertices2[i].Position[2]<<'\n';
-					   std::cout<<"uv = "<<vertices2[i].UV[0]<<' '<<vertices2[i].UV[1]<<'\n';
-				   }
-			   }
-			   zGrannyRenderMesh( &mesh, vertices2 );
+			   zGrannyRenderMesh( &mesh, vertices2, rgbData );
 		   }
+		   if (rgbData != 0)
+			delete[] rgbData;
 	   }
    }
    
    glDisableClientState(GL_VERTEX_ARRAY);
    glDisableClientState(GL_NORMAL_ARRAY);
    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+   glDisableClientState(GL_COLOR_ARRAY);
 }
 
 bool shown = false;
-void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices ) {
+void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices, VertexRGB *rgbData ) {
    glVertexPointer( 3, GL_FLOAT, sizeof(*vertices), vertices->Position );
    glNormalPointer( GL_FLOAT, sizeof(*vertices), vertices->Normal );
    glTexCoordPointer( 2, GL_FLOAT, sizeof(*vertices), vertices->UV );
+   if (rgbData != 0) {
+	glColorPointer( 4, GL_INT, sizeof(*rgbData), rgbData );
+   }
 	   
    /* Now both the indices and vertices are loaded, so I can
       render.	I grab the material groups and spin over them,
@@ -396,15 +408,6 @@ void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices 
 		   //glBindTexture( GL_TEXTURE_2D, 0 );
 	   }
 	   
-	   if (!shown) {
-		   std::cout<<"sizeof v = "<<sizeof(*vertices)<<'\n';
-		   shown = true;
-		   std::cout<<"deformed vertices:\n";
-		   for (int i=0; i<20; ++i) {
-			   std::cout<<"p = "<<vertices[i].Position[0]<<' '<<vertices[i].Position[1]<<' '<<vertices[i].Position[2]<<'\n';
-			   std::cout<<"uv = "<<vertices[i].UV[0]<<' '<<vertices[i].UV[1]<<'\n';
-		   }
-	   }
 	   glDrawElements(
 		   GL_TRIANGLES,
 		   group->TriCount*3,
@@ -519,8 +522,8 @@ void zGrannyShutdownScene( ZGrannyScene *scene ) {
    GrannyFreeFile( scene->loadedFile );
 }
 
-void zGrannyRenderScene( ZGrannyScene *scene ) {
+void zGrannyRenderScene( ZGrannyScene *scene, VertexRGB *vertexRgb ) {
    for( int i = 0; i < scene->modelCount; ++i ) {
-	   zGrannyRenderModel( scene, &scene->models[i] );
+	   zGrannyRenderModel( scene, &scene->models[i], vertexRgb);
    }
 }

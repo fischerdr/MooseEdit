@@ -69,7 +69,7 @@ void GlContextWidget::resizeGL(int w, int h) {
     if (h == 0) h = 1;
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(60, w/(double)h, 0.01, 100.0);
+    gluPerspective(45, w/(double)h, 0.01, 100.0);
     
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -120,33 +120,8 @@ void GlContextWidget::paintGL() {
    if (grannyScenes.size() > 0) {
 	   for (int i=0; i<grannyScenes.size(); ++i) {
 		   glBindTexture( GL_TEXTURE_2D, textureIds[i] );
-		   zGrannyRenderScene(grannyScenes[i]);
+		   zGrannyRenderScene(grannyScenes[i], vertexRGBs[i]);
 	   }
-   } else {
-	   float vertsCoords[] = {0.5f, 0.5f, 0.5f,          //V0
-		   -0.5f, 0.5f, 0.5f,           //V1
-		   -0.5f, -0.5f, 0.5f,         //V2
-		   0.5f, -0.5f, 0.5f,         //V3
-		   0.5f, -0.5f, -0.5f,       //V4
-		   0.5f,  0.5f, -0.5f,       //V5
-		   -0.5f, 0.5f, -0.5f,       //V6
-		   -0.5f, -0.5f, -0.5f,     //V7
-	   };  
-	
-	   GLubyte indices[] = {0, 1, 2, 3,              //Front face
-		   5, 0, 3, 4,             //Right face
-		   5, 6, 7, 4,             //Back face
-		   5, 6, 1, 0,             //Upper face
-		   1, 6, 7, 2,              //Left face
-		   7, 4, 3, 2,             //Bottom face
-	   };   
-	
-	   glEnableClientState(GL_VERTEX_ARRAY);
-	   glVertexPointer(3, GL_FLOAT, 0, vertsCoords);
-	
-	   glDrawElements(GL_QUADS, 24, GL_UNSIGNED_BYTE, indices);
-	
-	   glDisableClientState(GL_VERTEX_ARRAY);
    }
 
    polarToCartesian();
@@ -158,8 +133,14 @@ void GlContextWidget::paintGL() {
 
 void GlContextWidget::addGrannyScene(ZGrannyScene *scene, int texture)
 {
+	addGrannyScene(scene, texture, 0);
+}
+
+void GlContextWidget::addGrannyScene(ZGrannyScene *scene, int texture, VertexRGB *vertexRgb)
+{
 	grannyScenes.push_back(scene);
 	textureIds.push_back(texture);
+	vertexRGBs.push_back(vertexRgb);
 }
 
 void GlContextWidget::keyPressEvent(QKeyEvent* e) {

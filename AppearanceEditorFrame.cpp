@@ -3,8 +3,6 @@
 
 #include "GL/gl.h"
 #include "zgranny.h"
-#include "DDSLoader.h"
-#include "dds.h"
 #include "nv_dds.h"
 
 typedef void (*glCompressedTexImage2DARB_t)(GLenum target, 	GLint level, 	GLenum internalformat, 	GLsizei width, 	GLsizei height, 	GLint border, 	GLsizei imageSize, 	const GLvoid * data);
@@ -41,25 +39,37 @@ void AppearanceEditorFrame::setup() {
 	glBindTexture(GL_TEXTURE_2D, texobj2);
 	image2.upload_texture2D();
 	
-//	glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, image.get_format(), 
-//	 image.get_width(), image.get_height(), 0, image.get_size(), 
-//	 image);
+	nv_dds::CDDSImage image3;
+	GLuint texobj3;
+	image3.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Hair_A_DM.dds", false);
+	glGenTextures(1, &texobj3);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, texobj3);
+	image3.upload_texture2D();
 	
-//	for (int i = 0; i < image.get_num_mipmaps(); i++)
-//	{
-//	 nv_dds::CSurface mipmap = image.get_mipmap(i);
+	nv_dds::CDDSImage image4;
+	GLuint texobj4;
+	image4.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_ARM_Cloth_A_Torso_ABC_Tx_00_DM.dds", false);
+	glGenTextures(1, &texobj4);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, texobj4);
+	image4.upload_texture2D();
 	
-//	 glCompressedTexImage2DARB(GL_TEXTURE_2D, i+1, image.get_format(), 
-//		 mipmap.get_width(), mipmap.get_height(), 0, mipmap.get_size(), 
-//		 mipmap);
-//	} 
+	if (skinColor == 0) {
+		//skinColor = new VertexRGB({255, 0, 0, 0});
+	}
 	
 	ZGrannyScene *grannyScene = zGrannyCreateScene("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Characters\\Players\\PL_M_Body_A.GR2");
-	//glContext->setGrannyScene(grannyScene);
-	glContext->addGrannyScene(grannyScene, texobj);
+	glContext->addGrannyScene(grannyScene, texobj, skinColor);
 	
 	ZGrannyScene *grannyScene2 = zGrannyCreateScene("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Characters\\Players\\PL_M_Head_A.GR2");
 	glContext->addGrannyScene(grannyScene2, texobj2);
+	
+	ZGrannyScene *grannyScene3 = zGrannyCreateScene("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Characters\\Players\\PL_M_Hair_A.GR2");
+	glContext->addGrannyScene(grannyScene3, texobj3);
+	
+	ZGrannyScene *grannyScene4 = zGrannyCreateScene("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Characters\\Players\\PL_M_ARM_Cloth_A_Torso_A.GR2");
+	glContext->addGrannyScene(grannyScene4, texobj4);
 }
 
 AppearanceEditorFrame::~AppearanceEditorFrame()

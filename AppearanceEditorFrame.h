@@ -3,6 +3,7 @@
 
 #include <QFrame>
 #include "GlContextWidget.h"
+#include "zgranny.h"
 
 namespace Ui {
 class AppearanceEditorFrame;
@@ -26,6 +27,7 @@ public:
 	}
 	
 private:
+	VertexRGB *skinColor = 0;
 	Ui::AppearanceEditorFrame *ui;
 	void setup();
 };
