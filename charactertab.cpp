@@ -25,6 +25,8 @@ characterTab::characterTab(std::vector<TAG_LSB *> *tagList, LsbObject *itemsObje
 	QScrollArea *inventoryScrollArea = this->findChild<QScrollArea *>("inventoryScrollArea");
 	inventoryScrollArea->setContextMenuPolicy(Qt::CustomContextMenu);
 	talentList->setContextMenuPolicy(Qt::CustomContextMenu);
+	
+	appearanceEditorFrame = new AppearanceEditorFrame();
 }
 
 long characterTab::levelFromExperience(long experience) {
@@ -718,5 +720,12 @@ void characterTab::on_levelEdit_textEdited(const QString &text)
 			long exp = experienceRequired[value];
 			experienceObject->setData((char *)&exp, sizeof(exp));
 		}
+	}
+}
+
+void characterTab::on_appearanceButton_released()
+{
+	if (appearanceEditorFrame != 0) {
+		appearanceEditorFrame->show();
 	}
 }

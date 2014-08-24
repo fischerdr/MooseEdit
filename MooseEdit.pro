@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui opengl
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -16,6 +16,8 @@ INCLUDEPATH = C:\boost\boost_1_55_0
 LIBS += "-LC:\boost\boost_1_55_0\stage\lib"
 LIBS += "-LC:\boost\stage\lib" -lboost_filesystem-mgw48-mt-1_55
 LIBS += "-LC:\boost\stage\lib" -lboost_system-mgw48-mt-1_55
+LIBS += "-LC:\Users\Jason\MooseEdit\granny\lib\win32"
+LIBS += "-lgranny2"
 
 win32:RC_ICONS += cogMoose.ico
 
@@ -52,7 +54,10 @@ SOURCES += main.cpp\
     GamePakData.cpp \
     ItemTemplateWidget.cpp \
     EditorSettings.cpp \
-    CharacterLoader.cpp
+    CharacterLoader.cpp \
+    AppearanceEditorFrame.cpp \
+    zgranny.cpp \
+    GlContextWidget.cpp
 
 HEADERS  += mainwindow.h \
     LsbReader.h \
@@ -85,7 +90,12 @@ HEADERS  += mainwindow.h \
     GamePakData.h \
     ItemTemplateWidget.h \
     EditorSettings.h \
-    CharacterLoader.h
+    CharacterLoader.h \
+    AppearanceEditorFrame.h \
+    granny/granny.h \
+    zgranny.h \
+    granny/AutoGranny.h \
+    GlContextWidget.h
 
 FORMS    += mainwindow.ui \
     charactertab.ui \
@@ -97,7 +107,8 @@ FORMS    += mainwindow.ui \
     AbilityGroupItem.ui \
     TraitWidget.ui \
     SkillEditFrame.ui \
-    ItemTemplateWidget.ui
+    ItemTemplateWidget.ui \
+    AppearanceEditorFrame.ui
 
 RESOURCES += \
     resources.qrc

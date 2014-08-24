@@ -9,6 +9,7 @@
 #include "SkillEditFrame.h"
 #include "EquipmentHandler.h"
 #include "CharacterLoader.h"
+#include "AppearanceEditorFrame.h"
 
 namespace Ui {
 class characterTab;
@@ -91,6 +92,8 @@ private slots:
 	
 	void on_levelEdit_textEdited(const QString &text);
 	
+	void on_appearanceButton_released();
+	
 protected:
 	void showEvent(QShowEvent *);
 
@@ -115,7 +118,8 @@ private:
 	std::vector<StatsContainer *> traits;
 	std::map<std::string, std::string> *nameMappings = 0;
 	RelativePositionLayout *relPosLayout = 0;
-	SkillEditFrame *skillEditFrame;
+	SkillEditFrame *skillEditFrame = 0;
+	AppearanceEditorFrame *appearanceEditorFrame = 0;
 	int lastWidth = 0;
 	void addWidgetsToLayout(QWidget *widget, QLayout *layout);
 	long levelFromExperience(long experience);
