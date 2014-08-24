@@ -22,6 +22,8 @@ GlContextWidget::GlContextWidget(QWidget *parent) :
 
 double movementVelocity = 5;
 
+bool mouseLeft = false;
+
 bool leftDown = false;
 bool rightDown = false;
 bool upDown = false;
@@ -49,7 +51,9 @@ void GlContextWidget::initializeGL() {
 #endif
    //dglw::initialize();
 
-
+   glDisable(GL_BLEND);        // Turn Blending Off
+   glEnable(GL_DEPTH_TEST);    // Turn Depth Testing On
+   
    //demo_scene_ = shared_ptr<DemoScene>(new DemoScene());
    //timer_.start();
    
@@ -111,8 +115,13 @@ void GlContextWidget::paintGL() {
 	}
 	
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-   if (grannyScene != 0) {
-	   zGrannyRenderScene(grannyScene);
+   glScalef(-1.0f, 1.0f, 1.0f);
+   //if (grannyScene != 0) {
+   if (grannyScenes.size() > 0) {
+	   for (int i=0; i<grannyScenes.size(); ++i) {
+		   glBindTexture( GL_TEXTURE_2D, textureIds[i] );
+		   zGrannyRenderScene(grannyScenes[i]);
+	   }
    } else {
 	   float vertsCoords[] = {0.5f, 0.5f, 0.5f,          //V0
 		   -0.5f, 0.5f, 0.5f,           //V1
@@ -142,9 +151,15 @@ void GlContextWidget::paintGL() {
 
    polarToCartesian();
    glLoadIdentity();
-   gluLookAt(posX, posY, posZ,
+   gluLookAt(posX + addX, posY + addY, posZ + addZ,
    lookatX, lookatY, lookatZ, 
-   0, 1, 0);
+			 0, 1, 0);
+}
+
+void GlContextWidget::addGrannyScene(ZGrannyScene *scene, int texture)
+{
+	grannyScenes.push_back(scene);
+	textureIds.push_back(texture);
 }
 
 void GlContextWidget::keyPressEvent(QKeyEvent* e) {
@@ -236,6 +251,11 @@ void GlContextWidget::keyReleaseEvent(QKeyEvent* e) {
 
 void GlContextWidget::mousePressEvent(QMouseEvent *event)
 {
+	if (event->button() == Qt::LeftButton) {
+		mouseLeft = true;
+	} else {
+		mouseLeft = false;
+	}
 	lastMousePos = event->pos();
 }
 
@@ -249,10 +269,17 @@ void GlContextWidget::mouseMoveEvent(QMouseEvent *event)
 	if (lastMousePos.x() >= 0 && lastMousePos.y() >= 0) {
 		int deltaX = event->pos().x() - lastMousePos.x();
 		int deltaY = event->pos().y() - lastMousePos.y();
-		double angleX = deltaX * 0.5;
-		double angleY = deltaY * 0.5;
-		addAngle(&azimuth, angleX);
-		addAngle(&inclination, angleY);
+		if (mouseLeft) {
+			double angleX = deltaX * 0.5;
+			double angleY = deltaY * 0.5;
+			addAngle(&azimuth, angleX, false);
+			addAngle(&inclination, angleY, true);
+		} else {
+			double multiplier = 2;
+			double resultY = deltaY * 0.001 * multiplier;
+			addY += resultY;
+			lookatY += resultY;
+		}
 	}
 	lastMousePos = event->pos();
 }
@@ -264,13 +291,13 @@ void GlContextWidget::wheelEvent(QWheelEvent *event)
 	radius += radiusDelta;
 }
 
-ZGrannyScene *GlContextWidget::getGrannyScene() const
-{
-	return grannyScene;
-}
+//ZGrannyScene *GlContextWidget::getGrannyScene() const
+//{
+//	return grannyScene;
+//}
 
-void GlContextWidget::setGrannyScene(ZGrannyScene *value)
-{
-	grannyScene = value;
-}
+//void GlContextWidget::setGrannyScene(ZGrannyScene *value)
+//{
+//	grannyScene = value;
+//}
 

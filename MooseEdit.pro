@@ -57,7 +57,9 @@ SOURCES += main.cpp\
     CharacterLoader.cpp \
     AppearanceEditorFrame.cpp \
     zgranny.cpp \
-    GlContextWidget.cpp
+    GlContextWidget.cpp \
+    dds.cpp \
+    nv_dds.cpp
 
 HEADERS  += mainwindow.h \
     LsbReader.h \
@@ -94,8 +96,10 @@ HEADERS  += mainwindow.h \
     AppearanceEditorFrame.h \
     granny/granny.h \
     zgranny.h \
-    granny/AutoGranny.h \
-    GlContextWidget.h
+    GlContextWidget.h \
+    DDSLoader.h \
+    dds.h \
+    nv_dds.h
 
 FORMS    += mainwindow.ui \
     charactertab.ui \

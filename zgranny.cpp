@@ -29,10 +29,65 @@
 // MODULE includes:
 #include "zgranny.h"
 #include <stdio.h>
-// ZBSLIB includes:
 
-//granny_data_type_definition *GrannyPNT332VertexType = *(granny_data_type_definition **)GetProcAddress(LoadLibraryW(L"granny2.dll"), "GrannyPNT332VertexType");
+granny_data_type_definition *GrannyPNT332VertexType = *(granny_data_type_definition **)GetProcAddress(LoadLibraryW(L"granny2.dll"), "GrannyPNT332VertexType");
 granny_data_type_definition *GrannyPWNGBT343332VertexType = *(granny_data_type_definition **)GetProcAddress(LoadLibraryW(L"granny2.dll"), "GrannyPWNGBT343332VertexType");
+//typedef void (*glCompressedTexImage2D_t)(GLenum target, 	GLint level, 	GLenum internalformat, 	GLsizei width, 	GLsizei height, 	GLint border, 	GLsizei imageSize, 	const GLvoid * data);
+//glCompressedTexImage2D_t glCompressedTexImage2D = (glCompressedTexImage2D_t)wglGetProcAddress("glCompressedTexImage2D");
+
+//void loadTexture(const GLubyte *pixelBuffer, int bufferSize, int width, int height, GLuint format) {
+//	glBindTexture( GL_TEXTURE_2D, 0 );
+	
+//	glCompressedTexImage2D(
+//	   GL_TEXTURE_2D, 0, format, width, height, 0,
+//	   bufferSize, pixelBuffer
+//   );
+////	glTexImage2D(
+////	   GL_TEXTURE_2D, 0, format, width, height, 0,
+////	   format, GL_UNSIGNED_BYTE, pixelBuffer
+////   );
+
+//   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+//   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+//   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+//}
+#include <iostream>
+void loadTexture(const GLubyte *pixelBuffer, int bufferSize, int width, int height, GLuint format) {
+//	if (bufferSize == 0)
+//		return;
+
+//	std::cout<<"info = "<<bufferSize<<' '<<width<<' '<<height<<'\n';
+//	char buf[256];
+//	sprintf(buf, "info = %i %i %i", bufferSize, width, height);
+//	MessageBoxA(0, buf, 0, 0);
+//	int m_NbMipmaps = 1;
+//	int m_Width = width;
+//	int m_Height = height;
+//	// Missing mipmaps won't be a problem anymore.
+//	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, GLint(m_NbMipmaps) - 1);
+
+//	// Upload each mipmap
+//	size_t Offset = 0;
+//	size_t Width = m_Width;
+//	size_t Height = m_Height;
+
+//	glBindTexture( GL_TEXTURE_2D, 0 );
+	
+//	for (size_t i = 0; (i < m_NbMipmaps) && ((Width != 0) || (Height != 0)); ++i) {
+
+//		//size_t BufSize = ((Width + 3) / 4) * ((Height + 3) / 4) * m_BlockSize;
+
+//		glCompressedTexImage2D(GL_TEXTURE_2D, GLint(i), format, GLsizei(Width), GLsizei(Height), 0, bufferSize, pixelBuffer);
+
+//		//Offset += BufSize;
+//		if ((Width /= 2) == 0) Width = 1;
+//		if ((Height /= 2) == 0) Height = 1;
+//	}
+	
+//	return;
+}
 
 //void zGrannyCreateTexture( ZGrannyTexture *texture, granny_texture *grannyTexture ) {
 //   /* The name of the ZGrannyTexture is just the file name that
@@ -120,9 +175,6 @@ void zGrannyCreateModel( ZGrannyModel *model, ZGrannyScene *inScene, granny_mode
    model->meshCount = grannyModel->MeshBindingCount;
    model->meshes = new ZGrannyMesh[ model->meshCount ];
    for( int i = 0; i < model->meshCount; ++i ) {
-	   char buf[512];
-	   sprintf(buf, "loading mesh %s", grannyModel->MeshBindings[i].Mesh->Name);
-	   MessageBoxA(0, buf, 0, 0);
 	   zGrannyCreateMesh(
 		   &model->meshes[i],
 		   grannyModel->MeshBindings[i].Mesh,
@@ -210,7 +262,7 @@ void zGrannyCreateMesh( ZGrannyMesh *mesh, granny_mesh *grannyMesh, granny_model
 
 	   mesh->grannyDeformer = GrannyNewMeshDeformer(
 		   GrannyGetMeshVertexType(grannyMesh), GrannyPWNGBT343332VertexType,
-		   GrannyDeformPositionNormal, GrannyAllowUncopiedTail
+		   GrannyDeformPositionNormalTangentBinormal, GrannyAllowUncopiedTail
 	   );
 
 	   if( !mesh->grannyDeformer ) {
@@ -238,7 +290,7 @@ ZGrannyTexture *zGrannyFindTexture( ZGrannyScene *scene, granny_material *granny
 
    return(0);
 }
-#include <iostream>
+
 bool shown2 = false;
 void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model ) {
    /* Before I do any rendering, I enable the arrays for the vertex
@@ -283,27 +335,32 @@ void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model ) {
 		   // Tell Granny to deform the vertices of the ZGrannyMesh with the
 		   // current world pose of the ZGrannyModel, and dump the results
 		   // into the mutable vertex buffer.
-		   granny_pwngbt343332_vertex *vertices2 = (granny_pwngbt343332_vertex *)GrannyGetMeshVertices( mesh.grannyMesh );
-		   if (!shown2) {
-			   shown2 = true;
-			std::cout<<"vertex type = "<<GrannyGetMeshVertexType(mesh.grannyMesh)->Type<<'\n';
-			std::cout<<"vertices2:\n";
-			for (int i=0; i<20; ++i) {
-				   std::cout<<"p = "<<vertices2[i].Position[0]<<' '<<vertices2[i].Position[1]<<' '<<vertices2[i].Position[2]<<'\n';
+		   
+		   if (mesh.grannyDeformer) {
+			   granny_pwngbt343332_vertex *vertices = new granny_pwngbt343332_vertex[sizeof(granny_pwngbt343332_vertex) * vertexCount];
+			   GrannyDeformVertices(
+				   mesh.grannyDeformer, 
+				   toBoneIndices, (float *)compositeBuffer,
+				   vertexCount,
+				   GrannyGetMeshVertices( mesh.grannyMesh ),
+				   vertices
+			   );
+	
+			   zGrannyRenderMesh( &mesh, vertices );
+			   delete[] vertices;
+		   } else {
+			   granny_pwngbt343332_vertex *vertices2 = (granny_pwngbt343332_vertex *)GrannyGetMeshVertices( mesh.grannyMesh );
+			   if (!shown2) {
+				   shown2 = true;
+				std::cout<<"vertex type = "<<GrannyGetMeshVertexType(mesh.grannyMesh)->Type<<'\n';
+				std::cout<<"vertices2:\n";
+				for (int i=0; i<20; ++i) {
+					   std::cout<<"p = "<<vertices2[i].Position[0]<<' '<<vertices2[i].Position[1]<<' '<<vertices2[i].Position[2]<<'\n';
+					   std::cout<<"uv = "<<vertices2[i].UV[0]<<' '<<vertices2[i].UV[1]<<'\n';
+				   }
 			   }
+			   zGrannyRenderMesh( &mesh, vertices2 );
 		   }
-//		   granny_pwngbt343332_vertex *vertices = new granny_pwngbt343332_vertex[sizeof(granny_pwngbt343332_vertex) * vertexCount];
-//		   GrannyDeformVertices(
-//			   mesh.grannyDeformer, 
-//			   toBoneIndices, (float *)compositeBuffer,
-//			   vertexCount,
-//			   GrannyGetMeshVertices( mesh.grannyMesh ),
-//			   vertices
-//		   );
-
-//		   zGrannyRenderMesh( &mesh, vertices );
-		   zGrannyRenderMesh( &mesh, vertices2 );
-		   //delete[] vertices;
 	   }
    }
    
@@ -336,7 +393,7 @@ void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices 
 		   }
 	   }
 	   else {
-		   glBindTexture( GL_TEXTURE_2D, 0 );
+		   //glBindTexture( GL_TEXTURE_2D, 0 );
 	   }
 	   
 	   if (!shown) {
@@ -345,6 +402,7 @@ void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices 
 		   std::cout<<"deformed vertices:\n";
 		   for (int i=0; i<20; ++i) {
 			   std::cout<<"p = "<<vertices[i].Position[0]<<' '<<vertices[i].Position[1]<<' '<<vertices[i].Position[2]<<'\n';
+			   std::cout<<"uv = "<<vertices[i].UV[0]<<' '<<vertices[i].UV[1]<<'\n';
 		   }
 	   }
 	   glDrawElements(
@@ -432,15 +490,9 @@ ZGrannyScene *zGrannyCreateScene( char *filename ) {
    scene->modelCount = fileInfo->ModelCount;
    scene->models = new ZGrannyModel[scene->modelCount];
    memset( scene->models, 0, sizeof(ZGrannyModel)*scene->modelCount );
-   char buf2[512];
-   sprintf(buf2, "loading %i models", scene->modelCount);
-   MessageBoxA(0, buf2, 0, 0);
    for( int i = 0; i < scene->modelCount; ++i ) {
 	   // Create the model
 	   granny_model *grannyModel = fileInfo->Models[i];
-	   char buf[512];
-	   sprintf(buf, "loading model %s", grannyModel->Name);
-	   MessageBoxA(0, buf, 0, 0);
 	   ZGrannyModel *model = &scene->models[i];
 	   zGrannyCreateModel( model, scene, grannyModel );
 

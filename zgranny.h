@@ -7,6 +7,8 @@
 // This is a simple interface into Granny based on the sample
 // code provided by Casey.
 
+void loadTexture(const GLubyte *pixelBuffer, int bufferSize, int width, int height, GLuint format);
+
 struct ZGrannyTexture {
 	char *name;
 		// The name used for this textures when meshes reference it

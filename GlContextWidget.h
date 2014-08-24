@@ -18,8 +18,9 @@ public:
 	void resizeGL(int w, int h);
 	void paintGL();
 	
-	ZGrannyScene *getGrannyScene() const;
-	void setGrannyScene(ZGrannyScene *value);
+	//ZGrannyScene *getGrannyScene() const;
+	//void setGrannyScene(ZGrannyScene *value);
+	void addGrannyScene(ZGrannyScene *scene, int texture);
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);
 	void mousePressEvent(QMouseEvent *event);
@@ -32,13 +33,25 @@ signals:
 public slots:
 	
 private:
-	void addAngle(double *angle, double toAdd) {
+	void addAngle(double *angle, double toAdd, bool restricted) {
 		*angle += toAdd;
-		*angle = fmod(*angle + 360.0, 360.0);
+		if (restricted) {
+			*angle = fmod(*angle + 360.0, 360.0);
+			if (*angle < 180.0) {
+				*angle += 180.0;
+			}
+		}
+		else {
+			*angle = fmod(*angle + 360.0, 360.0);
+		}
 	}
 	
 	double d2r(double degrees) {
 		return degrees * 3.1415926535897932385 / 180.0;
+	}
+	
+	double r2d(double radians) {
+		return radians * 180.0 / 3.1415926535897932385;
 	}
 	
 	void polarToCartesian() {
@@ -49,13 +62,27 @@ private:
 		posY = radius * cos(r_inclination);
 	}
 	
+	void cartesianToPolar() {
+		radius = sqrt(posX*posX + posY*posY + posZ*posZ);
+		inclination = 0;
+		addAngle(&inclination, r2d(acos(posY/radius)), true);
+		azimuth = 0;
+		addAngle(&azimuth, r2d(atan2(posZ, posX)), false);
+	}
+	
 	QPoint lastMousePos = QPoint(-1, -1);
 	const long framesPerSecond = 60;
 	QTimer frameTimer;
-	ZGrannyScene *grannyScene = 0;
+	std::vector<ZGrannyScene *> grannyScenes;
+	std::vector<int> textureIds;
+	//ZGrannyScene *grannyScene = 0;
 	double posX;
 	double posY;
 	double posZ;
+	
+	double addX;
+	double addY;
+	double addZ;
 	
 	double radius;
 	double inclination;
