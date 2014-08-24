@@ -73,6 +73,14 @@ class LsbObject {
 	LsbObject *parent = 0;
 	std::vector<TAG_LSB *> *tagList = 0;
 public:
+	static LsbObject *lookupByUniquePathEntity(LsbObject *entity, const char *path);
+	static LsbObject *lookupByUniquePath(std::vector<LsbObject *>& entities, const char *path);
+	static std::vector<LsbObject *> lookupAllEntitiesWithName(LsbObject *object, const char *name);
+	static std::vector<LsbObject *> extractPropertyForEachListItem(std::vector<LsbObject *>& list, const char *propertyName);
+	static std::vector<LsbObject *> findItemsByAttribute(std::vector<LsbObject *>& list, const char *attributeName, const char *attributeValue, int valueLength);
+	static LsbObject *getObjectCreator(LsbObject *object);
+	static LsbObject *getObjectFromCreator(LsbObject *creator, const char *objectGroupName);
+	
 	~LsbObject() {
 		if (data != 0) {
 			delete[] data;

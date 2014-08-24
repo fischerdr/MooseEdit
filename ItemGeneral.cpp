@@ -20,10 +20,10 @@ void ItemGeneral::registerCallback(GeneralEditCallback *generalEditCallback)
 void ItemGeneral::refreshGeneralData()
 {
 	QLineEdit *amountEdit = this->findChild<QLineEdit *>("amountEdit");
-	amountEdit->setText(LsbReader::lookupByUniquePathEntity(item->getObject(), "Amount")->toString().c_str());
+	amountEdit->setText(LsbObject::lookupByUniquePathEntity(item->getObject(), "Amount")->toString().c_str());
 	
 	QLineEdit *scaleEdit = this->findChild<QLineEdit *>("scaleEdit");
-	scaleEdit->setText(LsbReader::lookupByUniquePathEntity(item->getObject(), "Scale")->toString().c_str());
+	scaleEdit->setText(LsbObject::lookupByUniquePathEntity(item->getObject(), "Scale")->toString().c_str());
 	
 	LsbObject *statsDirectory = item->getStatsDirectory();
 	
@@ -39,14 +39,14 @@ void ItemGeneral::refreshGeneralData()
 	itemTypeCombo->blockSignals(true);
 	repairDuraEdit->blockSignals(true);
 	if (statsDirectory != 0) {
-		levelEdit->setText(LsbReader::lookupByUniquePathEntity(statsDirectory, "Level")->toString().c_str());
-		duraEdit->setText(LsbReader::lookupByUniquePathEntity(statsDirectory, "Durability")->toString().c_str());
-		long identValue = *((long*)LsbReader::lookupByUniquePathEntity(statsDirectory, "IsIdentified")->getData());
+		levelEdit->setText(LsbObject::lookupByUniquePathEntity(statsDirectory, "Level")->toString().c_str());
+		duraEdit->setText(LsbObject::lookupByUniquePathEntity(statsDirectory, "Durability")->toString().c_str());
+		long identValue = *((long*)LsbObject::lookupByUniquePathEntity(statsDirectory, "IsIdentified")->getData());
 		bool checked = identValue != 0;
 		identCheck->setChecked(checked);
 		identCheck->setText((checked ? "True" : "False"));
-		itemTypeCombo->setCurrentText(LsbReader::lookupByUniquePathEntity(statsDirectory, "ItemType")->toString().c_str());
-		repairDuraEdit->setText(LsbReader::lookupByUniquePathEntity(statsDirectory, "RepairDurabilityPenalty")->toString().c_str());
+		itemTypeCombo->setCurrentText(LsbObject::lookupByUniquePathEntity(statsDirectory, "ItemType")->toString().c_str());
+		repairDuraEdit->setText(LsbObject::lookupByUniquePathEntity(statsDirectory, "RepairDurabilityPenalty")->toString().c_str());
 	} else {
 		levelEdit->clear();
 		duraEdit->clear();
@@ -68,7 +68,7 @@ ItemGeneral::~ItemGeneral()
 
 void ItemGeneral::on_amountEdit_textEdited(const QString &text)
 {
-    LsbObject *amountObject = LsbReader::lookupByUniquePathEntity(item->getObject(), "Amount");
+    LsbObject *amountObject = LsbObject::lookupByUniquePathEntity(item->getObject(), "Amount");
 	long value = 0;
 	try {
 		value = boost::lexical_cast<long>(text.toStdString());
@@ -85,7 +85,7 @@ void ItemGeneral::on_amountEdit_textEdited(const QString &text)
 
 void ItemGeneral::on_scaleEdit_textEdited(const QString &text)
 {
-	LsbObject *scaleObject = LsbReader::lookupByUniquePathEntity(item->getObject(), "Scale");
+	LsbObject *scaleObject = LsbObject::lookupByUniquePathEntity(item->getObject(), "Scale");
 	float value = 0;
 	try {
 		value = boost::lexical_cast<float>(text.toStdString());
@@ -112,12 +112,12 @@ void ItemGeneral::on_levelEdit_textEdited(const QString &text)
 		;
 	}
 	if (statsDirectory != 0) {
-		LsbObject *levelObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "Level");
+		LsbObject *levelObject = LsbObject::lookupByUniquePathEntity(statsDirectory, "Level");
 		levelObject->setData((char *)&value, sizeof(long));
 	}
-//	LsbObject *generationObject = LsbReader::lookupByUniquePathEntity(item->getObject(), "Generation");
+//	LsbObject *generationObject = LsbObject::lookupByUniquePathEntity(item->getObject(), "Generation");
 //	if (generationObject != 0) {
-//		LsbObject *generationLevelObject = LsbReader::lookupByUniquePathEntity(generationObject, "Level");
+//		LsbObject *generationLevelObject = LsbObject::lookupByUniquePathEntity(generationObject, "Level");
 //		//WARNING: level is short here
 //		generationLevelObject->setData((char *)&value, sizeof(long));
 //	}
@@ -136,7 +136,7 @@ void ItemGeneral::on_duraEdit_textEdited(const QString &text)
 		statsDirectory = item->createStatsDirectory();
 	}
 	if (statsDirectory != 0) {
-		LsbObject *durabilityObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "Durability");
+		LsbObject *durabilityObject = LsbObject::lookupByUniquePathEntity(statsDirectory, "Durability");
 		long value = 0;
 		try {
 			value = boost::lexical_cast<long>(text.toStdString());
@@ -161,17 +161,17 @@ void ItemGeneral::on_itemTypeCombo_currentIndexChanged(const QString &text)
 	}
 	std::string value = text.toStdString();
 	if (statsDirectory != 0) {
-		LsbObject *itemTypeObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "ItemType");
+		LsbObject *itemTypeObject = LsbObject::lookupByUniquePathEntity(statsDirectory, "ItemType");
 		itemTypeObject->setData(value.c_str(), value.length() + 1);
 	}
-	LsbObject *generationObject = LsbReader::lookupByUniquePathEntity(item->getObject(), "Generation");
+	LsbObject *generationObject = LsbObject::lookupByUniquePathEntity(item->getObject(), "Generation");
 	if (generationObject == 0) {
 		if (value != "Common") {
 			generationObject = item->createGenerationDirectory();
 		}
 	}
 	if (generationObject != 0) {
-		LsbObject *generationItemTypeObject = LsbReader::lookupByUniquePathEntity(generationObject, "ItemType");
+		LsbObject *generationItemTypeObject = LsbObject::lookupByUniquePathEntity(generationObject, "ItemType");
 		generationItemTypeObject->setData(value.c_str(), value.length() + 1);
 	}
 	
@@ -189,7 +189,7 @@ void ItemGeneral::on_repairDuraEdit_textEdited(const QString &text)
 		statsDirectory = item->createStatsDirectory();
 	}
 	if (statsDirectory != 0) {
-		LsbObject *repairDuraObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "RepairDurabilityPenalty");
+		LsbObject *repairDuraObject = LsbObject::lookupByUniquePathEntity(statsDirectory, "RepairDurabilityPenalty");
 		long value = 0;
 		try {
 			value = boost::lexical_cast<long>(text.toStdString());
@@ -213,7 +213,7 @@ void ItemGeneral::on_identCheck_toggled(bool checked)
 		statsDirectory = item->createStatsDirectory();
 	}
 	if (statsDirectory != 0) {
-		LsbObject *identObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "IsIdentified");
+		LsbObject *identObject = LsbObject::lookupByUniquePathEntity(statsDirectory, "IsIdentified");
 		long value = checked;
 		identObject->setData((char *)&value, sizeof(long));
 		QCheckBox *identCheck = this->findChild<QCheckBox *>("identCheck");

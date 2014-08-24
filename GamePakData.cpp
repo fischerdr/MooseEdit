@@ -90,11 +90,11 @@ void GamePakData::setIconAtlas(const TextureAtlas &value)
 }
 void GamePakData::buildNameMappings()
 {
-	LsbObject *stringKeysRoot = LsbReader::lookupByUniquePath(stats, "TranslatedStringKeys/root");
+	LsbObject *stringKeysRoot = LsbObject::lookupByUniquePath(stats, "TranslatedStringKeys/root");
 	for (int i=0; i<stringKeysRoot->getChildren().size(); ++i) {
 		LsbObject *child = stringKeysRoot->getChildren()[i];
-		LsbObject *uuidObject = LsbReader::lookupByUniquePathEntity(child, "UUID");
-		LsbObject *contentObject = LsbReader::lookupByUniquePathEntity(child, "Content");
+		LsbObject *uuidObject = LsbObject::lookupByUniquePathEntity(child, "UUID");
+		LsbObject *contentObject = LsbObject::lookupByUniquePathEntity(child, "Content");
 		if (uuidObject != 0 && contentObject != 0) {
 			nameMappings[uuidObject->getData()] = contentObject->getData();
 		}
@@ -124,8 +124,8 @@ void GamePakData::setModTemplateMap(const std::map<std::string, LsbObject *> &va
 void GamePakData::populateRootTemplateMap(std::vector<LsbObject *>& rootTemplates) {
 	for (int i=0; i<rootTemplates.size(); ++i) {
 		LsbObject *rootTemplate = rootTemplates[i];
-		LsbObject *rootObject = LsbReader::lookupByUniquePathEntity(rootTemplate, "root");
-		std::vector<LsbObject *> mapKeyObjects = LsbReader::extractPropertyForEachListItem(rootObject->getChildren(), "MapKey");
+		LsbObject *rootObject = LsbObject::lookupByUniquePathEntity(rootTemplate, "root");
+		std::vector<LsbObject *> mapKeyObjects = LsbObject::extractPropertyForEachListItem(rootObject->getChildren(), "MapKey");
 		for (int j=0; j<mapKeyObjects.size(); ++j) {
 			LsbObject *mapKeyObject = mapKeyObjects[j];
 			std::string templateKey = mapKeyObject->getData();
@@ -137,8 +137,8 @@ void GamePakData::populateRootTemplateMap(std::vector<LsbObject *>& rootTemplate
 void GamePakData::populateModTemplateMap(std::vector<LsbObject *>& modTemplates) {
 	for (int i=0; i<modTemplates.size(); ++i) {
 		LsbObject *modTemplate = modTemplates[i];
-		LsbObject *rootObject = LsbReader::lookupByUniquePathEntity(modTemplate, "root");
-		std::vector<LsbObject *> mapKeyObjects = LsbReader::extractPropertyForEachListItem(rootObject->getChildren(), "MapKey");
+		LsbObject *rootObject = LsbObject::lookupByUniquePathEntity(modTemplate, "root");
+		std::vector<LsbObject *> mapKeyObjects = LsbObject::extractPropertyForEachListItem(rootObject->getChildren(), "MapKey");
 		for (int j=0; j<mapKeyObjects.size(); ++j) {
 			LsbObject *mapKeyObject = mapKeyObjects[j];
 			std::string templateKey = mapKeyObject->getData();
@@ -158,9 +158,9 @@ void GamePakData::setStatToTemplateMap(const StatTemplateMap &value) {
 
 void GamePakData::addTemplatesToStatTemplateMap(std::vector<LsbObject *> &templatesObjects, bool isRootTemplate) {
 	if (templatesObjects.size() == 1) {
-		LsbObject *templatesObject = LsbReader::lookupByUniquePath(templatesObjects, "Templates");
+		LsbObject *templatesObject = LsbObject::lookupByUniquePath(templatesObjects, "Templates");
 		if (templatesObject != 0) {
-			LsbObject *rootObject = LsbReader::lookupByUniquePathEntity(templatesObject, "root");
+			LsbObject *rootObject = LsbObject::lookupByUniquePathEntity(templatesObject, "root");
 			if (rootObject != 0) {
 				for (int i=0; i<rootObject->getChildren().size(); ++i) {
 					LsbObject *gameObject = rootObject->getChildren()[i];
@@ -173,8 +173,8 @@ void GamePakData::addTemplatesToStatTemplateMap(std::vector<LsbObject *> &templa
 
 void GamePakData::addTemplateToStatTemplateMap(LsbObject *gameObject, bool isRootTemplate) {
 	if (gameObject != 0) {
-		LsbObject *mapKeyObject = LsbReader::lookupByUniquePathEntity(gameObject, "MapKey");
-		LsbObject *statsObject = LsbReader::lookupByUniquePathEntity(gameObject, "Stats");
+		LsbObject *mapKeyObject = LsbObject::lookupByUniquePathEntity(gameObject, "MapKey");
+		LsbObject *statsObject = LsbObject::lookupByUniquePathEntity(gameObject, "Stats");
 		if (mapKeyObject != 0 && statsObject != 0) {
 			std::string templateId = mapKeyObject->getData();
 			std::string statId = statsObject->getData();
@@ -264,13 +264,13 @@ void GamePakData::addModLookupsToStatTemplateMap() {
 void GamePakData::addModsToRootModsList() {
 	for (int i=0; i<modTemplates.size(); ++i) {
 		LsbObject *modTemplate = modTemplates[i];
-		LsbObject *rootObject = LsbReader::lookupByUniquePathEntity(modTemplate, "root");
+		LsbObject *rootObject = LsbObject::lookupByUniquePathEntity(modTemplate, "root");
 		if (rootObject != 0) {
 			for (int j=0; j<rootObject->getChildren().size(); ++j) {
 				LsbObject *gameObject = rootObject->getChildren()[j];
 				if (gameObject != 0) {
-					LsbObject *mapKeyObject = LsbReader::lookupByUniquePathEntity(gameObject, "MapKey");
-					LsbObject *templateNameObject = LsbReader::lookupByUniquePathEntity(gameObject, "TemplateName");
+					LsbObject *mapKeyObject = LsbObject::lookupByUniquePathEntity(gameObject, "MapKey");
+					LsbObject *templateNameObject = LsbObject::lookupByUniquePathEntity(gameObject, "TemplateName");
 					if (mapKeyObject != 0 && templateNameObject != 0) {
 						std::string modTemplateId = mapKeyObject->getData();
 						std::string rootTemplateId = templateNameObject->getData();

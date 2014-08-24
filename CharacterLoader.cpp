@@ -23,12 +23,12 @@ CharacterLoader::CharacterLoader()
 }
 
 void CharacterLoader::load(std::vector<LsbObject *> &globals, std::vector<TAG_LSB *> *globalTagList, QWidget *mainWindow) {
-	LsbObject *characters = LsbReader::lookupByUniquePath(globals, "Characters/root/CharacterFactory/Party/Characters");
+	LsbObject *characters = LsbObject::lookupByUniquePath(globals, "Characters/root/CharacterFactory/Party/Characters");
 	QTreeWidget *tree = mainWindow->findChild<QTreeWidget *>("treeWidget");
 	tree->clear();
 	//displayAllItems2(tree, characters->getChildren());
-	std::vector<LsbObject *> characterCreatorHandles = LsbReader::extractPropertyForEachListItem(characters->getChildren(), "Handle");
-	LsbObject *creators = LsbReader::lookupByUniquePath(globals, "Characters/root/CharacterFactory/Creators");
+	std::vector<LsbObject *> characterCreatorHandles = LsbObject::extractPropertyForEachListItem(characters->getChildren(), "Handle");
+	LsbObject *creators = LsbObject::lookupByUniquePath(globals, "Characters/root/CharacterFactory/Creators");
 	std::vector<LsbObject *> matchingCharacterCreators;
 	int characterLoadCounter = characterCreatorHandles.size() * 5 - 1;
 	QProgressDialog characterProgress("Processing character data...", QString(), 0, characterLoadCounter, mainWindow);
@@ -38,7 +38,7 @@ void CharacterLoader::load(std::vector<LsbObject *> &globals, std::vector<TAG_LS
 	QApplication::processEvents();
 	for (int i=0; i<characterCreatorHandles.size(); ++i) {
 		long handleId = characterCreatorHandles[i]->getIntData();
-		std::vector<LsbObject *> matches = LsbReader::findItemsByAttribute(creators->getChildren(), "Handle", (const char *)&handleId, sizeof(handleId));
+		std::vector<LsbObject *> matches = LsbObject::findItemsByAttribute(creators->getChildren(), "Handle", (const char *)&handleId, sizeof(handleId));
 		if (matches.size() == 1) {
 			matchingCharacterCreators.push_back(matches[0]);
 		}
@@ -48,13 +48,13 @@ void CharacterLoader::load(std::vector<LsbObject *> &globals, std::vector<TAG_LS
 		characterProgress.setValue(characterProgress.value() + 1);
 		QApplication::processEvents();
 	}
-	std::vector<LsbObject *> templateIds = LsbReader::extractPropertyForEachListItem(matchingCharacterCreators, "TemplateID");
+	std::vector<LsbObject *> templateIds = LsbObject::extractPropertyForEachListItem(matchingCharacterCreators, "TemplateID");
 	//displayAllItems2(tree, matchingCharacterCreators);
-	LsbObject *allCharacters = LsbReader::lookupByUniquePath(globals, "Characters/root/CharacterFactory/Characters");
+	LsbObject *allCharacters = LsbObject::lookupByUniquePath(globals, "Characters/root/CharacterFactory/Characters");
 	std::vector<LsbObject *> matchingCharacters;
 	for (int i=0; i<templateIds.size(); ++i) {
 		std::string templateId = templateIds[i]->getData();
-		std::vector<LsbObject *> matches = LsbReader::findItemsByAttribute(allCharacters->getChildren(), "OriginalTemplate", templateId.c_str(), templateId.length() + 1);
+		std::vector<LsbObject *> matches = LsbObject::findItemsByAttribute(allCharacters->getChildren(), "OriginalTemplate", templateId.c_str(), templateId.length() + 1);
 		if (matches.size() == 1) {
 			matchingCharacters.push_back(matches[0]);
 		}
@@ -72,12 +72,12 @@ void CharacterLoader::load(std::vector<LsbObject *> &globals, std::vector<TAG_LS
 		LsbObject *character = matchingCharacters[i];
 		std::ostringstream ss;
 		ss<<"charTab"<<i;
-		LsbObject *itemsObject = LsbReader::lookupByUniquePath(globals, "Items/root/ItemFactory/Items");
+		LsbObject *itemsObject = LsbObject::lookupByUniquePath(globals, "Items/root/ItemFactory/Items");
 		QWidget *widget = new characterTab(globalTagList, itemsObject, this, tabWidget, mainWindow);
 		widget->setObjectName(QString(ss.str().c_str()));
 		
-		LsbObject *origTemplate = LsbReader::lookupByUniquePathEntity(character, "OriginalTemplate");
-		LsbObject *playerName = LsbReader::lookupByUniquePathEntity(character, "PlayerData/PlayerCustomData/Name");
+		LsbObject *origTemplate = LsbObject::lookupByUniquePathEntity(character, "OriginalTemplate");
+		LsbObject *playerName = LsbObject::lookupByUniquePathEntity(character, "PlayerData/PlayerCustomData/Name");
 		std::string origTemplateId = origTemplate->getData();
 		std::wstring charName;
 		if (origTemplateId == "5c5447e5-c1cf-4677-b84b-006d9be3f075") {
@@ -103,16 +103,16 @@ void CharacterLoader::load(std::vector<LsbObject *> &globals, std::vector<TAG_LS
 	}
 	
 	//compile item list
-	LsbObject *allItems = LsbReader::lookupByUniquePath(globals, "Items/root/ItemFactory/Items");
+	LsbObject *allItems = LsbObject::lookupByUniquePath(globals, "Items/root/ItemFactory/Items");
 	
 	for (int i=0; i<characterCreatorHandles.size(); ++i) {
 		long handleId = characterCreatorHandles[i]->getIntData();
-		std::vector<LsbObject *> matches = LsbReader::findItemsByAttribute(allItems->getChildren(), "owner", (const char *)&handleId, sizeof(handleId));
+		std::vector<LsbObject *> matches = LsbObject::findItemsByAttribute(allItems->getChildren(), "owner", (const char *)&handleId, sizeof(handleId));
 		long parentId = 0;
 		std::vector<GameItem *> equipmentSet;
 		for (int j=0; j<matches.size(); ++j) {
 			LsbObject *match = matches[j];
-			LsbObject *slotObject = LsbReader::lookupByUniquePathEntity(match, "Slot");
+			LsbObject *slotObject = LsbObject::lookupByUniquePathEntity(match, "Slot");
 			std::vector<LsbObject *> deleteMe;
 			if (slotObject != 0) {
 				unsigned short slot = *((unsigned short *)slotObject->getData());
@@ -139,27 +139,27 @@ void CharacterLoader::load(std::vector<LsbObject *> &globals, std::vector<TAG_LS
 		//if (i != 0)
 			//continue;
 		LsbObject *character = this->getCharacterGroup().getCharacters()[i]->getObject();
-		long inventoryId = *((long *)LsbReader::lookupByUniquePathEntity(character, "Inventory")->getData());
-		LsbObject *inventoryCreators = LsbReader::lookupByUniquePath(globals, "Inventories/root/InventoryFactory/Creators");
-		std::vector<LsbObject *> creatorMatches = LsbReader::findItemsByAttribute(inventoryCreators->getChildren(), "Object", (const char *)&inventoryId, sizeof(long));
+		long inventoryId = *((long *)LsbObject::lookupByUniquePathEntity(character, "Inventory")->getData());
+		LsbObject *inventoryCreators = LsbObject::lookupByUniquePath(globals, "Inventories/root/InventoryFactory/Creators");
+		std::vector<LsbObject *> creatorMatches = LsbObject::findItemsByAttribute(inventoryCreators->getChildren(), "Object", (const char *)&inventoryId, sizeof(long));
 		if (creatorMatches.size() == 1) {
 			LsbObject *creator = creatorMatches[0];
-			LsbObject *inventory = LsbReader::getObjectFromCreator(creator, "Inventories");
+			LsbObject *inventory = LsbObject::getObjectFromCreator(creator, "Inventories");
 			std::vector<LsbObject *> inventoryHolder; //TODO: remove me
 			inventoryHolder.push_back(inventory); //TODO: remove me
 			//displayAllItems2(tree, inventoryHolder); //TODO: remove me
-			std::vector<LsbObject *> views = LsbReader::lookupAllEntitiesWithName(inventory, "Views");
+			std::vector<LsbObject *> views = LsbObject::lookupAllEntitiesWithName(inventory, "Views");
 			if (views.size() > 0) {
 				for (int k=0; k<views.size(); ++k) {
-					LsbObject *viewMapKey = LsbReader::lookupByUniquePathEntity(views[k], "MapKey");
+					LsbObject *viewMapKey = LsbObject::lookupByUniquePathEntity(views[k], "MapKey");
 					unsigned long viewId = *((unsigned long*)viewMapKey->getData());
-					LsbObject *viewMapValue = LsbReader::lookupByUniquePathEntity(views[k], "MapValue");
+					LsbObject *viewMapValue = LsbObject::lookupByUniquePathEntity(views[k], "MapValue");
 					if (viewMapValue != 0) {
-						std::vector<LsbObject *> indicesList = LsbReader::lookupAllEntitiesWithName(viewMapValue, "Indices");
+						std::vector<LsbObject *> indicesList = LsbObject::lookupAllEntitiesWithName(viewMapValue, "Indices");
 						for (int j=0; j<indicesList.size(); ++j) {
 							LsbObject *index = indicesList[j];
-							unsigned long itemCreatorHandle = *((unsigned long *)LsbReader::lookupByUniquePathEntity(index, "MapKey")->getData());
-							unsigned long slot = *((unsigned long *)LsbReader::lookupByUniquePathEntity(index, "MapValue")->getData());
+							unsigned long itemCreatorHandle = *((unsigned long *)LsbObject::lookupByUniquePathEntity(index, "MapKey")->getData());
+							unsigned long slot = *((unsigned long *)LsbObject::lookupByUniquePathEntity(index, "MapValue")->getData());
 							if (i == 0){
 								std::cout<<"slot = "<<slot<<'\n';
 							}
@@ -184,11 +184,11 @@ void CharacterLoader::load(std::vector<LsbObject *> &globals, std::vector<TAG_LS
 		ViewSlotMap& viewSlotMap = itemHandleData.viewSlotMap;
 		unsigned long itemCreatorHandle = it->first;
 		
-		LsbObject *itemCreators = LsbReader::lookupByUniquePath(globals, "Items/root/ItemFactory/Creators");
-		std::vector<LsbObject *> itemCreatorMatches = LsbReader::findItemsByAttribute(itemCreators->getChildren(), "Handle", (char *)&itemCreatorHandle, sizeof(long));
+		LsbObject *itemCreators = LsbObject::lookupByUniquePath(globals, "Items/root/ItemFactory/Creators");
+		std::vector<LsbObject *> itemCreatorMatches = LsbObject::findItemsByAttribute(itemCreators->getChildren(), "Handle", (char *)&itemCreatorHandle, sizeof(long));
 		if (itemCreatorMatches.size() == 1) {
 			LsbObject *itemCreator = itemCreatorMatches[0];
-			LsbObject *item = LsbReader::getObjectFromCreator(itemCreator, "Items");
+			LsbObject *item = LsbObject::getObjectFromCreator(itemCreator, "Items");
 			GameItem *newItem = new GameItem(globalTagList);
 			newItem->setObject(item);
 			

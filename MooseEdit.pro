@@ -58,7 +58,9 @@ SOURCES += main.cpp\
     AppearanceEditorFrame.cpp \
     zgranny.cpp \
     GlContextWidget.cpp \
-    nv_dds.cpp
+    nv_dds.cpp \
+    LsxReader.cpp \
+    LsbObject.cpp
 
 HEADERS  += mainwindow.h \
     LsbReader.h \
@@ -98,7 +100,8 @@ HEADERS  += mainwindow.h \
     GlContextWidget.h \
     DDSLoader.h \
     dds.h \
-    nv_dds.h
+    nv_dds.h \
+    LsxReader.h
 
 FORMS    += mainwindow.ui \
     charactertab.ui \

@@ -367,7 +367,7 @@ void MainWindow::handleLoadButton() {
 					charTab->setStatToTemplateMap(&gamePakData->getStatToTemplateMap());
 					
 					QWidget *equipmentWidget = charTab->findChild<QWidget *>("equipmentWidget");
-					LsbObject *itemsObject = LsbReader::lookupByUniquePath(globals, "Items/root/ItemFactory/Items");
+					LsbObject *itemsObject = LsbObject::lookupByUniquePath(globals, "Items/root/ItemFactory/Items");
 					EquipmentHandler *equipHandler = 
 							new EquipmentHandler(*gamePakData->getInventoryCellImg(), gamePakData->getStats(), gamePakData->getRootTemplates(), 
 												gamePakData->getModTemplates(), gamePakData->getIconAtlas(), gamePakData->getItemStats(), gamePakData->getNameMappings(),
@@ -485,33 +485,33 @@ void MainWindow::on_loadFileWidget_currentItemChanged(QListWidgetItem *current, 
 				LsbReader reader;
 				std::vector<LsbObject *> metaDataList = reader.loadFile(fin);
 				fin.close();
-				LsbObject *metaData = LsbReader::lookupByUniquePath(metaDataList, "MetaData");
-				LsbObject *saveTime = LsbReader::lookupByUniquePathEntity(metaData, "root/MetaData/SaveTime");
-				LsbObject *module = LsbReader::lookupByUniquePathEntity(metaData, "root/MetaData/ModuleSettings/Mods/ModuleShortDesc");
+				LsbObject *metaData = LsbObject::lookupByUniquePath(metaDataList, "MetaData");
+				LsbObject *saveTime = LsbObject::lookupByUniquePathEntity(metaData, "root/MetaData/SaveTime");
+				LsbObject *module = LsbObject::lookupByUniquePathEntity(metaData, "root/MetaData/ModuleSettings/Mods/ModuleShortDesc");
 				QLabel *previewPicture = this->findChild<QLabel *>("previewPicture");
 				QImage img = QImage(QString::fromStdWString(bitmapPath));
 				img = img.scaled(previewPicture->size());
 				previewPicture->setPixmap(QPixmap::fromImage(img));
 				QLineEdit *previewName = this->findChild<QLineEdit *>("previewName");
 				QLineEdit *previewDate = this->findChild<QLineEdit *>("previewDate");
-				long month = LsbReader::lookupByUniquePathEntity(saveTime, "Month")->getByteData();
-				long day = LsbReader::lookupByUniquePathEntity(saveTime, "Day")->getByteData();
-				long year = 1900 + LsbReader::lookupByUniquePathEntity(saveTime, "Year")->getByteData();
+				long month = LsbObject::lookupByUniquePathEntity(saveTime, "Month")->getByteData();
+				long day = LsbObject::lookupByUniquePathEntity(saveTime, "Day")->getByteData();
+				long year = 1900 + LsbObject::lookupByUniquePathEntity(saveTime, "Year")->getByteData();
 				std::ostringstream ssDate;
 				ssDate<<month<<"/"<<day<<"/"<<year;
 				std::string dateText = ssDate.str();
 				QLineEdit *previewTime = this->findChild<QLineEdit *>("previewTime");
 				std::ostringstream ssTime;
-				long hours24 = LsbReader::lookupByUniquePathEntity(saveTime, "Hours")->getByteData();
+				long hours24 = LsbObject::lookupByUniquePathEntity(saveTime, "Hours")->getByteData();
 				std::string midday = (hours24 >= 12 ? "PM" : "AM");
 				long hours = hours24 % 12;
 				if (hours == 0)
 					hours = 12;
-				long minutes = LsbReader::lookupByUniquePathEntity(saveTime, "Minutes")->getByteData();
+				long minutes = LsbObject::lookupByUniquePathEntity(saveTime, "Minutes")->getByteData();
 				ssTime<<boost::format("%i:%02i %s") % hours % minutes % midday;
 				std::string timeText = ssTime.str();
 				QLineEdit *previewModule = this->findChild<QLineEdit *>("previewModule");
-				std::string moduleText = LsbReader::lookupByUniquePathEntity(module, "Name")->getData();
+				std::string moduleText = LsbObject::lookupByUniquePathEntity(module, "Name")->getData();
 				previewName->setText(QString::fromStdWString(tokens[1]));
 				previewDate->setText(QString(dateText.c_str()));
 				previewTime->setText(QString(timeText.c_str()));
@@ -927,9 +927,9 @@ void MainWindow::on_savesFolderEdit_textChanged(const QString &text)
 		LsbReader reader;
 		playerProfiles = reader.loadFile(fin);
 		if (playerProfiles.size() > 0) {
-			LsbObject *profilesDir = LsbReader::lookupByUniquePath(playerProfiles, "UserProfiles/root");
-			std::vector<LsbObject *> profiles = LsbReader::lookupAllEntitiesWithName(profilesDir, "PlayerProfile");
-			std::vector<LsbObject *> profileNames = LsbReader::extractPropertyForEachListItem(profiles, "PlayerProfileName");
+			LsbObject *profilesDir = LsbObject::lookupByUniquePath(playerProfiles, "UserProfiles/root");
+			std::vector<LsbObject *> profiles = LsbObject::lookupAllEntitiesWithName(profilesDir, "PlayerProfile");
+			std::vector<LsbObject *> profileNames = LsbObject::extractPropertyForEachListItem(profiles, "PlayerProfileName");
 			for (int i=0; i<profileNames.size(); ++i) {
 				wchar_t *data = (wchar_t *)profileNames[i]->getData();
 				//char *data = profileNames[i]->getData();

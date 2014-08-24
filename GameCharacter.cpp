@@ -2,15 +2,15 @@
 
 std::vector<LsbObject *> GameCharacter::getSkillList() {
 	std::vector<LsbObject *> skillObjects;
-	LsbObject *skillManagerObject = LsbReader::lookupByUniquePathEntity(this->getObject(), "SkillManager");
+	LsbObject *skillManagerObject = LsbObject::lookupByUniquePathEntity(this->getObject(), "SkillManager");
 	if (skillManagerObject != 0) {
-		return LsbReader::lookupAllEntitiesWithName(skillManagerObject, "Skills");
+		return LsbObject::lookupAllEntitiesWithName(skillManagerObject, "Skills");
 	}
 	return skillObjects;
 }
 
 void GameCharacter::addSkill(const char *skillName) {
-	LsbObject *skillManagerObject = LsbReader::lookupByUniquePathEntity(this->getObject(), "SkillManager");
+	LsbObject *skillManagerObject = LsbObject::lookupByUniquePathEntity(this->getObject(), "SkillManager");
 	if (skillManagerObject != 0) {
 		TAG_LSB *skillsTag = LsbObject::createTagIfNeeded("Skills", &tagList);
 		LsbObject *skillsObject = new LsbObject(true, skillsTag->index, skillsTag->tag, 0, skillManagerObject, &tagList);
@@ -55,13 +55,13 @@ void GameCharacter::addSkill(const char *skillName) {
 }
 
 unsigned long GameCharacter::getInventoryId() {
-	return *((long *)LsbReader::lookupByUniquePathEntity(this->getObject(), "Inventory")->getData());
+	return *((long *)LsbObject::lookupByUniquePathEntity(this->getObject(), "Inventory")->getData());
 }
 
 unsigned long GameCharacter::getCreatorId() {
-	LsbObject *creatorObject = LsbReader::getObjectCreator(this->getObject());
+	LsbObject *creatorObject = LsbObject::getObjectCreator(this->getObject());
 	if (creatorObject != 0) {
-		LsbObject *handleObject = LsbReader::lookupByUniquePathEntity(creatorObject, "Handle");
+		LsbObject *handleObject = LsbObject::lookupByUniquePathEntity(creatorObject, "Handle");
 		if (handleObject != 0) {
 			return *((unsigned long *)handleObject->getData());
 		}
@@ -70,7 +70,7 @@ unsigned long GameCharacter::getCreatorId() {
 }
 
 void GameCharacter::ensureInventoryCapacity(LsbObject *viewMapValueObject, unsigned long viewSlot) {
-	std::vector<LsbObject *> itemsObjects = LsbReader::lookupAllEntitiesWithName(viewMapValueObject, "Items");
+	std::vector<LsbObject *> itemsObjects = LsbObject::lookupAllEntitiesWithName(viewMapValueObject, "Items");
 	long additionalSlotsRequired = (viewSlot + 1) - itemsObjects.size();
 	for (int i=0; i<additionalSlotsRequired; ++i) {
 		TAG_LSB *itemsTag = LsbObject::createTagIfNeeded("Items", &tagList);
@@ -88,7 +88,7 @@ void GameCharacter::ensureInventoryCapacity(LsbObject *viewMapValueObject, unsig
 }
 
 bool GameCharacter::addItemToInventoryObject(LsbObject *itemCreatorObject, unsigned long viewSlot, unsigned long extraInventoryTab, unsigned long extraViewSlot, bool equippedItem) {
-	LsbObject *handleObject = LsbReader::lookupByUniquePathEntity(itemCreatorObject, "Handle");
+	LsbObject *handleObject = LsbObject::lookupByUniquePathEntity(itemCreatorObject, "Handle");
 	if (handleObject != 0) {
 		unsigned long creatorHandle = *((unsigned long *)handleObject->getData());
 		LsbObject *inventoryObject = this->getInventoryObject();
@@ -114,11 +114,11 @@ bool GameCharacter::addItemToInventoryObject(LsbObject *itemCreatorObject, unsig
 		}
 		
 		if (!equippedItem) {
-			std::vector<LsbObject *> viewsObjects = LsbReader::lookupAllEntitiesWithName(inventoryObject, "Views");
+			std::vector<LsbObject *> viewsObjects = LsbObject::lookupAllEntitiesWithName(inventoryObject, "Views");
 			for (int i=0; i<viewsObjects.size(); ++i) {
 				LsbObject *viewObject = viewsObjects[i];
 				if (viewObject != 0) {
-					LsbObject *mapKeyObject = LsbReader::lookupByUniquePathEntity(viewObject, "MapKey");
+					LsbObject *mapKeyObject = LsbObject::lookupByUniquePathEntity(viewObject, "MapKey");
 					if (mapKeyObject != 0) {
 						unsigned long viewId = *((long *)mapKeyObject->getData());
 						
@@ -127,7 +127,7 @@ bool GameCharacter::addItemToInventoryObject(LsbObject *itemCreatorObject, unsig
 							currentSlot = extraViewSlot;
 						}
 						if (viewId == 0 || viewId == extraInventoryTab) {
-							LsbObject *mapValueObject = LsbReader::lookupByUniquePathEntity(viewObject, "MapValue");
+							LsbObject *mapValueObject = LsbObject::lookupByUniquePathEntity(viewObject, "MapValue");
 							
 							TAG_LSB *indicesTag = LsbObject::createTagIfNeeded("Indices", &tagList);
 							LsbObject *indicesObject = new LsbObject(true, indicesTag->index, indicesTag->tag, 0, mapValueObject, &tagList);
@@ -155,7 +155,7 @@ bool GameCharacter::addItemToInventoryObject(LsbObject *itemCreatorObject, unsig
 							
 							itemsObject->addChild(objectObject);
 							
-							std::vector<LsbObject *> itemsObjects = LsbReader::lookupAllEntitiesWithName(mapValueObject, "Items");
+							std::vector<LsbObject *> itemsObjects = LsbObject::lookupAllEntitiesWithName(mapValueObject, "Items");
 							if (currentSlot < itemsObjects.size()) {
 								LsbObject *childToReplace = itemsObjects[currentSlot];
 								mapValueObject->replaceChild(childToReplace, itemsObject);
@@ -171,24 +171,24 @@ bool GameCharacter::addItemToInventoryObject(LsbObject *itemCreatorObject, unsig
 }
 
 LsbObject *GameCharacter::getInventoryObject() {
-	long inventoryId = *((long *)LsbReader::lookupByUniquePathEntity(this->getObject(), "Inventory")->getData());
-	LsbObject *inventoryCreators = LsbReader::lookupByUniquePath(globals, "Inventories/root/InventoryFactory/Creators");
-	std::vector<LsbObject *> creatorMatches = LsbReader::findItemsByAttribute(inventoryCreators->getChildren(), "Object", (const char *)&inventoryId, sizeof(long));
+	long inventoryId = *((long *)LsbObject::lookupByUniquePathEntity(this->getObject(), "Inventory")->getData());
+	LsbObject *inventoryCreators = LsbObject::lookupByUniquePath(globals, "Inventories/root/InventoryFactory/Creators");
+	std::vector<LsbObject *> creatorMatches = LsbObject::findItemsByAttribute(inventoryCreators->getChildren(), "Object", (const char *)&inventoryId, sizeof(long));
 	if (creatorMatches.size() == 1) {
 		LsbObject *creator = creatorMatches[0];
-		LsbObject *inventoryObject = LsbReader::getObjectFromCreator(creator, "Inventories");
+		LsbObject *inventoryObject = LsbObject::getObjectFromCreator(creator, "Inventories");
 		return inventoryObject;
 	}
 	return 0;
 }
 
 void GameCharacter::removeSkill(const char *skillName) {
-	LsbObject *skillManagerObject = LsbReader::lookupByUniquePathEntity(this->getObject(), "SkillManager");
+	LsbObject *skillManagerObject = LsbObject::lookupByUniquePathEntity(this->getObject(), "SkillManager");
 	if (skillManagerObject != 0) {
 		std::vector<LsbObject *> skillObjects = getSkillList();
 		for (int i=0; i<skillObjects.size(); ++i) {
 			LsbObject *skillObject = skillObjects[i];
-			LsbObject *mapKeyObject = LsbReader::lookupByUniquePathEntity(skillObject, "MapKey");
+			LsbObject *mapKeyObject = LsbObject::lookupByUniquePathEntity(skillObject, "MapKey");
 			if (mapKeyObject != 0) {
 				std::string name = skillName;
 				if (mapKeyObject->getData() == name) {
@@ -197,10 +197,10 @@ void GameCharacter::removeSkill(const char *skillName) {
 				}
 			}
 		}
-		std::vector<LsbObject *> timeAddedObjects = LsbReader::lookupAllEntitiesWithName(skillManagerObject, "TimeItemAddedToSkillManager");
+		std::vector<LsbObject *> timeAddedObjects = LsbObject::lookupAllEntitiesWithName(skillManagerObject, "TimeItemAddedToSkillManager");
 		for (int i=0; i<timeAddedObjects.size(); ++i) {
 			LsbObject *timeAddedObject = timeAddedObjects[i];
-			LsbObject *mapKeyObject = LsbReader::lookupByUniquePathEntity(timeAddedObject, "MapKey");
+			LsbObject *mapKeyObject = LsbObject::lookupByUniquePathEntity(timeAddedObject, "MapKey");
 			if (mapKeyObject != 0) {
 				std::string name = skillName;
 				if (mapKeyObject->getData() == name) {
@@ -214,11 +214,11 @@ void GameCharacter::removeSkill(const char *skillName) {
 
 std::vector<LsbObject *> GameCharacter::getAbilityList() {
 	std::vector<LsbObject *> abilityObjects;
-	LsbObject *playerUpgradeObject = LsbReader::lookupByUniquePathEntity(this->getObject(), "PlayerData/PlayerUpgrade");
+	LsbObject *playerUpgradeObject = LsbObject::lookupByUniquePathEntity(this->getObject(), "PlayerData/PlayerUpgrade");
 	if (playerUpgradeObject != 0) {
-		std::vector<LsbObject *> abilitiesObjects = LsbReader::lookupAllEntitiesWithName(playerUpgradeObject, "Abilities");
+		std::vector<LsbObject *> abilitiesObjects = LsbObject::lookupAllEntitiesWithName(playerUpgradeObject, "Abilities");
 		for (int i=0; i<abilitiesObjects.size(); ++i) {
-			abilityObjects.push_back(LsbReader::lookupByUniquePathEntity(abilitiesObjects[i], "Object"));
+			abilityObjects.push_back(LsbObject::lookupByUniquePathEntity(abilitiesObjects[i], "Object"));
 		}
 	}
 	return abilityObjects;
@@ -226,23 +226,23 @@ std::vector<LsbObject *> GameCharacter::getAbilityList() {
 
 std::vector<LsbObject *> GameCharacter::getTraitList() {
 	std::vector<LsbObject *> traitObjects;
-	LsbObject *playerUpgradeObject = LsbReader::lookupByUniquePathEntity(this->getObject(), "PlayerData/PlayerUpgrade");
+	LsbObject *playerUpgradeObject = LsbObject::lookupByUniquePathEntity(this->getObject(), "PlayerData/PlayerUpgrade");
 	if (playerUpgradeObject != 0) {
-		std::vector<LsbObject *> traitsObjects = LsbReader::lookupAllEntitiesWithName(playerUpgradeObject, "Traits");
+		std::vector<LsbObject *> traitsObjects = LsbObject::lookupAllEntitiesWithName(playerUpgradeObject, "Traits");
 		for (int i=0; i<traitsObjects.size(); ++i) {
-			traitObjects.push_back(LsbReader::lookupByUniquePathEntity(traitsObjects[i], "Object"));
+			traitObjects.push_back(LsbObject::lookupByUniquePathEntity(traitsObjects[i], "Object"));
 		}
 	}
 	return traitObjects;
 }
 
 bool GameCharacter::hasTalent(long talentId) {
-	LsbObject *upgradeObject = LsbReader::lookupByUniquePathEntity(this->getObject(), "PlayerData/PlayerUpgrade");
+	LsbObject *upgradeObject = LsbObject::lookupByUniquePathEntity(this->getObject(), "PlayerData/PlayerUpgrade");
 	if (upgradeObject != 0) {
-		std::vector<LsbObject *> talentList = LsbReader::lookupAllEntitiesWithName(upgradeObject, "Talents");
+		std::vector<LsbObject *> talentList = LsbObject::lookupAllEntitiesWithName(upgradeObject, "Talents");
 		std::vector<LsbObject *> talentObjects;
 		for (int i=0; i<talentList.size(); ++i) {
-			LsbObject *innerObject = LsbReader::lookupByUniquePathEntity(talentList[i], "Object");
+			LsbObject *innerObject = LsbObject::lookupByUniquePathEntity(talentList[i], "Object");
 			if (innerObject != 0) {
 				talentObjects.push_back(innerObject);
 			}
@@ -258,12 +258,12 @@ bool GameCharacter::hasTalent(long talentId) {
 }
 
 void GameCharacter::setTalent(long talentId, bool enabled) {
-	LsbObject *upgradeObject = LsbReader::lookupByUniquePathEntity(this->getObject(), "PlayerData/PlayerUpgrade");
+	LsbObject *upgradeObject = LsbObject::lookupByUniquePathEntity(this->getObject(), "PlayerData/PlayerUpgrade");
 	if (upgradeObject != 0) {
-		std::vector<LsbObject *> talentList = LsbReader::lookupAllEntitiesWithName(upgradeObject, "Talents");
+		std::vector<LsbObject *> talentList = LsbObject::lookupAllEntitiesWithName(upgradeObject, "Talents");
 		std::vector<LsbObject *> talentObjects;
 		for (int i=0; i<talentList.size(); ++i) {
-			LsbObject *innerObject = LsbReader::lookupByUniquePathEntity(talentList[i], "Object");
+			LsbObject *innerObject = LsbObject::lookupByUniquePathEntity(talentList[i], "Object");
 			if (innerObject != 0) {
 				talentObjects.push_back(innerObject);
 			}

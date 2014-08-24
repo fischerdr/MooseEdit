@@ -40,7 +40,7 @@ void EquipmentHandler::onItemEdited(GameItem *newItem, GameItem *oldItem) {
 		//item is newly added
 		LsbObject *itemObject = copy->getObject();
 		itemsObject->addChild(itemObject);
-		LsbObject *slotObject = LsbReader::lookupByUniquePathEntity(itemObject, "Slot");
+		LsbObject *slotObject = LsbObject::lookupByUniquePathEntity(itemObject, "Slot");
 		unsigned short slot = EQUIP_SLOTS;
 		if (slotObject != 0) {
 			slot = *((unsigned short *)slotObject->getData());
@@ -111,7 +111,7 @@ void EquipmentHandler::customContextRequested(const QPoint& pos) {
 						itemEditFrame->registerCloseCallback(this);
 					} else {
 						LsbObject *itemObject = GameItem::createNewItem(&tagList, itemsObject, character->getInventoryId(), character->getCreatorId());
-						LsbObject *slotObject = LsbReader::lookupByUniquePathEntity(itemObject, "Slot");
+						LsbObject *slotObject = LsbObject::lookupByUniquePathEntity(itemObject, "Slot");
 						if (slotObject != 0) {
 							slotObject->setData((char *)&slot, sizeof(slot));
 						}
@@ -134,7 +134,7 @@ EquipmentHandler::~EquipmentHandler()
 }
 
 void EquipmentHandler::addItem(GameItem *item) {
-	LsbObject *slotObject = LsbReader::lookupByUniquePathEntity(item->getObject(), "Slot");
+	LsbObject *slotObject = LsbObject::lookupByUniquePathEntity(item->getObject(), "Slot");
 	if (slotObject != 0) {
 		unsigned short slot = *((unsigned short *)slotObject->getData());
 		if (slot >= 0 && slot < EQUIP_SLOTS) {

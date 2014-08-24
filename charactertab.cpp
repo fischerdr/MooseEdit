@@ -138,7 +138,7 @@ bool characterTab::populateTraitsView() {
 bool characterTab::populateAbilitiesView() {
 	QLineEdit *abilitiesAvailableEdit = this->findChild<QLineEdit *>("abilitiesAvailableEdit");
 	LsbObject *characterObject = this->getCharacter()->getObject();
-	LsbObject *abilityPointsObject = LsbReader::lookupByUniquePathEntity(characterObject, "PlayerData/PlayerUpgrade/AbilityPoints");
+	LsbObject *abilityPointsObject = LsbObject::lookupByUniquePathEntity(characterObject, "PlayerData/PlayerUpgrade/AbilityPoints");
 	if (abilityPointsObject != 0) {
 		long value = *((long *)abilityPointsObject->getData());
 		std::ostringstream ss;
@@ -204,7 +204,7 @@ bool characterTab::populateAbilitiesView() {
 bool characterTab::populateTalentsView() {
 	QLineEdit *talentsAvailableEdit = this->findChild<QLineEdit *>("talentsAvailableEdit");
 	LsbObject *characterObject = this->getCharacter()->getObject();
-	LsbObject *talentPointsObject = LsbReader::lookupByUniquePathEntity(characterObject, "PlayerData/PlayerUpgrade/TalentPoints");
+	LsbObject *talentPointsObject = LsbObject::lookupByUniquePathEntity(characterObject, "PlayerData/PlayerUpgrade/TalentPoints");
 	if (talentPointsObject != 0) {
 		long value = *((long *)talentPointsObject->getData());
 		std::ostringstream ss;
@@ -265,10 +265,10 @@ void characterTab::setCharacter(GameCharacter *character) {
 	QLineEdit *spdEdit = this->findChild<QLineEdit *>("spdEdit");
 	QLineEdit *perEdit = this->findChild<QLineEdit *>("perEdit");
 	QLineEdit *statsAvailableEdit = this->findChild<QLineEdit *>("statsAvailableEdit");
-	LsbObject *playerUpgrades = LsbReader::lookupByUniquePathEntity(character->getObject(), "PlayerData/PlayerUpgrade");
-	LsbObject *attributePointsObject = LsbReader::lookupByUniquePathEntity(playerUpgrades, "AttributePoints");
-	std::vector<LsbObject *> attributes = LsbReader::lookupAllEntitiesWithName(playerUpgrades, "Attributes");
-	std::vector<LsbObject *> attributeData = LsbReader::extractPropertyForEachListItem(attributes, "Object");
+	LsbObject *playerUpgrades = LsbObject::lookupByUniquePathEntity(character->getObject(), "PlayerData/PlayerUpgrade");
+	LsbObject *attributePointsObject = LsbObject::lookupByUniquePathEntity(playerUpgrades, "AttributePoints");
+	std::vector<LsbObject *> attributes = LsbObject::lookupAllEntitiesWithName(playerUpgrades, "Attributes");
+	std::vector<LsbObject *> attributeData = LsbObject::extractPropertyForEachListItem(attributes, "Object");
 	int idx = 0;
 	strEdit->setText(attributeData[idx++]->toString().c_str());
 	dexEdit->setText(attributeData[idx++]->toString().c_str());
@@ -285,7 +285,7 @@ void characterTab::setCharacter(GameCharacter *character) {
 	loadExperienceData();
 	QLineEdit *levelEdit = this->findChild<QLineEdit *>("levelEdit");
 	LsbObject *characterObject = this->getCharacter()->getObject();
-	LsbObject *experienceObject = LsbReader::lookupByUniquePathEntity(characterObject, "Stats/Experience");
+	LsbObject *experienceObject = LsbObject::lookupByUniquePathEntity(characterObject, "Stats/Experience");
 	if (experienceObject != 0) {
 		unsigned long exp = *((unsigned long *)experienceObject->getData());
 		unsigned long level = levelFromExperience(exp);
@@ -304,7 +304,7 @@ characterTab::~characterTab()
 
 void characterTab::on_nameEdit_textEdited(const QString &text)
 {
-	LsbObject *nameObject = LsbReader::lookupByUniquePathEntity(character->getObject(), "PlayerData/PlayerCustomData/Name");
+	LsbObject *nameObject = LsbObject::lookupByUniquePathEntity(character->getObject(), "PlayerData/PlayerCustomData/Name");
 	std::wstring newName = text.toStdWString();
 	nameObject->setData((char *)newName.c_str(), (newName.length() + 1) * 2);
 	if (tabWidget != 0) {
@@ -327,9 +327,9 @@ void characterTab::on_nextCharButton_released()
 }
 
 void characterTab::adjustAttribute(long attribId, long newValue) {
-	LsbObject *playerUpgrades = LsbReader::lookupByUniquePathEntity(character->getObject(), "PlayerData/PlayerUpgrade");
-	std::vector<LsbObject *> attributes = LsbReader::lookupAllEntitiesWithName(playerUpgrades, "Attributes");
-	std::vector<LsbObject *> attributeData = LsbReader::extractPropertyForEachListItem(attributes, "Object");
+	LsbObject *playerUpgrades = LsbObject::lookupByUniquePathEntity(character->getObject(), "PlayerData/PlayerUpgrade");
+	std::vector<LsbObject *> attributes = LsbObject::lookupAllEntitiesWithName(playerUpgrades, "Attributes");
+	std::vector<LsbObject *> attributeData = LsbObject::extractPropertyForEachListItem(attributes, "Object");
 	attributeData[attribId]->setData((char *)&newValue, sizeof(long));
 }
 EquipmentHandler *characterTab::getEquipmentHandler() const
@@ -438,7 +438,7 @@ void characterTab::onItemEdited(GameItem *newItem, GameItem *oldItem) {
 		isAddedItem = true;
 		//item did not exist in inventoryHandler: item is newly added to inventory
 		itemsObject->addChild(copy->getObject());
-		LsbObject *slotObject = LsbReader::lookupByUniquePathEntity(copy->getObject(), "Slot");
+		LsbObject *slotObject = LsbObject::lookupByUniquePathEntity(copy->getObject(), "Slot");
 		if (slotObject != 0) {
 			unsigned short newSlot = this->character->getInventoryHandler()->getItems()->getLargestInternalSlot() + 1;
 			//unsigned short newSlot = copy->getRenderSlot() + 15;
@@ -449,9 +449,9 @@ void characterTab::onItemEdited(GameItem *newItem, GameItem *oldItem) {
 		LsbObject *creatorsObject = GameItem::getCreatorsObject(itemsObject);
 		creatorsObject->addChild(newCreatorObject);
 		
-		LsbObject *newItemObject = LsbReader::getObjectFromCreator(newCreatorObject, "Items");
+		LsbObject *newItemObject = LsbObject::getObjectFromCreator(newCreatorObject, "Items");
 		//LsbObject *newItemObject = copy->getObject();
-		LsbObject *statsObject = LsbReader::lookupByUniquePathEntity(newItemObject, "Stats");
+		LsbObject *statsObject = LsbObject::lookupByUniquePathEntity(newItemObject, "Stats");
 		std::string inventoryTab = "";
 		if (statsObject != 0) {
 			std::string statName = statsObject->getData();
@@ -620,7 +620,7 @@ void characterTab::on_talentsAvailableEdit_textEdited(const QString &text)
 		;
 	}
 	LsbObject *characterObject = this->getCharacter()->getObject();
-	LsbObject *talentPointsObject = LsbReader::lookupByUniquePathEntity(characterObject, "PlayerData/PlayerUpgrade/TalentPoints");
+	LsbObject *talentPointsObject = LsbObject::lookupByUniquePathEntity(characterObject, "PlayerData/PlayerUpgrade/TalentPoints");
 	if (talentPointsObject != 0) {
 		talentPointsObject->setData((char *)&value, sizeof(long));
 	}
@@ -678,7 +678,7 @@ void characterTab::on_abilitiesAvailableEdit_textEdited(const QString &text)
 		;
 	}
 	LsbObject *characterObject = this->getCharacter()->getObject();
-	LsbObject *talentPointsObject = LsbReader::lookupByUniquePathEntity(characterObject, "PlayerData/PlayerUpgrade/AbilityPoints");
+	LsbObject *talentPointsObject = LsbObject::lookupByUniquePathEntity(characterObject, "PlayerData/PlayerUpgrade/AbilityPoints");
 	if (talentPointsObject != 0) {
 		talentPointsObject->setData((char *)&value, sizeof(long));
 	}
@@ -698,7 +698,7 @@ void characterTab::on_statsAvailableEdit_textEdited(const QString &text)
 		;
 	}
 	LsbObject *characterObject = this->getCharacter()->getObject();
-	LsbObject *attribPointsObject = LsbReader::lookupByUniquePathEntity(characterObject, "PlayerData/PlayerUpgrade/AttributePoints");
+	LsbObject *attribPointsObject = LsbObject::lookupByUniquePathEntity(characterObject, "PlayerData/PlayerUpgrade/AttributePoints");
 	if (attribPointsObject != 0) {
 		attribPointsObject->setData((char *)&value, sizeof(long));
 	}
@@ -713,7 +713,7 @@ void characterTab::on_levelEdit_textEdited(const QString &text)
 		;
 	}
 	LsbObject *characterObject = this->getCharacter()->getObject();
-	LsbObject *experienceObject = LsbReader::lookupByUniquePathEntity(characterObject, "Stats/Experience");
+	LsbObject *experienceObject = LsbObject::lookupByUniquePathEntity(characterObject, "Stats/Experience");
 	if (experienceObject != 0) {
 		--value;
 		if (value >= 0 && value < experienceRequired.size()) {

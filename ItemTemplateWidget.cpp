@@ -98,7 +98,7 @@ void ItemTemplateWidget::addToTree(ItemTemplateData &templateData, QTreeWidget *
 	std::string outputText = templateData.templateId;
 	LsbObject *gameObject = templateData.gameObject;
 	if (gameObject != 0) {
-		LsbObject *displayNameObject = LsbReader::lookupByUniquePathEntity(gameObject, "DisplayName");
+		LsbObject *displayNameObject = LsbObject::lookupByUniquePathEntity(gameObject, "DisplayName");
 		if (displayNameObject != 0) {
 			outputText = displayNameObject->getData();
 			outputText += " (";
@@ -130,13 +130,13 @@ void ItemTemplateWidget::populate() {
 	if (item != 0) {
 		LsbObject *itemObject = item->getObject();
 		if (itemObject != 0) {
-			LsbObject *currentTemplateObject = LsbReader::lookupByUniquePathEntity(itemObject, "CurrentTemplate");
+			LsbObject *currentTemplateObject = LsbObject::lookupByUniquePathEntity(itemObject, "CurrentTemplate");
 			std::string templateId = "";
 			if (currentTemplateObject != 0) {
 				templateId = currentTemplateObject->getData();
 				templateIdEdit->setText(templateId.c_str());
 			}
-			LsbObject *statsObject = LsbReader::lookupByUniquePathEntity(itemObject, "Stats");
+			LsbObject *statsObject = LsbObject::lookupByUniquePathEntity(itemObject, "Stats");
 			if (statsObject != 0) {
 				std::string statId = statsObject->getData();
 				statNameLabel->setText(statsObject->getData());

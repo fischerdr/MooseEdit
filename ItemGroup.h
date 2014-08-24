@@ -26,7 +26,7 @@ public:
 	}
 	void addItem(GameItem *item) {
 		if (item != 0 && item->getObject() != 0) {
-			LsbObject *slotObject = LsbReader::lookupByUniquePathEntity(item->getObject(), "Slot");
+			LsbObject *slotObject = LsbObject::lookupByUniquePathEntity(item->getObject(), "Slot");
 			unsigned short internalSlot = SLOT_INVALID;
 			if (slotObject != 0) {
 				internalSlot = *((unsigned short *)slotObject->getData());

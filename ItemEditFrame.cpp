@@ -27,7 +27,7 @@ public:
 			selectedItem = current;
 			selectedItem->setTextColor(0, QColor(255, 0, 0));
 			
-			LsbObject *statsObject = LsbReader::lookupByUniquePathEntity(itemEditFrame->item->getObject(), "Stats");
+			LsbObject *statsObject = LsbObject::lookupByUniquePathEntity(itemEditFrame->item->getObject(), "Stats");
 			std::string statsText = current->getData();
 			statsObject->setData(statsText.c_str(), statsText.length() + 1);
 			
@@ -47,16 +47,16 @@ public:
 				}
 			}
 			
-			LsbObject *currentTemplateObject = LsbReader::lookupByUniquePathEntity(itemEditFrame->item->getObject(), "CurrentTemplate");
+			LsbObject *currentTemplateObject = LsbObject::lookupByUniquePathEntity(itemEditFrame->item->getObject(), "CurrentTemplate");
 			StatsContainer *linkContainer = GenStatsReader::getContainer(itemEditFrame->itemLinks, statsText);
 			if (linkContainer != 0) {
 				std::string templateText = linkContainer->getArg(1);
 				currentTemplateObject->setData(templateText.c_str(), templateText.length() + 1);
 			}
 			
-			LsbObject *generationObject = LsbReader::lookupByUniquePathEntity(itemEditFrame->item->getObject(), "Generation");
+			LsbObject *generationObject = LsbObject::lookupByUniquePathEntity(itemEditFrame->item->getObject(), "Generation");
 			if (generationObject != 0) {
-				LsbObject *baseObject = LsbReader::lookupByUniquePathEntity(generationObject, "Base");
+				LsbObject *baseObject = LsbObject::lookupByUniquePathEntity(generationObject, "Base");
 				if (baseObject != 0) {
 					baseObject->setData(statsText.c_str(), statsText.length() + 1);
 				}
@@ -91,9 +91,9 @@ public:
 		long childIndex = statsTree->invisibleRootItem()->indexOfChild(selectedItem);
 		delete selectedItem;
 		LsbObject *itemObject = itemEditFrame->item->getObject();
-		LsbObject *generationObject = LsbReader::lookupByUniquePathEntity(itemObject, "Generation");
+		LsbObject *generationObject = LsbObject::lookupByUniquePathEntity(itemObject, "Generation");
 		if (generationObject != 0) {
-			std::vector<LsbObject *> boostObjects = LsbReader::lookupAllEntitiesWithName(generationObject, "Boost");
+			std::vector<LsbObject *> boostObjects = LsbObject::lookupAllEntitiesWithName(generationObject, "Boost");
 			if (childIndex < boostObjects.size()) {
 				LsbObject *targetBoost = boostObjects[childIndex];
 				//TODO: verify this is the correct node
@@ -129,7 +129,7 @@ public:
 		delete selectedItem;
 		LsbObject *itemObject = itemEditFrame->item->getObject();
 		LsbObject *statsDirectory = 0;
-		std::vector<LsbObject *> statsObjects = LsbReader::lookupAllEntitiesWithName(itemObject, "Stats");
+		std::vector<LsbObject *> statsObjects = LsbObject::lookupAllEntitiesWithName(itemObject, "Stats");
 		for (int i=0; i<statsObjects.size(); ++i) {
 			LsbObject *object = statsObjects[i];
 			if (object->isDirectory()) {
@@ -139,7 +139,7 @@ public:
 		}
 		
 		if (statsDirectory != 0) {
-			LsbObject *permBoostObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "PermanentBoost");
+			LsbObject *permBoostObject = LsbObject::lookupByUniquePathEntity(statsDirectory, "PermanentBoost");
 			if (childIndex < permBoostObject->getChildren().size()) {
 				LsbObject *targetPermBoost = permBoostObject->getChildren()[childIndex];
 				//TODO: verify this is the correct node
@@ -174,7 +174,7 @@ public:
 			
 			LsbObject *itemObject = itemEditFrame->item->getObject();
 			LsbObject *statsDirectory = 0;
-			std::vector<LsbObject *> statsObjects = LsbReader::lookupAllEntitiesWithName(itemObject, "Stats");
+			std::vector<LsbObject *> statsObjects = LsbObject::lookupAllEntitiesWithName(itemObject, "Stats");
 			for (int i=0; i<statsObjects.size(); ++i) {
 				LsbObject *object = statsObjects[i];
 				if (object->isDirectory()) {
@@ -200,7 +200,7 @@ public:
 					newBoostTag = newTag;
 				}
 				if (newBoostTag != 0) {
-					newPermBoost = LsbReader::lookupByUniquePathEntity(statsDirectory, "PermanentBoost");
+					newPermBoost = LsbObject::lookupByUniquePathEntity(statsDirectory, "PermanentBoost");
 					if (newPermBoost == 0) {
 						TAG_LSB *permBoostTag = LsbObject::createTagIfNeeded("PermanentBoost", itemEditFrame->tagList);
 						newPermBoost = new LsbObject(true, permBoostTag->index, permBoostTag->tag, 0, statsDirectory, itemEditFrame->tagList);
@@ -270,7 +270,7 @@ public:
 		containers.push_back(container);
 		itemEditFrame->modsView->addToTree(containers);
 		LsbObject *itemObject = itemEditFrame->item->getObject();
-		LsbObject *generationObject = LsbReader::lookupByUniquePathEntity(itemObject, "Generation");
+		LsbObject *generationObject = LsbObject::lookupByUniquePathEntity(itemObject, "Generation");
 		if (generationObject != 0) {
 			addBoostToGenerationObject(generationObject, modName);
 		} else {
@@ -494,7 +494,7 @@ void ItemEditFrame::onEdit(DataContainerTreeItem *&selectedItem, QTreeWidget *st
 	long childIndex = statsTree->invisibleRootItem()->indexOfChild(selectedItem);
 	
 	LsbObject *statsDirectory = 0;
-	std::vector<LsbObject *> statsObjects = LsbReader::lookupAllEntitiesWithName(this->item->getObject(), "Stats");
+	std::vector<LsbObject *> statsObjects = LsbObject::lookupAllEntitiesWithName(this->item->getObject(), "Stats");
 	for (int i=0; i<statsObjects.size(); ++i) {
 		LsbObject *object = statsObjects[i];
 		if (object->isDirectory()) {
@@ -504,7 +504,7 @@ void ItemEditFrame::onEdit(DataContainerTreeItem *&selectedItem, QTreeWidget *st
 	}
 	
 	if (statsDirectory != 0) {
-		LsbObject *permBoostObject = LsbReader::lookupByUniquePathEntity(statsDirectory, "PermanentBoost");
+		LsbObject *permBoostObject = LsbObject::lookupByUniquePathEntity(statsDirectory, "PermanentBoost");
 		if (childIndex < permBoostObject->getChildren().size()) {
 			LsbObject *targetPermBoost = permBoostObject->getChildren()[childIndex];
 			//TODO: verify this is the correct node
@@ -556,7 +556,7 @@ void ItemEditFrame::hideAllViews() {
 
 void ItemEditFrame::onTemplateEdit(std::string &newTemplate) {
 	LsbObject *itemObject = this->item->getObject();
-	LsbObject *currentTemplateObject = LsbReader::lookupByUniquePathEntity(itemObject, "CurrentTemplate");
+	LsbObject *currentTemplateObject = LsbObject::lookupByUniquePathEntity(itemObject, "CurrentTemplate");
 	currentTemplateObject->setData(newTemplate.c_str(), newTemplate.length() + 1);
 	this->redraw();
 }
@@ -669,15 +669,15 @@ void ItemEditFrame::on_importButton_released()
 				if (objects.size() == 1) {
 					LsbObject *importedObject = objects[0];
 					if (importedObject->isEntity()) {
-						LsbObject *importedItem = LsbReader::lookupByUniquePathEntity(importedObject, "Item");
+						LsbObject *importedItem = LsbObject::lookupByUniquePathEntity(importedObject, "Item");
 						if (importedItem != 0) {
 							LsbObject *oldItem = this->item->getObject();
-							LsbObject *oldParentObject = LsbReader::lookupByUniquePathEntity(oldItem, "Parent");
-							LsbObject *oldOwnerObject = LsbReader::lookupByUniquePathEntity(oldItem, "owner");
+							LsbObject *oldParentObject = LsbObject::lookupByUniquePathEntity(oldItem, "Parent");
+							LsbObject *oldOwnerObject = LsbObject::lookupByUniquePathEntity(oldItem, "owner");
 							unsigned long parentId = *((unsigned long *)oldParentObject->getData());
 							unsigned long ownerId = *((unsigned long *)oldOwnerObject->getData());
-							LsbObject *newParentObject = LsbReader::lookupByUniquePathEntity(importedItem, "Parent");
-							LsbObject *newOwnerObject = LsbReader::lookupByUniquePathEntity(importedItem, "owner");
+							LsbObject *newParentObject = LsbObject::lookupByUniquePathEntity(importedItem, "Parent");
+							LsbObject *newOwnerObject = LsbObject::lookupByUniquePathEntity(importedItem, "owner");
 							newParentObject->setData((char *)&parentId, sizeof(parentId));
 							newOwnerObject->setData((char *)&ownerId, sizeof(ownerId));
 							importedItem->setParent(oldItem->getParent());
