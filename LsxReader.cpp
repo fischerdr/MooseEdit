@@ -112,8 +112,8 @@ bool LsxReader::readTagData(TiXmlElement *node, long readSize, std::stack<LsbObj
 		currentNodeIsDirectory = !(i < attributes.size());
 
 		const char *id;
-		long type;
-		long value;
+		unsigned long type;
+		unsigned long value;
 		const char *typeText;
 		const char *valueText;
 		id = child->Attribute("id");
@@ -127,12 +127,12 @@ bool LsxReader::readTagData(TiXmlElement *node, long readSize, std::stack<LsbObj
 				return false;
 			}
 			try {
-				type = boost::lexical_cast<long>(typeText);
+				type = boost::lexical_cast<unsigned long>(typeText);
 			} catch (const boost::bad_lexical_cast& e) {
 				
 			}
 			try {
-				value = boost::lexical_cast<long>(valueText);
+				value = boost::lexical_cast<unsigned long>(valueText);
 			} catch (const boost::bad_lexical_cast& e) {
 				
 			}
