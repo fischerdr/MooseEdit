@@ -4,6 +4,9 @@
 #include "GL/gl.h"
 #include "zgranny.h"
 #include "nv_dds.h"
+#include "LsxReader.h"
+
+#include <boost/filesystem/fstream.hpp>
 
 typedef void (*glCompressedTexImage2DARB_t)(GLenum target, 	GLint level, 	GLenum internalformat, 	GLsizei width, 	GLsizei height, 	GLint border, 	GLsizei imageSize, 	const GLvoid * data);
 glCompressedTexImage2DARB_t glCompressedTexImage2DARB = (glCompressedTexImage2DARB_t)wglGetProcAddress("glCompressedTexImage2DARB");
@@ -17,6 +20,21 @@ AppearanceEditorFrame::AppearanceEditorFrame(QWidget *parent) :
 
 void AppearanceEditorFrame::setup() {
 	//cleanup();
+	
+	boost::filesystem::ifstream fin("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Mods\\Main\\CharacterCreation\\properties.lsx", 
+									std::ios_base::binary);
+	if (fin) {
+		LsxReader reader;
+		std::vector<LsbObject *> objects = reader.loadFile(fin);
+		if (objects.size() == 0) {
+			MessageBoxA(0, "Failed to parse CharacterCreation properties!", 0, 0);
+		}
+		fin.close();
+		
+	} else {
+		MessageBoxA(0, "Couldn't read CharacterCreation properties file!", 0, 0);
+	}
+	
 	GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
 	//DDSLoader ddsLoader;
 	//ddsLoader.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Body_A_DM.dds");

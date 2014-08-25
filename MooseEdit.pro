@@ -60,7 +60,8 @@ SOURCES += main.cpp\
     GlContextWidget.cpp \
     nv_dds.cpp \
     LsxReader.cpp \
-    LsbObject.cpp
+    LsbObject.cpp \
+    LsxWriter.cpp
 
 HEADERS  += mainwindow.h \
     LsbReader.h \
@@ -101,7 +102,8 @@ HEADERS  += mainwindow.h \
     DDSLoader.h \
     dds.h \
     nv_dds.h \
-    LsxReader.h
+    LsxReader.h \
+    LsxWriter.h
 
 FORMS    += mainwindow.ui \
     charactertab.ui \

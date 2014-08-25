@@ -4,6 +4,7 @@
 #include "InventoryHandler.h"
 #include "LsbReader.h"
 #include "LsbWriter.h"
+#include "LsxReader.h"
 #include "PakReader.h"
 #include "TextureAtlas.h"
 #include "finddialog.h"
@@ -398,23 +399,41 @@ void MainWindow::handleOpenFileButton() {
 	std::wstringstream stream;
 	stream<<this->getSaveLocation();
 	QString result = QFileDialog::getOpenFileName(this,
-												  QString("Open LSB"), QString::fromStdWString(stream.str()), QString("LSB Files (*.lsb)"));
+												  QString("Open LSB"), QString::fromStdWString(stream.str()), QString("LSB Files (*.lsb);;LSX Files (*.lsx)"));
 	if (result.size() != 0) {
-		boost::filesystem::ifstream fin(result.toStdWString(),
+		std::wstring resultPath = result.toStdWString();
+		boost::filesystem::ifstream fin(resultPath,
 						  std::ios_base::binary);
-		LsbReader reader;
-		std::vector<LsbObject *> directoryList = reader.loadFile(fin);
-		openFileButtonTagList = reader.getTagList();
-		fin.close();
-		QTreeWidget *tree = this->findChild<QTreeWidget *>("treeWidget");
-		tree->clear();
-		if (directoryList.size() != 0) {
-			displayAllItems2(tree, directoryList);
-		}
-		else {
-			QMessageBox msgBox;
-			msgBox.setText("Bad data");
-			msgBox.exec();
+		if (boost::ends_with(resultPath, L".lsx")) {
+			LsxReader reader;
+			std::vector<LsbObject *> directoryList = reader.loadFile(fin);
+			openFileButtonTagList = reader.getTagList();
+			fin.close();
+			QTreeWidget *tree = this->findChild<QTreeWidget *>("treeWidget");
+			tree->clear();
+			if (directoryList.size() != 0) {
+				displayAllItems2(tree, directoryList);
+			}
+			else {
+				QMessageBox msgBox;
+				msgBox.setText("Bad data");
+				msgBox.exec();
+			}
+		} else {
+			LsbReader reader;
+			std::vector<LsbObject *> directoryList = reader.loadFile(fin);
+			openFileButtonTagList = reader.getTagList();
+			fin.close();
+			QTreeWidget *tree = this->findChild<QTreeWidget *>("treeWidget");
+			tree->clear();
+			if (directoryList.size() != 0) {
+				displayAllItems2(tree, directoryList);
+			}
+			else {
+				QMessageBox msgBox;
+				msgBox.setText("Bad data");
+				msgBox.exec();
+			}
 		}
 	}
 }
