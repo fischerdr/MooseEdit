@@ -116,3 +116,12 @@ void GlShaderProgram::setUniformInt(std::string uniformName, GLint uniform) {
 	GLint location = uniformLocations[uniformName];
 	glUniform1i(location, uniform);
 }
+
+void GlShaderProgram::setUniformVec4(std::string uniformName, GLfloat components[4]) {
+	if (uniformLocations.find(uniformName) == uniformLocations.end()) {
+		GLint location = glGetUniformLocation(program, uniformName.c_str());
+		uniformLocations[uniformName] = location;
+	}
+	GLint location = uniformLocations[uniformName];
+	glUniform4fv(location, 1, components);
+}

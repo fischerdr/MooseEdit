@@ -25,6 +25,7 @@ public:
 	void unset();
 	void setUniformMatrix4x4(std::string uniformName, GLfloat buffer[16]);
 	void setUniformMatrix3x3(std::string uniformName, GLfloat buffer[9]);
+	void setUniformVec4(std::string uniformName, GLfloat components[4]);
 	void set4dVectorAttribute(std::string attributeName, GLsizei stride, const GLvoid* data);
 	void set3dVectorAttribute(std::string attributeName, GLsizei stride, const GLvoid* data);
 	void set2dVectorAttribute(std::string attributeName, GLsizei stride, const GLvoid* data);

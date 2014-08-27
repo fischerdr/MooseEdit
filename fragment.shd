@@ -5,6 +5,7 @@ varying vec2 uv;
 uniform sampler2D color_texture;
 uniform sampler2D normal_texture;
 uniform sampler2D mask_texture;
+uniform vec4 skinColor;
 
 void normal_shader(void)
 {
@@ -26,7 +27,6 @@ void normal_shader(void)
 
 void alpha_shader(void)
 {
-	vec4 skinColor = vec4(0.90, 0.74, 0.60, 1.0);
 	vec4 skinVec = vec4(gl_FragColor.xyz*skinColor.xyz*texture2D(mask_texture,uv).a,1.0);
 	vec4 garmentVec = vec4(gl_FragColor.xyz*(1.0 - texture2D(mask_texture,uv).a),1.0);
 	gl_FragColor = skinVec + garmentVec;

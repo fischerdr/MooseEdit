@@ -79,7 +79,6 @@ private:
 	QTimer frameTimer;
 	std::vector<ZGrannyScene *> grannyScenes;
 	std::vector<std::vector<GLint> > textureIds;
-	char x[50];
 	std::vector<VertexRGB *> vertexRGBs;
 	std::vector<GlShaderProgram *> shaderPrograms;
 	//ZGrannyScene *grannyScene = 0;

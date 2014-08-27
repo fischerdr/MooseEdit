@@ -37,7 +37,7 @@
 	background-image: url(:/game_parchment.png);
 }</string>
         </property>
-        <widget class="QLabel" name="label">
+        <widget class="QLabel" name="portraitLabel">
          <property name="geometry">
           <rect>
            <x>190</x>
@@ -113,7 +113,7 @@
           <string/>
          </property>
         </widget>
-        <widget class="QPushButton" name="pushButton_4">
+        <widget class="QPushButton" name="femaleButton">
          <property name="geometry">
           <rect>
            <x>140</x>
@@ -131,7 +131,7 @@
           <string/>
          </property>
         </widget>
-        <widget class="QPushButton" name="pushButton_5">
+        <widget class="QPushButton" name="maleButton">
          <property name="geometry">
           <rect>
            <x>240</x>
@@ -149,7 +149,7 @@
           <string/>
          </property>
         </widget>
-        <widget class="QPushButton" name="pushButton_6">
+        <widget class="QPushButton" name="aiPersonalityPrev">
          <property name="geometry">
           <rect>
            <x>330</x>
@@ -167,7 +167,7 @@
           <string/>
          </property>
         </widget>
-        <widget class="QPushButton" name="pushButton_7">
+        <widget class="QPushButton" name="aiPersonalityNext">
          <property name="geometry">
           <rect>
            <x>360</x>
@@ -185,7 +185,7 @@
           <string/>
          </property>
         </widget>
-        <widget class="QLabel" name="label_2">
+        <widget class="QLabel" name="aiPersonalityLabel">
          <property name="geometry">
           <rect>
            <x>90</x>
@@ -266,7 +266,7 @@
           <set>Qt::AlignCenter</set>
          </property>
         </widget>
-        <widget class="QLabel" name="label_5">
+        <widget class="QLabel" name="voiceLabel">
          <property name="geometry">
           <rect>
            <x>90</x>
@@ -293,7 +293,7 @@
           <number>15</number>
          </property>
         </widget>
-        <widget class="QPushButton" name="pushButton_8">
+        <widget class="QPushButton" name="voicePrev">
          <property name="geometry">
           <rect>
            <x>330</x>
@@ -311,7 +311,7 @@
           <string/>
          </property>
         </widget>
-        <widget class="QPushButton" name="pushButton_9">
+        <widget class="QPushButton" name="voiceNext">
          <property name="geometry">
           <rect>
            <x>360</x>
@@ -356,7 +356,7 @@
           <set>Qt::AlignCenter</set>
          </property>
         </widget>
-        <widget class="QLabel" name="label_7">
+        <widget class="QLabel" name="skinColorLabel">
          <property name="geometry">
           <rect>
            <x>90</x>
@@ -383,7 +383,7 @@
           <number>15</number>
          </property>
         </widget>
-        <widget class="QPushButton" name="pushButton_10">
+        <widget class="QPushButton" name="skinColorPrev">
          <property name="geometry">
           <rect>
            <x>330</x>
@@ -401,7 +401,7 @@
           <string/>
          </property>
         </widget>
-        <widget class="QPushButton" name="pushButton_11">
+        <widget class="QPushButton" name="skinColorNext">
          <property name="geometry">
           <rect>
            <x>360</x>
@@ -446,7 +446,7 @@
           <set>Qt::AlignCenter</set>
          </property>
         </widget>
-        <widget class="QLabel" name="label_9">
+        <widget class="QLabel" name="headLabel">
          <property name="geometry">
           <rect>
            <x>90</x>
@@ -473,7 +473,7 @@
           <number>15</number>
          </property>
         </widget>
-        <widget class="QPushButton" name="pushButton_12">
+        <widget class="QPushButton" name="headPrev">
          <property name="geometry">
           <rect>
            <x>330</x>
@@ -491,7 +491,7 @@
           <string/>
          </property>
         </widget>
-        <widget class="QPushButton" name="pushButton_13">
+        <widget class="QPushButton" name="headNext">
          <property name="geometry">
           <rect>
            <x>360</x>
@@ -536,7 +536,7 @@
           <set>Qt::AlignCenter</set>
          </property>
         </widget>
-        <widget class="QLabel" name="label_11">
+        <widget class="QLabel" name="hairLabel">
          <property name="geometry">
           <rect>
            <x>90</x>
@@ -563,7 +563,7 @@
           <number>15</number>
          </property>
         </widget>
-        <widget class="QPushButton" name="pushButton_14">
+        <widget class="QPushButton" name="hairPrev">
          <property name="geometry">
           <rect>
            <x>330</x>
@@ -581,7 +581,7 @@
           <string/>
          </property>
         </widget>
-        <widget class="QPushButton" name="pushButton_15">
+        <widget class="QPushButton" name="hairNext">
          <property name="geometry">
           <rect>
            <x>360</x>
@@ -626,7 +626,7 @@
           <set>Qt::AlignCenter</set>
          </property>
         </widget>
-        <widget class="QLabel" name="label_13">
+        <widget class="QLabel" name="hairColorLabel">
          <property name="geometry">
           <rect>
            <x>90</x>
@@ -653,7 +653,7 @@
           <number>15</number>
          </property>
         </widget>
-        <widget class="QPushButton" name="pushButton_16">
+        <widget class="QPushButton" name="hairColorPrev">
          <property name="geometry">
           <rect>
            <x>330</x>
@@ -671,7 +671,7 @@
           <string/>
          </property>
         </widget>
-        <widget class="QPushButton" name="pushButton_17">
+        <widget class="QPushButton" name="hairColorNext">
          <property name="geometry">
           <rect>
            <x>360</x>
@@ -716,7 +716,7 @@
           <set>Qt::AlignCenter</set>
          </property>
         </widget>
-        <widget class="QLabel" name="label_15">
+        <widget class="QLabel" name="underwearLabel">
          <property name="geometry">
           <rect>
            <x>90</x>
@@ -743,7 +743,7 @@
           <number>15</number>
          </property>
         </widget>
-        <widget class="QPushButton" name="pushButton_18">
+        <widget class="QPushButton" name="underwearPrev">
          <property name="geometry">
           <rect>
            <x>330</x>
@@ -761,7 +761,7 @@
           <string/>
          </property>
         </widget>
-        <widget class="QPushButton" name="pushButton_19">
+        <widget class="QPushButton" name="underwearNext">
          <property name="geometry">
           <rect>
            <x>360</x>
@@ -857,6 +857,42 @@
          </property>
          <property name="text">
           <string>Cancel</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="skinColorPicker">
+         <property name="geometry">
+          <rect>
+           <x>61</x>
+           <y>343</y>
+           <width>21</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+	border-image: url(:/colorPickerIcon.png)
+}</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="hairColorPicker">
+         <property name="geometry">
+          <rect>
+           <x>60</x>
+           <y>493</y>
+           <width>21</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+	border-image: url(:/colorPickerIcon.png)
+}</string>
+         </property>
+         <property name="text">
+          <string/>
          </property>
         </widget>
        </widget>

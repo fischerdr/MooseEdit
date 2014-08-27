@@ -47,5 +47,6 @@
         <file>appearance-portrait.png</file>
         <file>vertex.shd</file>
         <file>fragment.shd</file>
+        <file>colorPickerIcon.png</file>
     </qresource>
 </RCC>

@@ -119,6 +119,12 @@ void GlContextWidget::paintGL() {
 	
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
    glScalef(-1.0f, 1.0f, 1.0f);
+   glEnable( GL_LINE_SMOOTH );
+   glEnable( GL_POLYGON_SMOOTH );
+   glHint( GL_LINE_SMOOTH_HINT, GL_NICEST );
+   glHint( GL_POLYGON_SMOOTH_HINT, GL_NICEST );
+   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+   glEnable(GL_MULTISAMPLE);
    
    if (grannyScenes.size() > 0) {
 	   for (int i=0; i<grannyScenes.size(); ++i) {

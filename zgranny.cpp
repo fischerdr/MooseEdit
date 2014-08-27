@@ -213,10 +213,11 @@ void zGrannyCreateMesh( ZGrannyMesh *mesh, granny_mesh *grannyMesh, std::vector<
 	int vertexCount = GrannyGetMeshVertexCount( grannyMesh );
 	
 	/* Now, I process the vertex data. */
-	if( GrannyMeshIsRigid(grannyMesh) ) {
+	//if( GrannyMeshIsRigid(grannyMesh) ) {
+	if (false) {
 		/* It's a rigid ZGrannyMesh, so I can store the whole thing in a 
 		  (possibly card resident) display list. */
-		granny_pwngbt343332_vertex *tempVertices = new granny_pwngbt343332_vertex[vertexCount];
+		granny_pngbt33332_vertex *tempVertices = new granny_pngbt33332_vertex[vertexCount];
 		
 		/* GrannyCopyMeshVertices can do arbitrary vertex format
 		  conversion, so in this case I just request that, whatever
@@ -229,7 +230,7 @@ void zGrannyCreateMesh( ZGrannyMesh *mesh, granny_mesh *grannyMesh, std::vector<
 		  ZGrannyTexture coordinates, tangent spaces, etc., can all be in
 		  there). */
 		
-		GrannyCopyMeshVertices( grannyMesh, GrannyPWNGBT343332VertexType, tempVertices );
+		GrannyCopyMeshVertices( grannyMesh, GrannyPNGBT33332VertexType, tempVertices );
 		
 		
 		mesh->displayList = glGenLists(1);
@@ -240,7 +241,7 @@ void zGrannyCreateMesh( ZGrannyMesh *mesh, granny_mesh *grannyMesh, std::vector<
 			glEnableClientState( GL_NORMAL_ARRAY );
 			glEnableClientState( GL_TEXTURE_COORD_ARRAY );
 			
-			zGrannyRenderMesh( mesh, tempVertices, textures, 0, 0 );
+			zGrannyRenderMesh3( mesh, tempVertices, textures, 0, 0 );
 			
 			glDisableClientState( GL_VERTEX_ARRAY );
 			glDisableClientState( GL_NORMAL_ARRAY );
@@ -306,9 +307,6 @@ void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model, std::vector
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	if (vertexRgb != 0) {
-		glEnableClientState(GL_COLOR_ARRAY);
-	}
 	
 	/* Since I'm going to need it constantly, I dereference the composite
 	  transform buffer for the ZGrannyModel's current world-space pose.  This
@@ -328,7 +326,8 @@ void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model, std::vector
 		// buffer and load those, depending on whether the ZGrannyMesh is
 		// rigid or not.
 		int vertexCount = GrannyGetMeshVertexCount( mesh.grannyMesh );
-		if( GrannyMeshIsRigid(mesh.grannyMesh) ) {
+		//if( GrannyMeshIsRigid(mesh.grannyMesh) ) {
+		if (false) {
 			// It's a rigid ZGrannyMesh, so I use the display list we've
 			// previously created for it.
 			glPushMatrix();
@@ -345,16 +344,6 @@ void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model, std::vector
 			// current world pose of the ZGrannyModel, and dump the results
 			// into the mutable vertex buffer.
 			
-			VertexRGB *rgbData = 0;
-			if (vertexRgb != 0) {
-				rgbData = new VertexRGB[vertexCount];
-				for (int i=0; i<vertexCount; ++i) {
-					rgbData[i].r = vertexRgb->r;
-					rgbData[i].g = vertexRgb->g;
-					rgbData[i].b = vertexRgb->b;
-					rgbData[i].a = vertexRgb->a;
-				}
-			}
 			if (mesh.grannyDeformer) {
 				granny_pnt332_vertex *vertices = new granny_pnt332_vertex[vertexCount];
 				GrannyDeformVertices(
@@ -370,33 +359,27 @@ void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model, std::vector
 						std::cout<<"pos = "<<vertices->Position[0]<<' '<<vertices->Position[1]<<' '<<vertices->Position[2]<<'\n';
 					}
 				}
-				zGrannyRenderMesh2( &mesh, vertices, textures, rgbData, shaderProgram );
+				zGrannyRenderMesh2( &mesh, vertices, textures, vertexRgb, shaderProgram );
 				delete[] vertices;
 			} else {
 				//granny_pwngbt343332_vertex *vertices2 = (granny_pwngbt343332_vertex *)GrannyGetMeshVertices( mesh.grannyMesh );
 				granny_pwngbt343332_vertex *vertices2 = new granny_pwngbt343332_vertex[vertexCount];
 				GrannyCopyMeshVertices( mesh.grannyMesh, GrannyPWNGBT343332VertexType, vertices2 );
-				zGrannyRenderMesh( &mesh, vertices2, textures, rgbData, shaderProgram );
+				zGrannyRenderMesh( &mesh, vertices2, textures, vertexRgb, shaderProgram );
 				delete[] vertices2;
 			}
-			if (rgbData != 0)
-				delete[] rgbData;
 		}
 	}
 	
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
 }
 
-void zGrannyRenderMesh2( ZGrannyMesh *mesh, granny_pnt332_vertex *vertices, std::vector<GLint> &textures, VertexRGB *rgbData, GlShaderProgram *shaderProgram) {
+void zGrannyRenderMesh3( ZGrannyMesh *mesh, granny_pngbt33332_vertex *vertices, std::vector<GLint> &textures, VertexRGB *rgbData, GlShaderProgram *shaderProgram) {
 	glVertexPointer( 3, GL_FLOAT, sizeof(*vertices), vertices->Position );
 	glNormalPointer( GL_FLOAT, sizeof(*vertices), vertices->Normal );
 	glTexCoordPointer( 2, GL_FLOAT, sizeof(*vertices), vertices->UV );
-	if (rgbData != 0) {
-		glColorPointer( 4, GL_INT, sizeof(*rgbData), rgbData );
-	}
 	
 	if (shaderProgram != 0) {
 		shaderProgram->set3dVectorAttribute("vertex", sizeof(*vertices), vertices->Position);
@@ -447,13 +430,10 @@ void zGrannyRenderMesh2( ZGrannyMesh *mesh, granny_pnt332_vertex *vertices, std:
 	}
 }
 
-void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices, std::vector<GLint> &textures, VertexRGB *rgbData, GlShaderProgram *shaderProgram) {
+void zGrannyRenderMesh2( ZGrannyMesh *mesh, granny_pnt332_vertex *vertices, std::vector<GLint> &textures, VertexRGB *rgbData, GlShaderProgram *shaderProgram) {
 	glVertexPointer( 3, GL_FLOAT, sizeof(*vertices), vertices->Position );
 	glNormalPointer( GL_FLOAT, sizeof(*vertices), vertices->Normal );
 	glTexCoordPointer( 2, GL_FLOAT, sizeof(*vertices), vertices->UV );
-	if (rgbData != 0) {
-		glColorPointer( 4, GL_INT, sizeof(*rgbData), rgbData );
-	}
 	
 	if (shaderProgram != 0) {
 		shaderProgram->set3dVectorAttribute("vertex", sizeof(*vertices), vertices->Position);
@@ -469,6 +449,68 @@ void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices,
 		shaderProgram->setUniformInt("color_texture", 0);
 		shaderProgram->setUniformInt("normal_texture", 1);
 		shaderProgram->setUniformInt("mask_texture", 2);
+	}
+	
+	/* Now both the indices and vertices are loaded, so I can
+	  render.	I grab the material groups and spin over them,
+	  changing to the appropriate ZGrannyTexture and rendering each batch.
+	  A more savvy rendering loop might have instead built a
+	  sorted list of material groups to minimize ZGrannyTexture changes,
+	  etc., but this is the most basic way to render. */
+	int indexSize = GrannyGetMeshBytesPerIndex( mesh->grannyMesh );
+	unsigned char *Indices = (unsigned char *)GrannyGetMeshIndices( mesh->grannyMesh );
+	int groupCount = GrannyGetMeshTriangleGroupCount( mesh->grannyMesh );
+	granny_tri_material_group *group = GrannyGetMeshTriangleGroups( mesh->grannyMesh );
+	while( groupCount-- ) {
+		if( group->MaterialIndex < mesh->textureCount ) {
+			ZGrannyTexture *texture = mesh->textureReferences[group->MaterialIndex];
+			if( texture ) {
+				glBindTexture( GL_TEXTURE_2D, texture->textureHandle );
+			}
+		}
+		for (int i=0; i<textures.size(); ++i) {
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(GL_TEXTURE_2D, textures[i]);
+		}
+		
+		glDrawElements(
+					GL_TRIANGLES,
+					group->TriCount*3,
+					(indexSize == 4) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT,
+					&Indices[group->TriFirst*3*indexSize]
+				);
+		
+		++group;
+	}
+}
+
+void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices, std::vector<GLint> &textures, VertexRGB *vertexRgb, GlShaderProgram *shaderProgram) {
+	glVertexPointer( 3, GL_FLOAT, sizeof(*vertices), vertices->Position );
+	glNormalPointer( GL_FLOAT, sizeof(*vertices), vertices->Normal );
+	glTexCoordPointer( 2, GL_FLOAT, sizeof(*vertices), vertices->UV );
+	
+	if (shaderProgram != 0) {
+		shaderProgram->set3dVectorAttribute("vertex", sizeof(*vertices), vertices->Position);
+		shaderProgram->set3dVectorAttribute("normal", sizeof(*vertices), vertices->Normal);
+		shaderProgram->set2dVectorAttribute("uv_coord", sizeof(*vertices), vertices->UV);
+		
+		GLfloat modelViewMatrix[16];
+		glGetFloatv(GL_MODELVIEW_MATRIX, modelViewMatrix);
+		shaderProgram->setUniformMatrix4x4("_mv", modelViewMatrix);
+		GLfloat projectionMatrix[16];
+		glGetFloatv(GL_PROJECTION_MATRIX, projectionMatrix);
+		shaderProgram->setUniformMatrix4x4("_proj", projectionMatrix);
+		shaderProgram->setUniformInt("color_texture", 0);
+		shaderProgram->setUniformInt("normal_texture", 1);
+		shaderProgram->setUniformInt("mask_texture", 2);
+		if (vertexRgb != 0) {
+			GLfloat vec[4];
+			vec[0] = vertexRgb->r/255.0;
+			vec[1] = vertexRgb->g/255.0;
+			vec[2] = vertexRgb->b/255.0;
+			vec[3] = vertexRgb->a/255.0;
+			shaderProgram->setUniformVec4("skinColor", vec);
+		}
 	}
 	
 	/* Now both the indices and vertices are loaded, so I can
