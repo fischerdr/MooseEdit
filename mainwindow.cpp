@@ -64,7 +64,7 @@ std::vector<std::wstring> getSaveGameList(std::wstring fullPath, std::wstring pr
 	return saveList;
 }
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(std::wstring argument, QWidget *parent) :
 	QMainWindow(parent), settings(L"moose_settings.ini"),
 	ui(new Ui::MainWindow)
 {
@@ -163,6 +163,29 @@ MainWindow::MainWindow(QWidget *parent) :
 	characterTabRefreshTimer.setSingleShot(false);
 	this->connect(&characterTabRefreshTimer, SIGNAL(timeout()), this, SLOT(refreshCurrentCharacterTab()));
 	characterTabRefreshTimer.start(200);
+	
+	if (argument.length() > 0) {
+		QTabWidget *tabWidget = this->findChild<QTabWidget *>("tabWidget");
+		if (boost::ends_with(argument, L".pak")) {
+			if (openPakFileToList(argument)) {
+				for (int i=0; i<tabWidget->count(); ++i) {
+					if (boost::contains(tabWidget->tabText(i).toStdString(), "PAK")) {
+						tabWidget->setCurrentIndex(i);
+						break;
+					}
+				}
+			}
+		} else {
+			if (lsbOpenFileToTree(argument)) {
+				for (int i=0; i<tabWidget->count(); ++i) {
+					if (boost::contains(tabWidget->tabText(i).toStdString(), "Dev")) {
+						tabWidget->setCurrentIndex(i);
+						break;
+					}
+				}
+			}
+		}
+	}
 }
 
 std::wstring MainWindow::getSteamPathFromRegistry() {
@@ -395,6 +418,45 @@ void MainWindow::handleLoadButton() {
 	}
 }
 
+bool MainWindow::lsbOpenFileToTree(std::wstring &resultPath) {
+	boost::filesystem::ifstream fin(resultPath,
+					  std::ios_base::binary);
+	if (boost::ends_with(resultPath, L".lsx")) {
+		LsxReader reader;
+		std::vector<LsbObject *> directoryList = reader.loadFile(fin);
+		openFileButtonTagList = reader.getTagList();
+		fin.close();
+		QTreeWidget *tree = this->findChild<QTreeWidget *>("treeWidget");
+		tree->clear();
+		if (directoryList.size() != 0) {
+			displayAllItems2(tree, directoryList);
+		}
+		else {
+			QMessageBox msgBox;
+			msgBox.setText("Bad data");
+			msgBox.exec();
+			return false;
+		}
+	} else {
+		LsbReader reader;
+		std::vector<LsbObject *> directoryList = reader.loadFile(fin);
+		openFileButtonTagList = reader.getTagList();
+		fin.close();
+		QTreeWidget *tree = this->findChild<QTreeWidget *>("treeWidget");
+		tree->clear();
+		if (directoryList.size() != 0) {
+			displayAllItems2(tree, directoryList);
+		}
+		else {
+			QMessageBox msgBox;
+			msgBox.setText("Bad data");
+			msgBox.exec();
+			return false;
+		}
+	}
+	return true;
+}
+
 void MainWindow::handleOpenFileButton() {
 	std::wstringstream stream;
 	stream<<this->getSaveLocation();
@@ -402,39 +464,7 @@ void MainWindow::handleOpenFileButton() {
 												  QString("Open LSB"), QString::fromStdWString(stream.str()), QString("LSB Files (*.lsb);;LSX Files (*.lsx)"));
 	if (result.size() != 0) {
 		std::wstring resultPath = result.toStdWString();
-		boost::filesystem::ifstream fin(resultPath,
-						  std::ios_base::binary);
-		if (boost::ends_with(resultPath, L".lsx")) {
-			LsxReader reader;
-			std::vector<LsbObject *> directoryList = reader.loadFile(fin);
-			openFileButtonTagList = reader.getTagList();
-			fin.close();
-			QTreeWidget *tree = this->findChild<QTreeWidget *>("treeWidget");
-			tree->clear();
-			if (directoryList.size() != 0) {
-				displayAllItems2(tree, directoryList);
-			}
-			else {
-				QMessageBox msgBox;
-				msgBox.setText("Bad data");
-				msgBox.exec();
-			}
-		} else {
-			LsbReader reader;
-			std::vector<LsbObject *> directoryList = reader.loadFile(fin);
-			openFileButtonTagList = reader.getTagList();
-			fin.close();
-			QTreeWidget *tree = this->findChild<QTreeWidget *>("treeWidget");
-			tree->clear();
-			if (directoryList.size() != 0) {
-				displayAllItems2(tree, directoryList);
-			}
-			else {
-				QMessageBox msgBox;
-				msgBox.setText("Bad data");
-				msgBox.exec();
-			}
-		}
+		lsbOpenFileToTree(resultPath);
 	}
 }
 
@@ -970,6 +1000,26 @@ void MainWindow::on_savesFolderEdit_textChanged(const QString &text)
 	fin.close();
 }
 
+bool MainWindow::openPakFileToList(std::wstring &fileName) {
+	userPakFileName = fileName;
+	userPakReader.loadFile(userPakFileName);
+	std::vector<std::string> fileList = userPakReader.getFileList();
+	QListWidget *pakListWidget = this->findChild<QListWidget *>("pakListWidget");
+	pakListWidget->clear();
+	if (fileList.size() != 0) {
+		for (int i=0; i<fileList.size(); ++i) {
+			pakListWidget->addItem(fileList[i].c_str());
+		}
+	}
+	else {
+		QMessageBox msgBox;
+		msgBox.setText("Bad data");
+		msgBox.exec();
+		return false;
+	}
+	return true;
+}
+
 void MainWindow::on_pakOpenButton_released()
 {
 	std::wstringstream stream;
@@ -977,21 +1027,8 @@ void MainWindow::on_pakOpenButton_released()
 	QString result = QFileDialog::getOpenFileName(this,
 												  QString("Open PAK"), QString::fromStdWString(stream.str()), QString("PAK Files (*.pak)"));
 	if (result.size() != 0) {
-		userPakFileName = result.toStdWString();
-		userPakReader.loadFile(userPakFileName);
-		std::vector<std::string> fileList = userPakReader.getFileList();
-		QListWidget *pakListWidget = this->findChild<QListWidget *>("pakListWidget");
-		pakListWidget->clear();
-		if (fileList.size() != 0) {
-			for (int i=0; i<fileList.size(); ++i) {
-				pakListWidget->addItem(fileList[i].c_str());
-			}
-		}
-		else {
-			QMessageBox msgBox;
-			msgBox.setText("Bad data");
-			msgBox.exec();
-		}
+		std::wstring wresult = result.toStdWString();
+		openPakFileToList(wresult);
 	}
 }
 

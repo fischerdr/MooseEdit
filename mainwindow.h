@@ -29,7 +29,7 @@ class MainWindow : public QMainWindow, ExtractQueueCallback, ReaderProgressCallb
 	Q_OBJECT
 	
 public:
-	explicit MainWindow(QWidget *parent = 0);
+	explicit MainWindow(std::wstring argument, QWidget *parent = 0);
 	~MainWindow();
 	std::vector<LsbObject *>& getGlobals() {
 		return globals;
@@ -94,6 +94,7 @@ private:
 	QTreeWidgetItem *findInTreeHelper(QTreeWidgetItem *item, QString text, int column, QTreeWidgetItem *position, bool& valid, QTreeWidgetItem *& firstItem);
 	void recursiveExpandAll(QTreeWidgetItem *item);
 	void unload();
+	bool lsbOpenFileToTree(std::wstring &resultPath);
 	std::vector<TAG_LSB *> globalTagList;
 	std::vector<LsbObject *> globals;
 	Ui::MainWindow *ui;
@@ -104,6 +105,7 @@ private:
 	std::wstring getGameDataLocation();
 	PakReader userPakReader;
 	std::wstring userPakFileName;
+	bool openPakFileToList(std::wstring &fileName);
 	GamePakData *gamePakData = 0;
 	std::vector<TAG_LSB *> openFileButtonTagList;
 };

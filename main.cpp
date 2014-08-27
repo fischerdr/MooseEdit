@@ -23,10 +23,22 @@ int main(int argc, char *argv[])
 	QGLFormat::setDefaultFormat(glf);
 	
 	a.setStyle("windowsxp");
-	MainWindow *w = new MainWindow();
+	std::wstring arg = L"";
+	#ifdef _WIN32
+		LPWSTR wideArgText = GetCommandLineW();
+		int wArgc;
+		LPWSTR *wideArgs = CommandLineToArgvW(wideArgText, &wArgc);
+		if (wArgc == 2) {
+			arg = wideArgs[1];
+		}
+	#endif
+	MainWindow *w = new MainWindow(arg);
 	w->show();
 	
 	int exec = a.exec();
 	delete w;
+	#ifdef _WIN32
+		LocalFree(wideArgs);
+	#endif
 	return exec;
 }
