@@ -29,6 +29,8 @@ public:
 	void mouseReleaseEvent(QMouseEvent *event);
 	void mouseMoveEvent(QMouseEvent* event);
 	void wheelEvent(QWheelEvent *event);
+	void showEvent(QShowEvent *event);
+	void hideEvent(QHideEvent *event);
 	
 signals:
 	

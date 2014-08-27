@@ -16,8 +16,17 @@ GlContextWidget::GlContextWidget(QWidget *parent) :
 	lookatX = 0.0;
 	lookatY = 1.0;
 	lookatZ = 0.0;
-			
+
+}
+
+void GlContextWidget::showEvent(QShowEvent *event)
+{
 	connect(&frameTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
+}
+
+void GlContextWidget::hideEvent(QHideEvent *event)
+{
+	disconnect(&frameTimer);
 }
 
 double movementVelocity = 5;

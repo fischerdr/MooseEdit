@@ -265,10 +265,11 @@ void zGrannyCreateMesh( ZGrannyMesh *mesh, granny_mesh *grannyMesh, std::vector<
 		  deformations of the tangent space if I was doing bump
 		  mapping. */
 		
-		mesh->grannyDeformer = GrannyNewMeshDeformer(
-					GrannyGetMeshVertexType(grannyMesh), GrannyPWNGBT343332VertexType,
-					GrannyDeformPosition, GrannyAllowUncopiedTail
-					);
+//		mesh->grannyDeformer = GrannyNewMeshDeformer(
+//					GrannyGetMeshVertexType(grannyMesh), GrannyPNT332VertexType,
+//					GrannyDeformPositionNormal, GrannyAllowUncopiedTail
+//					);
+		mesh->grannyDeformer = 0;
 		
 		if( !mesh->grannyDeformer ) {
 			//assert(0);
@@ -355,7 +356,7 @@ void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model, std::vector
 				}
 			}
 			if (mesh.grannyDeformer) {
-				granny_pwngbt343332_vertex *vertices = new granny_pwngbt343332_vertex[vertexCount];
+				granny_pnt332_vertex *vertices = new granny_pnt332_vertex[vertexCount];
 				GrannyDeformVertices(
 							mesh.grannyDeformer, 
 							toBoneIndices, (float *)compositeBuffer,
@@ -363,8 +364,13 @@ void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model, std::vector
 							GrannyGetMeshVertices( mesh.grannyMesh ),
 							vertices
 							);
-				
-				zGrannyRenderMesh( &mesh, vertices, textures, rgbData, shaderProgram );
+				if (shown2 == false) {\
+					shown2 = true;
+					for (int i=0; i<20; ++i) {
+						std::cout<<"pos = "<<vertices->Position[0]<<' '<<vertices->Position[1]<<' '<<vertices->Position[2]<<'\n';
+					}
+				}
+				zGrannyRenderMesh2( &mesh, vertices, textures, rgbData, shaderProgram );
 				delete[] vertices;
 			} else {
 				//granny_pwngbt343332_vertex *vertices2 = (granny_pwngbt343332_vertex *)GrannyGetMeshVertices( mesh.grannyMesh );
@@ -384,7 +390,63 @@ void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model, std::vector
 	glDisableClientState(GL_COLOR_ARRAY);
 }
 
-bool shown = false;
+void zGrannyRenderMesh2( ZGrannyMesh *mesh, granny_pnt332_vertex *vertices, std::vector<GLint> &textures, VertexRGB *rgbData, GlShaderProgram *shaderProgram) {
+	glVertexPointer( 3, GL_FLOAT, sizeof(*vertices), vertices->Position );
+	glNormalPointer( GL_FLOAT, sizeof(*vertices), vertices->Normal );
+	glTexCoordPointer( 2, GL_FLOAT, sizeof(*vertices), vertices->UV );
+	if (rgbData != 0) {
+		glColorPointer( 4, GL_INT, sizeof(*rgbData), rgbData );
+	}
+	
+	if (shaderProgram != 0) {
+		shaderProgram->set3dVectorAttribute("vertex", sizeof(*vertices), vertices->Position);
+		shaderProgram->set3dVectorAttribute("normal", sizeof(*vertices), vertices->Normal);
+		shaderProgram->set2dVectorAttribute("uv_coord", sizeof(*vertices), vertices->UV);
+		
+		GLfloat modelViewMatrix[16];
+		glGetFloatv(GL_MODELVIEW_MATRIX, modelViewMatrix);
+		shaderProgram->setUniformMatrix4x4("_mv", modelViewMatrix);
+		GLfloat projectionMatrix[16];
+		glGetFloatv(GL_PROJECTION_MATRIX, projectionMatrix);
+		shaderProgram->setUniformMatrix4x4("_proj", projectionMatrix);
+		shaderProgram->setUniformInt("color_texture", 0);
+		shaderProgram->setUniformInt("normal_texture", 1);
+		shaderProgram->setUniformInt("mask_texture", 2);
+	}
+	
+	/* Now both the indices and vertices are loaded, so I can
+	  render.	I grab the material groups and spin over them,
+	  changing to the appropriate ZGrannyTexture and rendering each batch.
+	  A more savvy rendering loop might have instead built a
+	  sorted list of material groups to minimize ZGrannyTexture changes,
+	  etc., but this is the most basic way to render. */
+	int indexSize = GrannyGetMeshBytesPerIndex( mesh->grannyMesh );
+	unsigned char *Indices = (unsigned char *)GrannyGetMeshIndices( mesh->grannyMesh );
+	int groupCount = GrannyGetMeshTriangleGroupCount( mesh->grannyMesh );
+	granny_tri_material_group *group = GrannyGetMeshTriangleGroups( mesh->grannyMesh );
+	while( groupCount-- ) {
+		if( group->MaterialIndex < mesh->textureCount ) {
+			ZGrannyTexture *texture = mesh->textureReferences[group->MaterialIndex];
+			if( texture ) {
+				glBindTexture( GL_TEXTURE_2D, texture->textureHandle );
+			}
+		}
+		for (int i=0; i<textures.size(); ++i) {
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(GL_TEXTURE_2D, textures[i]);
+		}
+		
+		glDrawElements(
+					GL_TRIANGLES,
+					group->TriCount*3,
+					(indexSize == 4) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT,
+					&Indices[group->TriFirst*3*indexSize]
+				);
+		
+		++group;
+	}
+}
+
 void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices, std::vector<GLint> &textures, VertexRGB *rgbData, GlShaderProgram *shaderProgram) {
 	glVertexPointer( 3, GL_FLOAT, sizeof(*vertices), vertices->Position );
 	glNormalPointer( GL_FLOAT, sizeof(*vertices), vertices->Normal );
