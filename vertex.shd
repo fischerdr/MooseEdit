@@ -1,0 +1,15 @@
+#version 110
+
+attribute vec3 vertex;
+attribute vec3 normal;
+attribute vec2 uv_coord;
+
+uniform mat4 _mv;
+uniform mat4 _proj;
+
+varying vec2 uv;
+
+void main(void) {
+	gl_Position = _proj * _mv * vec4(vertex, 1.0);
+	uv = uv_coord;
+}

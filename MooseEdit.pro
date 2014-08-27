@@ -11,7 +11,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = MooseEdit
 TEMPLATE = app
 
-INCLUDEPATH = C:\boost\boost_1_55_0
+INCLUDEPATH += C:\boost\boost_1_55_0
+INCLUDEPATH += C:\glew-1.11.0\include\
 
 LIBS += "-LC:\boost\boost_1_55_0\stage\lib"
 LIBS += "-LC:\boost\stage\lib" -lboost_filesystem-mgw48-mt-1_55
@@ -61,7 +62,10 @@ SOURCES += main.cpp\
     nv_dds.cpp \
     LsxReader.cpp \
     LsbObject.cpp \
-    LsxWriter.cpp
+    LsxWriter.cpp \
+    GlShader.cpp \
+    GlShaderProgram.cpp \
+    glew.c
 
 HEADERS  += mainwindow.h \
     LsbReader.h \
@@ -103,7 +107,9 @@ HEADERS  += mainwindow.h \
     dds.h \
     nv_dds.h \
     LsxReader.h \
-    LsxWriter.h
+    LsxWriter.h \
+    GlShader.h \
+    GlShaderProgram.h
 
 FORMS    += mainwindow.ui \
     charactertab.ui \

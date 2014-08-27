@@ -1,9 +1,10 @@
 #ifndef GLCONTEXTWIDGET_H
 #define GLCONTEXTWIDGET_H
 
-#include <QGLWidget>
 #include <QTimer>
 #include "zgranny.h"
+#include "GlShaderProgram.h"
+#include <QGLWidget>
 
 #include <QMessageBox>
 #include <QKeyEvent>
@@ -20,8 +21,8 @@ public:
 	
 	//ZGrannyScene *getGrannyScene() const;
 	//void setGrannyScene(ZGrannyScene *value);
-	void addGrannyScene(ZGrannyScene *scene, int texture);
-	void addGrannyScene(ZGrannyScene *scene, int texture, VertexRGB *vertexRgb);
+	void addGrannyScene(ZGrannyScene *scene, std::vector<GLint> &textures);
+	void addGrannyScene(ZGrannyScene *scene, std::vector<GLint> &textures, VertexRGB *vertexRgb, GlShaderProgram *shaderProgram);
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);
 	void mousePressEvent(QMouseEvent *event);
@@ -75,9 +76,10 @@ private:
 	const long framesPerSecond = 60;
 	QTimer frameTimer;
 	std::vector<ZGrannyScene *> grannyScenes;
-	std::vector<int> textureIds;
+	std::vector<std::vector<GLint> > textureIds;
 	char x[50];
 	std::vector<VertexRGB *> vertexRGBs;
+	std::vector<GlShaderProgram *> shaderPrograms;
 	//ZGrannyScene *grannyScene = 0;
 	double posX;
 	double posY;

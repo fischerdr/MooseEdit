@@ -49,21 +49,15 @@ void GlContextWidget::initializeGL() {
    }
    LOG("Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 #endif
-   //dglw::initialize();
-
    glDisable(GL_BLEND);        // Turn Blending Off
    glEnable(GL_DEPTH_TEST);    // Turn Depth Testing On
-   
-   //demo_scene_ = shared_ptr<DemoScene>(new DemoScene());
-   //timer_.start();
-   
+
    double secondsPerFrame = 1.0/framesPerSecond;
    unsigned long msPerFrame = 1000 * secondsPerFrame;
    frameTimer.start(msPerFrame);
 }
 
 void GlContextWidget::resizeGL(int w, int h) {
-   //demo_scene_->setSize(w, h);
 	glViewport(0, 0, w, h);
     
     if (h == 0) h = 1;
@@ -75,7 +69,7 @@ void GlContextWidget::resizeGL(int w, int h) {
     glLoadIdentity();
 	updateGL();
 }
-
+#include <iostream>
 void GlContextWidget::paintGL() {
 	if (leftDown) {
 		posX -= movementVelocity / framesPerSecond;
@@ -116,14 +110,13 @@ void GlContextWidget::paintGL() {
 	
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
    glScalef(-1.0f, 1.0f, 1.0f);
-   //if (grannyScene != 0) {
+   
    if (grannyScenes.size() > 0) {
 	   for (int i=0; i<grannyScenes.size(); ++i) {
-		   glBindTexture( GL_TEXTURE_2D, textureIds[i] );
-		   zGrannyRenderScene(grannyScenes[i], vertexRGBs[i]);
+		   zGrannyRenderScene(grannyScenes[i], textureIds[i], vertexRGBs[i], shaderPrograms[i]);
 	   }
    }
-
+   
    polarToCartesian();
    glLoadIdentity();
    gluLookAt(posX + addX, posY + addY, posZ + addZ,
@@ -131,16 +124,17 @@ void GlContextWidget::paintGL() {
 			 0, 1, 0);
 }
 
-void GlContextWidget::addGrannyScene(ZGrannyScene *scene, int texture)
+void GlContextWidget::addGrannyScene(ZGrannyScene *scene, std::vector<GLint> &textures)
 {
-	addGrannyScene(scene, texture, 0);
+	addGrannyScene(scene, textures, 0, 0);
 }
 
-void GlContextWidget::addGrannyScene(ZGrannyScene *scene, int texture, VertexRGB *vertexRgb)
+void GlContextWidget::addGrannyScene(ZGrannyScene *scene, std::vector<GLint > &textures, VertexRGB *vertexRgb, GlShaderProgram *shaderProgram)
 {
 	grannyScenes.push_back(scene);
-	textureIds.push_back(texture);
+	textureIds.push_back(textures);
 	vertexRGBs.push_back(vertexRgb);
+	shaderPrograms.push_back(shaderProgram);
 }
 
 void GlContextWidget::keyPressEvent(QKeyEvent* e) {

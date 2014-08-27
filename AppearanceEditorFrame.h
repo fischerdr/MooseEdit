@@ -27,6 +27,8 @@ public:
 	}
 	
 private:
+	static bool didInitGlew;
+	GlShaderProgram *shaderProgram = 0;
 	VertexRGB *skinColor = 0;
 	Ui::AppearanceEditorFrame *ui;
 	void setup();

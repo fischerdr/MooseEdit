@@ -171,8 +171,8 @@
 #include <OpenGL/glext.h>
 #define GL_TEXTURE_RECTANGLE_NV GL_TEXTURE_RECTANGLE_EXT
 #else
-#include <GL/gl.h>
-#include <GL/glext.h>
+#define GLEW_STATIC
+#include <GL/glew.h>
 #endif
 
 #include <stdio.h>

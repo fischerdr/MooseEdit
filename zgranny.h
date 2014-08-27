@@ -2,10 +2,11 @@
 #ifndef ZGRANNY_H
 #define ZGRANNY_H
 
+#define GLEW_STATIC
+#include <GL/glew.h>
 #include "granny/granny.h"
+#include "GlShaderProgram.h"
 
-// This is a simple interface into Granny based on the sample
-// code provided by Casey.
 
 void loadTexture(const GLubyte *pixelBuffer, int bufferSize, int width, int height, GLuint format);
 
@@ -84,16 +85,16 @@ struct ZGrannyScene {
 ZGrannyTexture *zGrannyFindTexture( ZGrannyScene *scene, granny_material *grannyMaterial );
 void zGrannyCreateTexture( ZGrannyTexture *texture, granny_texture *grannyTexture );
 
-void zGrannyCreateModel( ZGrannyModel *model, ZGrannyScene *inScene, granny_model *grannyModel );
-void zGrannyCreateMesh( ZGrannyMesh *mesh, granny_mesh *grannyMesh, granny_model_instance *inModel, ZGrannyScene *inScene );
+void zGrannyCreateModel(ZGrannyModel *model, ZGrannyScene *inScene, granny_model *grannyModel , std::vector<GLint> &textures);
+void zGrannyCreateMesh(ZGrannyMesh *mesh, granny_mesh *grannyMesh, std::vector<GLint> &textures, granny_model_instance *inModel, ZGrannyScene *inScene );
 
-void zGrannyRenderModel(ZGrannyScene *inScene, ZGrannyModel *model , VertexRGB *vertexRgb );
-void zGrannyRenderMesh(ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices , VertexRGB *rgbData );
+void zGrannyRenderModel(ZGrannyScene *inScene, ZGrannyModel *model, std::vector<GLint> &textures, VertexRGB *vertexRgb , GlShaderProgram *shaderProgram);
+void zGrannyRenderMesh(ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices , std::vector<GLint> &textures, VertexRGB *rgbData , GlShaderProgram *shaderProgram);
 void zGrannyRenderSkeleton( granny_skeleton *skeleton, granny_world_pose *worldPose );
 
-ZGrannyScene *zGrannyCreateScene( char *filename );
+ZGrannyScene *zGrannyCreateScene(char *filename , std::vector<GLint> &textures);
 void zGrannyShutdownScene( ZGrannyScene *scene );
 
-void zGrannyRenderScene(ZGrannyScene *scene , VertexRGB *vertexRgb);
+void zGrannyRenderScene(ZGrannyScene *scene , std::vector<GLint> &textures, VertexRGB *vertexRgb, GlShaderProgram *shaderProgram);
 
 #endif

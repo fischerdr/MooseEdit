@@ -1,0 +1,14 @@
+precision highp float;
+
+varying vec2 uv;
+
+uniform sampler2D color_texture;
+uniform sampler2D mask_texture;
+
+void main(void)
+{
+    vec4 skinColor = vec4(0.90, 0.74, 0.60, 1.0);
+	vec4 skinVec = vec4(texture2D(color_texture,uv).xyz*skinColor.xyz*texture2D(mask_texture,uv).a,1.0);
+	vec4 garmentVec = vec4(texture2D(color_texture,uv).xyz*(1.0 - texture2D(mask_texture,uv).a),1.0);
+	gl_FragColor = skinVec + garmentVec;
+}

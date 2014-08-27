@@ -13,6 +13,8 @@
 #include <OpenGL/gl.h>
 #include <OpenGL/glext.h>
 #else
+#define GLEW_STATIC
+#include <GL/glew.h>
 //#include "GL/glew.h"
 //#include <GL/gl.h>
 //#include <GL/glext.h>
