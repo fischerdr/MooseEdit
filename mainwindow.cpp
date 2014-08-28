@@ -44,23 +44,24 @@ std::vector<std::wstring> getSaveGameList(std::wstring fullPath, std::wstring pr
 	fullPath += L"SaveGames";
 	wchar_t cwd[MAX_PATH + 1];
 	_wgetcwd(cwd, MAX_PATH + 1);
-	_wchdir(fullPath.c_str());
-	boost::filesystem::path dirPath(fullPath);
-	boost::filesystem::directory_iterator it(dirPath);
-	boost::filesystem::directory_iterator end;
-	for (it; it != end; ++it) {
-		boost::filesystem::path folder = (*it).path();
-		if (boost::filesystem::is_directory(folder)) {
-		std::wstring entName = folder.filename().wstring();
-			if (entName != L"." && entName != L"..") {
-				std::wstring saveText = profileName;
-				saveText += L"/";
-				saveText += entName;
-				saveList.push_back(saveText);
+	if (_wchdir(fullPath.c_str()) == 0) {
+		boost::filesystem::path dirPath(fullPath);
+		boost::filesystem::directory_iterator it(dirPath);
+		boost::filesystem::directory_iterator end;
+		for (it; it != end; ++it) {
+			boost::filesystem::path folder = (*it).path();
+			if (boost::filesystem::is_directory(folder)) {
+			std::wstring entName = folder.filename().wstring();
+				if (entName != L"." && entName != L"..") {
+					std::wstring saveText = profileName;
+					saveText += L"/";
+					saveText += entName;
+					saveList.push_back(saveText);
+				}
 			}
 		}
+		_wchdir(cwd);
 	}
-	_wchdir(cwd);
 	return saveList;
 }
 
