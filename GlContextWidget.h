@@ -22,7 +22,8 @@ public:
 	//ZGrannyScene *getGrannyScene() const;
 	//void setGrannyScene(ZGrannyScene *value);
 	void addGrannyScene(ZGrannyScene *scene, std::vector<GLint> &textures);
-	void addGrannyScene(ZGrannyScene *scene, std::vector<GLint> &textures, VertexRGB *vertexRgb, GlShaderProgram *shaderProgram);
+	void addGrannyScene(ZGrannyScene *scene, std::vector<GLint> &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram);
+	void removeGrannyScene(ZGrannyScene *scene);
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);
 	void mousePressEvent(QMouseEvent *event);
@@ -80,6 +81,7 @@ private:
 	std::vector<ZGrannyScene *> grannyScenes;
 	std::vector<std::vector<GLint> > textureIds;
 	std::vector<VertexRGB *> vertexRGBs;
+	std::vector<VertexRGB *> vertexRGB2s;
 	std::vector<GlShaderProgram *> shaderPrograms;
 	//ZGrannyScene *grannyScene = 0;
 	double posX;

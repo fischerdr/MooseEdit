@@ -9,6 +9,7 @@
 #include "GlShaderProgram.h"
 
 #include <boost/filesystem/fstream.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <QTextStream>
 #include <QFile>
@@ -25,23 +26,26 @@
 
 bool AppearanceEditorFrame::didInitGlew = false;
 
-AppearanceEditorFrame::AppearanceEditorFrame(QWidget *parent) :
-	QFrame(parent),
+AppearanceEditorFrame::AppearanceEditorFrame(std::wstring gameDataPath, QWidget *parent) :
+	QFrame(parent), gameDataPath(gameDataPath),
 	ui(new Ui::AppearanceEditorFrame)
 {
+	mainPak.loadFile(gameDataPath + L"Main.pak");
 	ui->setupUi(this);
 }
 
 void AppearanceEditorFrame::generateFields() {
-	boost::filesystem::ifstream fin("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Mods\\Main\\CharacterCreation\\properties.lsx", 
-									std::ios_base::binary);
-	if (fin) {
+	unsigned long fSize;
+	std::string extractPath = "Mods/Main/CharacterCreation/properties.lsx";
+	char *fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", extractPath, gameDataPath, false, &fSize);
+	std::stringstream fileReader;
+	fileReader.rdbuf()->pubsetbuf(fileBytes, fSize);
+	if (fileBytes != 0) {
 		LsxReader reader;
-		std::vector<LsbObject *> objects = reader.loadFile(fin);
+		std::vector<LsbObject *> objects = reader.loadFile(fileReader);
 		if (objects.size() == 0) {
 			MessageBoxA(0, "Failed to parse CharacterCreation properties!", 0, 0);
 		}
-		fin.close();
 		{
 			LsbObject *aiPersonalitiesObject = LsbObject::lookupByUniquePath(objects, "CharacterCreationProperties/root/AiPersonalities");
 			std::vector<LsbObject *> aiPersonalityObjects = LsbObject::lookupAllEntitiesWithName(aiPersonalitiesObject, "AiPersonality");
@@ -80,16 +84,52 @@ void AppearanceEditorFrame::generateFields() {
 			ss<<"Head "<<(i + 1);
 			heads.push_back({ss.str(), "", ""});
 		}
+		heads[0].maleValue = "PL_M_Head_A";
+		heads[1].maleValue = "PL_M_Head_B";
+		heads[2].maleValue = "PL_M_Head_C";
+		heads[3].maleValue = "PL_M_Head_D";
+		heads[4].maleValue = "PL_M_Head_E";
+		heads[5].maleValue = "PL_M_Head_F";
+		heads[6].maleValue = "PL_M_Head_I";
+		heads[7].maleValue = "PL_M_Head_N";
+		heads[8].maleValue = "PL_M_Head_O";
+		heads[9].maleValue = "PL_M_Head_A";
+		heads[10].maleValue = "PL_M_Head_A";
+		heads[11].maleValue = "PL_M_Head_A";
+		heads[12].maleValue = "PL_M_Head_A";
+		heads[13].maleValue = "PL_M_Head_A";
+		heads[14].maleValue = "PL_M_Head_A";
+		
 		for (int i=0; i<NUM_HAIRS; ++i) {
 			std::ostringstream ss;
 			ss<<"Hair "<<(i + 1);
 			hairs.push_back({ss.str(), "", ""});
 		}
+		hairs[0].maleValue = "PL_M_Hair_A";
+		hairs[1].maleValue = "PL_M_Hair_H";
+		hairs[2].maleValue = "PL_M_Hair_J";
+		hairs[3].maleValue = "PL_M_Hair_O";
+		hairs[4].maleValue = "PL_M_Hair_F";
+		hairs[5].maleValue = "PL_M_Hair_G";
+		hairs[6].maleValue = "PL_M_Hair_C";
+		hairs[7].maleValue = "PL_M_Hair_B";
+		hairs[8].maleValue = "PL_M_Hair_L";
+		hairs[9].maleValue = "PL_M_Hair_M";
+		hairs[10].maleValue = "PL_M_Hair_N";
+		hairs[11].maleValue = "PL_M_Hair_D";
+		hairs[12].maleValue = "PL_M_Hair_K";
+		hairs[13].maleValue = "PL_M_Hair_I";
+		hairs[14].maleValue = "PL_M_Hair_E";		
+		
 		for (int i=0; i<NUM_UNDERWEARS; ++i) {
 			std::ostringstream ss;
 			ss<<"Underwear "<<(i + 1);
 			underwears.push_back({ss.str(), "", ""});
 		}
+		underwears[0].maleValue = "PL_M_Body_A";
+		underwears[1].maleValue = "PL_M_Body_B";
+		underwears[2].maleValue = "PL_M_Body_C";
+		
 		{
 			LsbObject *hairColorsObject = LsbObject::lookupByUniquePath(objects, "CharacterCreationProperties/root/HairColors");
 			std::vector<LsbObject *> colorDescObjects = LsbObject::lookupAllEntitiesWithName(hairColorsObject, "ColorDesc");
@@ -105,6 +145,9 @@ void AppearanceEditorFrame::generateFields() {
 	} else {
 		MessageBoxA(0, "Couldn't read CharacterCreation properties file!", 0, 0);
 	}
+	if (fileBytes != 0) {
+		delete[] fileBytes;
+	}
 	
 	changeFieldValue("aiPersonalityLabel", aiPersonalityIdx, aiPersonalities);
 	changeFieldValue("voiceLabel", voiceIdx, voices);
@@ -116,6 +159,8 @@ void AppearanceEditorFrame::generateFields() {
 	
 	updateToCurrentSkinColor();
 	updateToCurrentHairColor();
+	updateToCurrentHair();
+	updateToCurrentHead();
 }
 
 void AppearanceEditorFrame::updateFieldText(QLabel *label, std::vector<fieldValue_t> &updateVector, int index) {
@@ -131,12 +176,54 @@ void AppearanceEditorFrame::setup() {
 			
 	//cleanup();
 	
+	isMale = true;
+	
 	if (skinColor == 0) {
 		skinColor = new VertexRGB({230, 188, 153, 255});
 	}
 	
 	if (hairColor == 0) {
 		hairColor = new VertexRGB({230, 188, 153, 255});
+	}
+	
+	QString mText;
+	std::vector<GlShader> allShaders;
+	
+	QFile vertexShader(":/vertex.shd");
+	if(!vertexShader.open(QFile::ReadOnly | QFile::Text)){
+		MessageBoxA(0, "failed to open vertex.shd", 0, 0);
+	}
+	{
+		QTextStream in(&vertexShader);
+		mText = in.readAll();
+		std::stringstream ss1(mText.toStdString());
+		vertexShader.close();
+		allShaders.push_back(GlShader(GL_VERTEX_SHADER, ss1));
+		GlShader& shader = allShaders.back();
+		if (!shader.compile()) {
+			MessageBoxA(0, shader.getLastError().c_str(), 0, 0);
+		}
+	}
+	
+	QFile fragmentShader(":/fragment.shd");
+	if(!fragmentShader.open(QFile::ReadOnly | QFile::Text)){
+		MessageBoxA(0, "failed to open fragment.shd", 0, 0);
+	}
+	{
+		QTextStream in(&fragmentShader);
+		mText = in.readAll();
+		std::stringstream ss1(mText.toStdString());
+		fragmentShader.close();
+		allShaders.push_back(GlShader(GL_FRAGMENT_SHADER, ss1));
+		GlShader& shader = allShaders.back();
+		if (!shader.compile()) {
+			MessageBoxA(0, shader.getLastError().c_str(), 0, 0);
+		}
+	}
+	
+	shaderProgram = new GlShaderProgram(allShaders);
+	if (!shaderProgram->link()) {
+		MessageBoxA(0, shaderProgram->getLastError().c_str(), 0, 0);
 	}
 	
 	generateFields();
@@ -226,46 +313,6 @@ void AppearanceEditorFrame::setup() {
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texobj4);
 	image4.upload_texture2D();
-
-	QString mText;
-	std::vector<GlShader> allShaders;
-	
-	QFile vertexShader(":/vertex.shd");
-	if(!vertexShader.open(QFile::ReadOnly | QFile::Text)){
-		MessageBoxA(0, "failed to open vertex.shd", 0, 0);
-	}
-	{
-		QTextStream in(&vertexShader);
-		mText = in.readAll();
-		std::stringstream ss1(mText.toStdString());
-		vertexShader.close();
-		allShaders.push_back(GlShader(GL_VERTEX_SHADER, ss1));
-		GlShader& shader = allShaders.back();
-		if (!shader.compile()) {
-			MessageBoxA(0, shader.getLastError().c_str(), 0, 0);
-		}
-	}
-	
-	QFile fragmentShader(":/fragment.shd");
-	if(!fragmentShader.open(QFile::ReadOnly | QFile::Text)){
-		MessageBoxA(0, "failed to open fragment.shd", 0, 0);
-	}
-	{
-		QTextStream in(&fragmentShader);
-		mText = in.readAll();
-		std::stringstream ss1(mText.toStdString());
-		fragmentShader.close();
-		allShaders.push_back(GlShader(GL_FRAGMENT_SHADER, ss1));
-		GlShader& shader = allShaders.back();
-		if (!shader.compile()) {
-			MessageBoxA(0, shader.getLastError().c_str(), 0, 0);
-		}
-	}
-	
-	shaderProgram = new GlShaderProgram(allShaders);
-	if (!shaderProgram->link()) {
-		MessageBoxA(0, shaderProgram->getLastError().c_str(), 0, 0);
-	}
 	
 	std::vector<GLint> textures;
 	
@@ -275,26 +322,26 @@ void AppearanceEditorFrame::setup() {
 	ZGrannyScene *grannyScene = 
 			zGrannyCreateScene("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Characters\\Players\\PL_M_Body_A.GR2",
 							   textures);
-	glContext->addGrannyScene(grannyScene, textures, skinColor, shaderProgram);
+	glContext->addGrannyScene(grannyScene, textures, skinColor, 0, shaderProgram);
 	textures.clear();
 	
-	textures.push_back(texobj2);
-	textures.push_back(texobj7);
-	textures.push_back(texobj8);
-	ZGrannyScene *grannyScene2 = 
-			zGrannyCreateScene("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Characters\\Players\\PL_M_Head_A.GR2",
-							   textures);
-	glContext->addGrannyScene(grannyScene2, textures, skinColor, shaderProgram);
-	textures.clear();
+//	textures.push_back(texobj2);
+//	textures.push_back(texobj7);
+//	textures.push_back(texobj8);
+//	ZGrannyScene *grannyScene2 = 
+//			zGrannyCreateScene("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Characters\\Players\\PL_M_Head_A.GR2",
+//							   textures);
+//	glContext->addGrannyScene(grannyScene2, textures, skinColor, 0, shaderProgram);
+//	textures.clear();
 	
-	textures.push_back(texobj3);
-	textures.push_back(texobj9);
-	textures.push_back(texobj10);
-	ZGrannyScene *grannyScene3 = 
-			zGrannyCreateScene("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Characters\\Players\\PL_M_Hair_A.GR2",
-							   textures);
-	glContext->addGrannyScene(grannyScene3, textures, skinColor, shaderProgram);
-	textures.clear();
+//	textures.push_back(texobj3);
+//	textures.push_back(texobj9);
+//	textures.push_back(texobj10);
+//	currentHair = 
+//			zGrannyCreateScene("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Characters\\Players\\PL_M_Hair_A.GR2",
+//							   textures);
+//	glContext->addGrannyScene(currentHair, textures, skinColor, shaderProgram);
+//	textures.clear();
 	
 	textures.push_back(texobj4);
 	ZGrannyScene *grannyScene4 = 
@@ -400,21 +447,95 @@ void AppearanceEditorFrame::on_skinColorNext_clicked()
 void AppearanceEditorFrame::on_headPrev_clicked()
 {
     changeFieldValue("headLabel", headIdx, heads, -1);
+	updateToCurrentHead();
 }
 
 void AppearanceEditorFrame::on_headNext_clicked()
 {
     changeFieldValue("headLabel", headIdx, heads, 1);
+	updateToCurrentHead();
 }
 
 void AppearanceEditorFrame::on_hairPrev_clicked()
 {
     changeFieldValue("hairLabel", hairIdx, hairs, -1);
+	updateToCurrentHair();
 }
 
 void AppearanceEditorFrame::on_hairNext_clicked()
 {
     changeFieldValue("hairLabel", hairIdx, hairs, 1);
+	updateToCurrentHair();
+}
+
+void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::vector<fieldValue_t> &values, int index, VertexRGB *foreColor, VertexRGB *backColor) {
+	GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
+	std::string modelFile = values[index].maleValue;//extract from file
+	std::vector<GLint> textures;
+	
+	nv_dds::CDDSImage image3;
+	GLuint texobj3;
+	image3.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + modelFile + "_DM.dds", false);
+	glGenTextures(1, &texobj3);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, texobj3);
+	image3.upload_texture2D();
+	
+	nv_dds::CDDSImage image9;
+	GLuint texobj9;
+	std::string nmDdsPath = "C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + modelFile + "_NM.dds";
+	boost::filesystem::path nmPath(nmDdsPath);
+	if (boost::filesystem::exists(nmPath)) {
+		image9.load(nmDdsPath, false);
+		glGenTextures(1, &texobj9);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, texobj9);
+		image9.upload_texture2D();
+	}
+	
+	nv_dds::CDDSImage image10;
+	GLuint texobj10;
+	std::string smDdsPath = "C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + modelFile + "_SM.dds";
+	boost::filesystem::path smPath(smDdsPath);
+	if (boost::filesystem::exists(smPath)) {
+		image10.load(smDdsPath, false);
+	} else {
+		image10.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + modelFile + "_MSK.dds", false);
+	}
+	glGenTextures(1, &texobj10);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, texobj10);
+	image10.upload_texture2D();
+	
+	if (current != 0) {
+		glContext->removeGrannyScene(current);
+		delete current; //call granny free function?
+	}
+	textures.push_back(texobj3);
+	textures.push_back(texobj9);
+	textures.push_back(texobj10);
+	unsigned long fSize;
+	std::string extractPath = "Public/Main/Assets/Characters/Players/" + modelFile + ".GR2";
+	char *fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", extractPath, gameDataPath, false, &fSize);
+	if (fileBytes == 0) {
+		MessageBoxA(0, "Failed to load model from game data", 0, 0);
+	}
+	current = 
+			zGrannyCreateSceneFromMemory(fileBytes, fSize,
+							   textures);
+	if (fileBytes != 0) {
+		delete[] fileBytes;
+	}
+	glContext->addGrannyScene(current, textures, foreColor, backColor, shaderProgram);
+	textures.clear();
+}
+
+void AppearanceEditorFrame::updateToCurrentHair() {
+	updateToCurrentModel(currentHair, hairs, hairIdx, 0, hairColor);
+}
+
+void AppearanceEditorFrame::updateToCurrentHead() {
+	updateToCurrentModel(currentHead, heads, headIdx, skinColor, hairColor);
 }
 
 void AppearanceEditorFrame::on_hairColorPrev_clicked()

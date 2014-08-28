@@ -12,7 +12,7 @@
 #include "ExpandableGroupBox.h"
 #include "TraitWidget.h"
 
-characterTab::characterTab(std::vector<TAG_LSB *> *tagList, LsbObject *itemsObject, CharacterLoader *characterLoader, QTabWidget *tabWidget, QWidget *parent) :
+characterTab::characterTab(std::vector<TAG_LSB *> *tagList, std::wstring gameDataPath, LsbObject *itemsObject, CharacterLoader *characterLoader, QTabWidget *tabWidget, QWidget *parent) :
 	QWidget(parent), tagList(tagList), itemsObject(itemsObject), tabWidget(tabWidget), statToTemplateMap(statToTemplateMap), characterLoader(characterLoader),
 	ui(new Ui::characterTab)
 {
@@ -26,7 +26,7 @@ characterTab::characterTab(std::vector<TAG_LSB *> *tagList, LsbObject *itemsObje
 	inventoryScrollArea->setContextMenuPolicy(Qt::CustomContextMenu);
 	talentList->setContextMenuPolicy(Qt::CustomContextMenu);
 	
-	appearanceEditorFrame = new AppearanceEditorFrame();
+	appearanceEditorFrame = new AppearanceEditorFrame(gameDataPath);
 }
 
 long characterTab::levelFromExperience(long experience) {

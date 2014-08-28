@@ -128,7 +128,7 @@ void GlContextWidget::paintGL() {
    
    if (grannyScenes.size() > 0) {
 	   for (int i=0; i<grannyScenes.size(); ++i) {
-		   zGrannyRenderScene(grannyScenes[i], textureIds[i], vertexRGBs[i], shaderPrograms[i]);
+		   zGrannyRenderScene(grannyScenes[i], textureIds[i], vertexRGBs[i], vertexRGB2s[i], shaderPrograms[i]);
 	   }
    }
    
@@ -141,15 +141,29 @@ void GlContextWidget::paintGL() {
 
 void GlContextWidget::addGrannyScene(ZGrannyScene *scene, std::vector<GLint> &textures)
 {
-	addGrannyScene(scene, textures, 0, 0);
+	addGrannyScene(scene, textures, 0, 0, 0);
 }
 
-void GlContextWidget::addGrannyScene(ZGrannyScene *scene, std::vector<GLint > &textures, VertexRGB *vertexRgb, GlShaderProgram *shaderProgram)
+void GlContextWidget::addGrannyScene(ZGrannyScene *scene, std::vector<GLint > &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram)
 {
 	grannyScenes.push_back(scene);
 	textureIds.push_back(textures);
 	vertexRGBs.push_back(vertexRgb);
+	vertexRGB2s.push_back(vertexRgb2);
 	shaderPrograms.push_back(shaderProgram);
+}
+
+void GlContextWidget::removeGrannyScene(ZGrannyScene *scene) {
+	for (int i=0; i<grannyScenes.size(); ++i) {
+		if (grannyScenes[i] == scene) {
+			grannyScenes.erase(grannyScenes.begin() + i);
+			textureIds.erase(textureIds.begin() + i);
+			vertexRGBs.erase(vertexRGBs.begin() + i);
+			vertexRGB2s.erase(vertexRGB2s.begin() + i);
+			shaderPrograms.erase(shaderPrograms.begin() + i);
+			break;
+		}
+	}
 }
 
 void GlContextWidget::keyPressEvent(QKeyEvent* e) {
@@ -263,7 +277,9 @@ void GlContextWidget::mouseMoveEvent(QMouseEvent *event)
 			double angleX = deltaX * 0.5;
 			double angleY = deltaY * 0.5;
 			addAngle(&azimuth, angleX, false);
-			addAngle(&inclination, angleY, true);
+			if (!(inclination + angleY >= 360.0) && !(inclination + angleY <= 180.0)) {
+				addAngle(&inclination, angleY, true);
+			}
 		} else {
 			double multiplier = 2;
 			double resultY = deltaY * 0.001 * multiplier;

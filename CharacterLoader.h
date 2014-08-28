@@ -22,7 +22,7 @@ public:
 		return characters;
 	}
 	CharacterGroup characters;
-	void load(std::vector<LsbObject *> &globals, std::vector<TAG_LSB *> *globalTagList, QWidget *mainWindow);
+	void load(std::vector<LsbObject *> &globals, std::wstring gameDataPath, std::vector<TAG_LSB *> *globalTagList, QWidget *mainWindow);
 	std::vector<std::vector<GameItem *> > &getEquipmentSets();
 	void setEquipmentSets(const std::vector<std::vector<GameItem *> > &value);
 };

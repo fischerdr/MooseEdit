@@ -20,7 +20,7 @@ class characterTab : public QWidget, ItemEditCallback, ItemEditorCloseCallback
 	Q_OBJECT
 	
 public:
-	explicit characterTab(std::vector<TAG_LSB *> *tagList, LsbObject *itemsObject, CharacterLoader *characterLoader, QTabWidget *tabWidget = 0, QWidget *parent = 0);
+	explicit characterTab(std::vector<TAG_LSB *> *tagList, std::wstring gameDataPath, LsbObject *itemsObject, CharacterLoader *characterLoader, QTabWidget *tabWidget = 0, QWidget *parent = 0);
 	~characterTab();
 	void refreshIconSizes();
 	void setCharacter(GameCharacter *character);

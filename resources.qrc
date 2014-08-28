@@ -46,7 +46,7 @@
         <file>appearance-button-male-activated.png</file>
         <file>appearance-portrait.png</file>
         <file>vertex.shd</file>
-        <file>fragment.shd</file>
         <file>colorPickerIcon.png</file>
+        <file>fragment.shd</file>
     </qresource>
 </RCC>

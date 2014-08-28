@@ -3,13 +3,49 @@
 attribute vec3 vertex;
 attribute vec3 normal;
 attribute vec2 uv_coord;
+attribute vec3 tangent;
+attribute vec3 binormal;
 
+uniform mat4 _m;
 uniform mat4 _mv;
 uniform mat4 _proj;
 
+varying vec3 vTangent;
+varying vec3 vBinormal;
 varying vec2 uv;
+varying vec3 n;
+
+varying vec3 Position_cameraspace;
+varying vec3 EyeDirection_cameraspace;
+varying vec3 LightDirection_cameraspace;
+
+varying vec3 LightDirection_tangentspace;
+varying vec3 EyeDirection_tangentspace;
 
 void main(void) {
+	//mat3 normalMatrix = mat3(transpose(inverse(_mv)));
 	gl_Position = _proj * _mv * vec4(vertex, 1.0);
 	uv = uv_coord;
+	//n = normalize(normalMatrix * normal);
+	
+	Position_cameraspace = (_mv * vec4(vertex,1)).xyz;
+	
+	// Vector that goes from the vertex to the camera, in camera space.
+	// In camera space, the camera is at the origin (0,0,0).
+	vec3 vertexPosition_cameraspace = ( _mv * vec4(vertex,1)).xyz;
+	EyeDirection_cameraspace = vec3(0.0,0.0,0.0) - vertexPosition_cameraspace;
+	
+	// model to camera = ModelView
+	//vec3 vertexTangent_cameraspace = mat3(_mv) * tangent;
+	//vec3 vertexBitangent_cameraspace = mat3(_mv) * binormal;
+	//vec3 vertexNormal_cameraspace = mat3(_mv) * normal;
+	
+	//mat3 TBN = transpose(mat3(
+	//	vertexTangent_cameraspace,
+	//	vertexBitangent_cameraspace,
+	//	vertexNormal_cameraspace	
+	//)); // You can use dot products instead of building this matrix and transposing it. See References for details.
+
+	//LightDirection_tangentspace = TBN * LightDirection_cameraspace;
+	//EyeDirection_tangentspace =  TBN * EyeDirection_cameraspace;
 }

@@ -88,15 +88,16 @@ void zGrannyCreateTexture( ZGrannyTexture *texture, granny_texture *grannyTextur
 void zGrannyCreateModel(ZGrannyModel *model, ZGrannyScene *inScene, granny_model *grannyModel , std::vector<GLint> &textures);
 void zGrannyCreateMesh(ZGrannyMesh *mesh, granny_mesh *grannyMesh, std::vector<GLint> &textures, granny_model_instance *inModel, ZGrannyScene *inScene );
 
-void zGrannyRenderModel(ZGrannyScene *inScene, ZGrannyModel *model, std::vector<GLint> &textures, VertexRGB *vertexRgb , GlShaderProgram *shaderProgram);
+void zGrannyRenderModel(ZGrannyScene *inScene, ZGrannyModel *model, std::vector<GLint> &textures, VertexRGB *vertexRgb , VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram);
 void zGrannyRenderMesh2( ZGrannyMesh *mesh, granny_pnt332_vertex *vertices, std::vector<GLint> &textures, VertexRGB *rgbData, GlShaderProgram *shaderProgram);
-void zGrannyRenderMesh3( ZGrannyMesh *mesh, granny_pngbt33332_vertex *vertices, std::vector<GLint> &textures, VertexRGB *rgbData, GlShaderProgram *shaderProgram);
-void zGrannyRenderMesh(ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices , std::vector<GLint> &textures, VertexRGB *vertexRgb , GlShaderProgram *shaderProgram);
+void zGrannyRenderMesh3( ZGrannyMesh *mesh, granny_pngbt33332_vertex *vertices, std::vector<GLint> &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram);
+void zGrannyRenderMesh(ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices , std::vector<GLint> &textures, VertexRGB *vertexRgb , VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram);
 void zGrannyRenderSkeleton( granny_skeleton *skeleton, granny_world_pose *worldPose );
 
-ZGrannyScene *zGrannyCreateScene(char *filename , std::vector<GLint> &textures);
+ZGrannyScene *zGrannyCreateSceneFromMemory( const char *fileBytes, unsigned long fileSize, std::vector<GLint> &textures );
+ZGrannyScene *zGrannyCreateScene(const char *filename , std::vector<GLint> &textures);
 void zGrannyShutdownScene( ZGrannyScene *scene );
 
-void zGrannyRenderScene(ZGrannyScene *scene , std::vector<GLint> &textures, VertexRGB *vertexRgb, GlShaderProgram *shaderProgram);
+void zGrannyRenderScene(ZGrannyScene *scene , std::vector<GLint> &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram);
 
 #endif

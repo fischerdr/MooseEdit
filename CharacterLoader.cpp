@@ -22,7 +22,7 @@ CharacterLoader::CharacterLoader()
 {
 }
 
-void CharacterLoader::load(std::vector<LsbObject *> &globals, std::vector<TAG_LSB *> *globalTagList, QWidget *mainWindow) {
+void CharacterLoader::load(std::vector<LsbObject *> &globals, std::wstring gameDataPath, std::vector<TAG_LSB *> *globalTagList, QWidget *mainWindow) {
 	LsbObject *characters = LsbObject::lookupByUniquePath(globals, "Characters/root/CharacterFactory/Party/Characters");
 	QTreeWidget *tree = mainWindow->findChild<QTreeWidget *>("treeWidget");
 	tree->clear();
@@ -73,7 +73,7 @@ void CharacterLoader::load(std::vector<LsbObject *> &globals, std::vector<TAG_LS
 		std::ostringstream ss;
 		ss<<"charTab"<<i;
 		LsbObject *itemsObject = LsbObject::lookupByUniquePath(globals, "Items/root/ItemFactory/Items");
-		QWidget *widget = new characterTab(globalTagList, itemsObject, this, tabWidget, mainWindow);
+		QWidget *widget = new characterTab(globalTagList, gameDataPath, itemsObject, this, tabWidget, mainWindow);
 		widget->setObjectName(QString(ss.str().c_str()));
 		
 		LsbObject *origTemplate = LsbObject::lookupByUniquePathEntity(character, "OriginalTemplate");

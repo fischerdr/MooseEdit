@@ -19,10 +19,11 @@ class GlShaderProgram
 	void _setLastError(std::string errorPrefix);
 public:
 	GlShaderProgram(std::vector<GlShader> &shaders);
-	void setUniformInt(std::string uniformName, GLint uniform);
 	bool link();
 	bool use();
 	void unset();
+	void setUniformInt(std::string uniformName, GLint uniform);
+	void setUniformFloat(std::string uniformName, GLfloat uniform);
 	void setUniformMatrix4x4(std::string uniformName, GLfloat buffer[16]);
 	void setUniformMatrix3x3(std::string uniformName, GLfloat buffer[9]);
 	void setUniformVec4(std::string uniformName, GLfloat components[4]);

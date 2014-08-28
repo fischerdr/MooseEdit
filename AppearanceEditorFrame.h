@@ -4,6 +4,7 @@
 #include <QFrame>
 #include "GlContextWidget.h"
 #include "zgranny.h"
+#include "PakReader.h"
 
 namespace Ui {
 class AppearanceEditorFrame;
@@ -20,7 +21,7 @@ class AppearanceEditorFrame : public QFrame
 	Q_OBJECT
 	
 public:
-	explicit AppearanceEditorFrame(QWidget *parent = 0);
+	explicit AppearanceEditorFrame(std::wstring gameDataPath, QWidget *parent = 0);
 	~AppearanceEditorFrame();
 	void showEvent(QShowEvent *);
 	void keyPressEvent(QKeyEvent* e) {
@@ -84,13 +85,21 @@ private:
 	int hairColorIdx = 0;
 	int underwearIdx = 0;
 	
-	
 	static bool didInitGlew;
 	GlShaderProgram *shaderProgram = 0;
 	VertexRGB *skinColor = 0;
 	VertexRGB *hairColor = 0;
 	Ui::AppearanceEditorFrame *ui;
+	bool isMale;
+	std::wstring gameDataPath;
+	PakReader mainPak;
 	
+	ZGrannyScene *currentHair = 0;
+	ZGrannyScene *currentHead = 0;
+	
+	void updateToCurrentModel(ZGrannyScene *&current, std::vector<fieldValue_t> &values, int index, VertexRGB *foreColor, VertexRGB *backColor);
+	void updateToCurrentHead();
+	void updateToCurrentHair();
 	void updateToCurrentSkinColor();
 	void updateToCurrentHairColor();
 	void setup();

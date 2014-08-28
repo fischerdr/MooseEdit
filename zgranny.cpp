@@ -241,7 +241,7 @@ void zGrannyCreateMesh( ZGrannyMesh *mesh, granny_mesh *grannyMesh, std::vector<
 			glEnableClientState( GL_NORMAL_ARRAY );
 			glEnableClientState( GL_TEXTURE_COORD_ARRAY );
 			
-			zGrannyRenderMesh3( mesh, tempVertices, textures, 0, 0 );
+			zGrannyRenderMesh3( mesh, tempVertices, textures, 0, 0, 0 );
 			
 			glDisableClientState( GL_VERTEX_ARRAY );
 			glDisableClientState( GL_NORMAL_ARRAY );
@@ -299,7 +299,7 @@ ZGrannyTexture *zGrannyFindTexture( ZGrannyScene *scene, granny_material *granny
 }
 
 bool shown2 = false;
-void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model, std::vector<GLint> &textures, VertexRGB *vertexRgb, GlShaderProgram *shaderProgram ) {
+void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model, std::vector<GLint> &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram ) {
 	/* Before I do any rendering, I enable the arrays for the vertex
 	  format I'm using.  You could do this once for the entire app,
 	  since I never render anything else, but I figured it'd me more
@@ -365,7 +365,7 @@ void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model, std::vector
 				//granny_pwngbt343332_vertex *vertices2 = (granny_pwngbt343332_vertex *)GrannyGetMeshVertices( mesh.grannyMesh );
 				granny_pwngbt343332_vertex *vertices2 = new granny_pwngbt343332_vertex[vertexCount];
 				GrannyCopyMeshVertices( mesh.grannyMesh, GrannyPWNGBT343332VertexType, vertices2 );
-				zGrannyRenderMesh( &mesh, vertices2, textures, vertexRgb, shaderProgram );
+				zGrannyRenderMesh( &mesh, vertices2, textures, vertexRgb, vertexRgb2, shaderProgram );
 				delete[] vertices2;
 			}
 		}
@@ -484,7 +484,7 @@ void zGrannyRenderMesh2( ZGrannyMesh *mesh, granny_pnt332_vertex *vertices, std:
 	}
 }
 
-void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices, std::vector<GLint> &textures, VertexRGB *vertexRgb, GlShaderProgram *shaderProgram) {
+void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices, std::vector<GLint> &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram) {
 	glVertexPointer( 3, GL_FLOAT, sizeof(*vertices), vertices->Position );
 	glNormalPointer( GL_FLOAT, sizeof(*vertices), vertices->Normal );
 	glTexCoordPointer( 2, GL_FLOAT, sizeof(*vertices), vertices->UV );
@@ -493,6 +493,8 @@ void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices,
 		shaderProgram->set3dVectorAttribute("vertex", sizeof(*vertices), vertices->Position);
 		shaderProgram->set3dVectorAttribute("normal", sizeof(*vertices), vertices->Normal);
 		shaderProgram->set2dVectorAttribute("uv_coord", sizeof(*vertices), vertices->UV);
+		shaderProgram->set3dVectorAttribute("tangent", sizeof(*vertices), vertices->Tangent);
+		shaderProgram->set3dVectorAttribute("binormal", sizeof(*vertices), vertices->Binormal);
 		
 		GLfloat modelViewMatrix[16];
 		glGetFloatv(GL_MODELVIEW_MATRIX, modelViewMatrix);
@@ -510,6 +512,20 @@ void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices,
 			vec[2] = vertexRgb->b/255.0;
 			vec[3] = vertexRgb->a/255.0;
 			shaderProgram->setUniformVec4("skinColor", vec);
+			shaderProgram->setUniformFloat("useForeColor", 1.0f);
+		} else {
+			shaderProgram->setUniformFloat("useForeColor", 0.0f);
+		}
+		if (vertexRgb2 != 0) {
+			GLfloat vec[4];
+			vec[0] = vertexRgb2->r/255.0;
+			vec[1] = vertexRgb2->g/255.0;
+			vec[2] = vertexRgb2->b/255.0;
+			vec[3] = vertexRgb2->a/255.0;
+			shaderProgram->setUniformVec4("backColor", vec);
+			shaderProgram->setUniformFloat("useBackColor", 1.0f);
+		} else {
+			shaderProgram->setUniformFloat("useBackColor", 0.0f);
 		}
 	}
 	
@@ -598,8 +614,7 @@ void zGrannyRenderSkeleton( granny_skeleton *skeleton, granny_world_pose *worldP
 // I want to be able to fetch model pointers conveniently out of the scene
 // and manipulate them bu name.
 
-
-ZGrannyScene *zGrannyCreateScene( char *filename, std::vector<GLint> &textures ) {
+ZGrannyScene *zGrannyCreateScene( const char *filename, std::vector<GLint> &textures ) {
 	ZGrannyScene *scene = new ZGrannyScene;
 	memset( scene, 0, sizeof(*scene) );
 	
@@ -645,16 +660,62 @@ ZGrannyScene *zGrannyCreateScene( char *filename, std::vector<GLint> &textures )
 	return scene;
 }
 
+ZGrannyScene *zGrannyCreateSceneFromMemory( const char *fileBytes, unsigned long fileSize, std::vector<GLint> &textures ) {
+	ZGrannyScene *scene = new ZGrannyScene;
+	memset( scene, 0, sizeof(*scene) );
+	
+	scene->loadedFile = GrannyReadEntireFileFromMemory(fileSize, (void *)fileBytes);
+	assert( scene->loadedFile );
+	
+	granny_file_info *fileInfo = GrannyGetFileInfo( scene->loadedFile );
+	//            GlobalScene.TextureCount = FileInfo->TextureCount;
+	//            GlobalScene.Textures = new texture[GlobalScene.TextureCount];
+	//            {for(int TextureIndex = 0;
+	//                 TextureIndex < GlobalScene.TextureCount;
+	//                 ++TextureIndex)
+	//            {
+	//                CreateTexture(&GlobalScene.Textures[TextureIndex],
+	//                              FileInfo->Textures[TextureIndex]);
+	//            }}            
+	
+	scene->modelCount = fileInfo->ModelCount;
+	scene->models = new ZGrannyModel[scene->modelCount];
+	memset( scene->models, 0, sizeof(ZGrannyModel)*scene->modelCount );
+	for( int i = 0; i < scene->modelCount; ++i ) {
+		// Create the model
+		granny_model *grannyModel = fileInfo->Models[i];
+		ZGrannyModel *model = &scene->models[i];
+		zGrannyCreateModel( model, scene, grannyModel, textures );
+		
+		GrannyGetModelInitialPlacement4x4( grannyModel, (float *)model->matrix );
+		
+		if( fileInfo->AnimationCount ) {
+			granny_animation *animation = fileInfo->Animations[0];
+			granny_control *control = GrannyPlayControlledAnimation( 0.0f, animation, model->grannyInstance );
+			if( control ) {
+				GrannySetControlLoopCount( control, 0 );
+				GrannyFreeControlOnceUnused( control );
+			}
+		}
+		
+	}
+	
+	// redo:
+	scene->sharedLocalPose = GrannyNewLocalPose( scene->maxBoneCount );
+	
+	return scene;
+}
+
 void zGrannyShutdownScene( ZGrannyScene *scene ) {
 	GrannyFreeFile( scene->loadedFile );
 }
 
-void zGrannyRenderScene( ZGrannyScene *scene, std::vector<GLint> &textures, VertexRGB *vertexRgb, GlShaderProgram *shaderProgram ) {
+void zGrannyRenderScene( ZGrannyScene *scene, std::vector<GLint> &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram ) {
 	if (shaderProgram != 0) {
 		shaderProgram->use();
 	}
 	for( int i = 0; i < scene->modelCount; ++i ) {
-		zGrannyRenderModel( scene, &scene->models[i], textures, vertexRgb, shaderProgram);
+		zGrannyRenderModel( scene, &scene->models[i], textures, vertexRgb, vertexRgb2, shaderProgram);
 	}
 	if (shaderProgram != 0) {
 		shaderProgram->unset();

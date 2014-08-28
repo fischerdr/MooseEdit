@@ -346,7 +346,7 @@ void MainWindow::handleLoadButton() {
 			fin.close();
 			
 			characterLoader = new CharacterLoader();
-			characterLoader->load(globals, &globalTagList, this);
+			characterLoader->load(globals, this->getGameDataLocation(), &globalTagList, this);
 			
 			//load pak resources for textures
 			std::wstring gameDataPath = this->getGameDataLocation();

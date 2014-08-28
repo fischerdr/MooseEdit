@@ -200,7 +200,8 @@ namespace nv_dds
                                        const CTexture &positiveZ, const CTexture &negativeZ);
 
             void clear();
-            bool load(std::string filename, bool flipImage = true);
+			bool load(std::string filename, bool flipImage = true);
+            //bool loadFromMemory(const char *memory, unsigned long size, bool flipImage = true);
             bool save(std::string filename, bool flipImage = true);
 
             bool upload_texture1D();
