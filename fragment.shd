@@ -1,11 +1,12 @@
-#version 110
-
 varying vec2 uv;
 
 uniform sampler2D color_texture;
 uniform sampler2D normal_texture;
 uniform sampler2D mask_texture;
 uniform vec4 skinColor;
+
+float useForeColor = 1.0;
+float useBackColor = 0.0;
 
 void normal_shader(void)
 {
@@ -27,8 +28,19 @@ void normal_shader(void)
 
 void alpha_shader(void)
 {
-	vec4 skinVec = vec4(gl_FragColor.xyz*skinColor.xyz*texture2D(mask_texture,uv).a,1.0);
-	vec4 garmentVec = vec4(gl_FragColor.xyz*(1.0 - texture2D(mask_texture,uv).a),1.0);
+	vec4 foreColor = skinColor;
+	vec4 backColor = vec4(1.0, 0.0, 0.0, 1.0);
+	vec4 skinVec;
+	if (useForeColor > 0.5)
+		skinVec = vec4(gl_FragColor.xyz*foreColor.xyz*texture2D(mask_texture,uv).a,1.0);
+	else
+		skinVec = gl_FragColor*texture2D(mask_texture,uv).a;
+	vec4 garmentVec;
+	if (useBackColor > 0.5)
+		garmentVec = gl_FragColor * backColor * (1.0 - texture2D(mask_texture,uv).a);
+	else
+
+		garmentVec = vec4(gl_FragColor.xyz*(1.0 - texture2D(mask_texture,uv).a),1.0);
 	gl_FragColor = skinVec + garmentVec;
 }
 

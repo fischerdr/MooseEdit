@@ -300,7 +300,7 @@ void AppearanceEditorFrame::setup() {
 	ZGrannyScene *grannyScene4 = 
 			zGrannyCreateScene("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Characters\\Players\\PL_M_ARM_Cloth_A_Torso_A.GR2",
 							   textures);
-	glContext->addGrannyScene(grannyScene4, textures);
+	//glContext->addGrannyScene(grannyScene4, textures);
 	textures.clear();
 }
 
