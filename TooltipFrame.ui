@@ -133,6 +133,9 @@ font: 75 14pt &quot;Garamond&quot;;</string>
         <property name="documentTitle">
          <string/>
         </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
         <property name="placeholderText">
          <string>Unknown.</string>
         </property>

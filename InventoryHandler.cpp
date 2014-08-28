@@ -46,7 +46,7 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 	std::cout<<"Root templates = "<<rootTemplates.size()<<'\n';
 	std::cout<<"Iterating through "<<slotsToDisplay<<" slots"<<'\n';
 	for (int i=0; i<slotsToDisplay; ++i) {
-		ItemLabel *label = new ItemLabel(itemStats, parent, mainWindow);
+		ItemLabel *label = new ItemLabel(itemStats, parent, 0);
 		itemLabels.push_back(label);
 		label->setFixedSize(iconSize, iconSize);
 		label->move(getItemX(i), getItemY(i));

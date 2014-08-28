@@ -5,6 +5,7 @@
 #include <boost/format.hpp>
 #include <QLayout>
 #include <map>
+#include <QDesktopWidget>
 #include "LsbObject.h"
 
 double ItemLabel::calculateDamage(long damageStat, long itemLevel, long damageBoost) {
@@ -561,20 +562,27 @@ void ItemLabel::enterEvent(QEvent *event)
 	if (this->item != 0) {
 		setupTooltip();
 		bool leftIcon = true;
-		QPoint tooltipEndPtR = this->mapToGlobal(QPoint(tooltip->width(), 0));
-		QPoint parentEndPtR = tooltip->parentWidget()->mapToGlobal(QPoint(tooltip->parentWidget()->width(), 0));
-		QPoint tooltipEndPtL = this->mapToGlobal(QPoint(-tooltip->width(), 0));
-		QPoint parentEndPtL = tooltip->parentWidget()->mapToGlobal(QPoint(0, 0));
+		QPoint tooltipEndPtR;
+		QPoint parentEndPtR;
+		QPoint tooltipEndPtL;
+		QPoint parentEndPtL;
+		if (tooltip->parentWidget() != 0) {
+			tooltipEndPtR = this->mapToGlobal(QPoint(tooltip->width(), 0));
+			parentEndPtR = tooltip->parentWidget()->mapToGlobal(QPoint(tooltip->parentWidget()->width(), 0));
+			tooltipEndPtL = this->mapToGlobal(QPoint(-tooltip->width(), 0));
+			parentEndPtL = tooltip->parentWidget()->mapToGlobal(QPoint(0, 0));
+		}
 		if (this->x() >= this->parentWidget()->width()/2) {
 			leftIcon = false;
 		} else {
-			long rightOverflow = tooltipEndPtR.x() - parentEndPtR.x();
-			long leftOverflow = parentEndPtL.x() - tooltipEndPtL.x();
-			if (rightOverflow > leftOverflow) {
-				leftIcon = false;
+			if (tooltip->parentWidget() != 0) {
+				long rightOverflow = tooltipEndPtR.x() - parentEndPtR.x();
+				long leftOverflow = parentEndPtL.x() - tooltipEndPtL.x();
+				if (rightOverflow > leftOverflow) {
+					leftIcon = false;
+				}
 			}
 		}
-		QWidget *main = tooltip->parentWidget();
 		QPoint currentPt = this->rect().topLeft();
 		if (leftIcon) {
 			currentPt.setX(currentPt.x() + this->width());
@@ -583,12 +591,34 @@ void ItemLabel::enterEvent(QEvent *event)
 			currentPt.setX(currentPt.x() - tooltip->width());
 		}
 		QPoint globalPt = this->mapToGlobal(currentPt);
-		QPoint pt = main->mapFromGlobal(globalPt);
-		long tooltipEnd = pt.y() + tooltip->height();
-		if (tooltipEnd > main->height()) {
-			long diff = tooltipEnd - main->height();
-			pt.setY(pt.y() - diff);
+		
+		QPoint pt;
+		
+		QWidget *main = tooltip->parentWidget();
+		if (main != 0) {
+			pt = main->mapFromGlobal(globalPt);
+			long tooltipEnd = pt.y() + tooltip->height();
+			if (tooltipEnd > main->height()) {
+				long diff = tooltipEnd - main->height();
+				pt.setY(pt.y() - diff);
+			}
+		} else {
+			pt = globalPt;
+			QDesktopWidget desktop;
+			
+			long tooltipEndY = pt.y() + tooltip->height();
+			if (tooltipEndY > desktop.height()) {
+				long diff = tooltipEndY - desktop.height();
+				pt.setY(pt.y() - diff);
+			}
+			
+			long tooltipEndX = pt.x() + tooltip->width();
+			if (tooltipEndX > desktop.width()) {
+				long diff = tooltipEndX - desktop.width();
+				pt.setX(pt.x() - diff);
+			}
 		}
+		
 		tooltip->move(pt);
 		tooltip->show();
 		tooltip->raise();
