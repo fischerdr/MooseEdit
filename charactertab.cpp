@@ -738,6 +738,6 @@ void characterTab::on_levelEdit_textEdited(const QString &text)
 void characterTab::on_appearanceButton_released()
 {
 	if (appearanceEditorFrame != 0) {
-		appearanceEditorFrame->show();
+		//appearanceEditorFrame->show();
 	}
 }
