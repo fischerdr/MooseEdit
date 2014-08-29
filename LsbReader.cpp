@@ -317,6 +317,10 @@ bool LsbReader::readTagData(std::istream& input, long readSize, std::stack<LsbOb
 								if (input && bytesLeft >= strSize) {
 									input.read(pairedStr, strSize);
 									bytesLeft -= strSize;
+									std::string& localized1 = object->getLocalized1();
+									localized1.assign(object->getData(), object->getDataSize());
+									std::string& localized2 = object->getLocalized2();
+									localized2.assign(pairedStr, strSize);
 									long tempSize = object->getDataSize() + strSize;
 									char *temp = new char[tempSize];
 									char *data = object->getData();

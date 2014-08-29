@@ -72,6 +72,8 @@ class LsbObject {
 	bool bIsDirectory = false;
 	LsbObject *parent = 0;
 	std::vector<TAG_LSB *> *tagList = 0;
+	std::string localized1;
+	std::string localized2;
 public:
 	static LsbObject *lookupByUniquePathEntity(LsbObject *entity, const char *path);
 	static LsbObject *lookupByUniquePath(std::vector<LsbObject *>& entities, const char *path);
@@ -635,6 +637,10 @@ public:
 		}
 		return ss.str();
 	}
+	std::string &getLocalized1();
+	void setLocalized1(const std::string &value);
+	std::string &getLocalized2();
+	void setLocalized2(const std::string &value);
 };
 
 #endif // LSBOBJECT_H

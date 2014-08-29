@@ -9,6 +9,26 @@
  * @param path
  * @return 
  */
+
+std::string& LsbObject::getLocalized1()
+{
+	return localized1;
+}
+
+void LsbObject::setLocalized1(const std::string &value)
+{
+	localized1 = value;
+}
+
+std::string& LsbObject::getLocalized2()
+{
+	return localized2;
+}
+
+void LsbObject::setLocalized2(const std::string &value)
+{
+	localized2 = value;
+}
 LsbObject *LsbObject::lookupByUniquePathEntity(LsbObject *entity, const char *path) {
 	char *pathCopy = new char[strlen(path) + 1];
 	strcpy(pathCopy, path);

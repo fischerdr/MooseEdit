@@ -12,7 +12,7 @@ long LsbWriter::writeSingleObject(LsbObject *object, std::ostream& output) {
 	bool isUnicodeStr = false;
 	bool isLocalizedStr = false;
 	if (!object->isDirectory()) {
-		if (type == 0x16 || type == 0x17 || type == 0x19 || type == 0x1E)
+		if ((type >= 0x14 && type <= 0x19) || type == 0x1E)
 			isStr = true;
 		if (type == 0x1C) {
 			isLocalizedStr = true;
@@ -39,15 +39,13 @@ long LsbWriter::writeSingleObject(LsbObject *object, std::ostream& output) {
 	}
 	
 	if (isLocalizedStr) {
-		char *firstString = object->getData();
-		long firstStringLength = strlen(firstString);
-		long firstStringBytes = firstStringLength + 2;
-		ss.write((char *)&(firstStringBytes), sizeof(long));
-		ss.write(firstString, firstStringBytes);
-		char *secondString = object->getData() + firstStringLength + 2;
-		long secondStringBytes = object->getDataSize() - firstStringBytes;
-		ss.write((char *)&(secondStringBytes), sizeof(long));
-		ss.write(secondString, secondStringBytes);
+		long length1 = object->getLocalized1().length();
+		ss.write((char *)&length1, sizeof(long));
+		ss.write(object->getLocalized1().c_str(), length1);
+		
+		long length2 = object->getLocalized2().length();
+		ss.write((char *)&length2, sizeof(long));
+		ss.write(object->getLocalized2().c_str(), length2);
 	}
 	else {
 		ss.write(object->getData(), object->getDataSize());
