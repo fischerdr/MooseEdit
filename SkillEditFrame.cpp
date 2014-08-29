@@ -121,33 +121,39 @@ void SkillEditFrame::on_skillList_currentItemChanged(QListWidgetItem *current, Q
 void SkillEditFrame::on_addButton_released()
 {
 	QTreeWidget *skillTree = this->findChild<QTreeWidget *>("skillTree");
-	DataTreeItem *item = (DataTreeItem *)skillTree->currentItem();
-	if (item == 0)
-		return;
-	if (item->getStringData().size() == 0)
-		return;
-    character->addSkill(item->getStringData().c_str());
-	
-	QListWidget *skillList = this->findChild<QListWidget *>("skillList");
-	DataListItem *newItem = new DataListItem();
-	StatsContainer *skill = GenStatsReader::getContainer(*skillStats, item->getStringData());
-	std::string skillText = skill->getData("DisplayNameRef");
-	newItem->setStringData(item->getStringData());
-	newItem->setText(skillText.c_str());
-	skillList->addItem(newItem);
+	QList<QTreeWidgetItem *> items = skillTree->selectedItems();
+	for (int i=0; i<items.size(); ++i) {
+		DataTreeItem *item = (DataTreeItem *)items[i];
+		if (item == 0)
+			return;
+		if (item->getStringData().size() == 0)
+			return;
+		character->addSkill(item->getStringData().c_str());
+		
+		QListWidget *skillList = this->findChild<QListWidget *>("skillList");
+		DataListItem *newItem = new DataListItem();
+		StatsContainer *skill = GenStatsReader::getContainer(*skillStats, item->getStringData());
+		std::string skillText = skill->getData("DisplayNameRef");
+		newItem->setStringData(item->getStringData());
+		newItem->setText(skillText.c_str());
+		skillList->addItem(newItem);
+	}
 }
 
 void SkillEditFrame::on_removeButton_released()
 {
 	QListWidget *skillList = this->findChild<QListWidget *>("skillList");
-	DataListItem *item = (DataListItem *)skillList->currentItem();
-	if (item == 0)
-		return;
-	if (item->getStringData().size() == 0)
-		return;
-    character->removeSkill(item->getStringData().c_str());
-	
-	delete item;
+	QList<QListWidgetItem *> items = skillList->selectedItems();
+	for (int i=0; i<items.size(); ++i) {
+		DataListItem *item = (DataListItem *)items[i];
+		if (item == 0)
+			return;
+		if (item->getStringData().size() == 0)
+			return;
+		character->removeSkill(item->getStringData().c_str());
+		
+		delete item;
+	}
 }
 
 void SkillEditFrame::on_skillList_itemClicked(QListWidgetItem *current)
