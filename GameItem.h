@@ -11,7 +11,7 @@
 class GameItem
 {
 	LsbObject *object;
-	unsigned long renderSlot = 0;
+	unsigned long renderSlot = SLOT_INVALID;
 	unsigned long equipmentSlot = 0;
 	unsigned long consumableSlot = 0;
 	unsigned long magicalSlot = 0;

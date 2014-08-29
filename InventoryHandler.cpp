@@ -334,6 +334,7 @@ GameItem *InventoryHandler::getItemAtPoint(const QPoint &pt)
 		long bottom = y + iconSize;
 		if (pt.x() >= x && pt.x() <= right &&
 				pt.y() >= y && pt.y() <= bottom) {
+			std::cout<<"ITEM AT POINT = "<<item->getAffixedName()<<' '<<item->getRenderSlot()<<' '<<item->getStatsText()<<" i="<<i<<'\n';
 			return item;
 		}
 	}

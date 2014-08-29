@@ -507,7 +507,7 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 	
 	nv_dds::CDDSImage image9;
 	GLuint texobj9;
-	std::string nmDdsPath = "C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + modelFile + "_NM.dds";
+	std::string nmDdsPath = "C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + textureFile + "_NM.dds";
 	boost::filesystem::path nmPath(nmDdsPath);
 	if (boost::filesystem::exists(nmPath)) {
 		image9.load(nmDdsPath, false);

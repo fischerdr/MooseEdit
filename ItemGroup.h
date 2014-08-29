@@ -40,7 +40,9 @@ public:
 		}
 		unsigned long renderSlot = item->getRenderSlot();
 		if (renderSlot > largestRenderSlot) {
-			largestRenderSlot = renderSlot;
+			if (renderSlot != SLOT_INVALID) {
+				largestRenderSlot = renderSlot;
+			}
 		}
 		unsigned long equipmentSlot = item->getEquipmentSlot();
 		if (equipmentSlot > largestEquipmentSlot) {
