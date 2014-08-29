@@ -73,9 +73,11 @@ private:
 	std::vector<fieldValue_t> voices;
 	std::vector<fieldValue_t> skinColors;
 	std::vector<fieldValue_t> heads;
+	std::vector<fieldValue_t> headTextures;
 	std::vector<fieldValue_t> hairs;
 	std::vector<fieldValue_t> hairColors;
 	std::vector<fieldValue_t> underwears;
+	std::vector<fieldValue_t> underwearTextures;
 	
 	int aiPersonalityIdx = 0;
 	int voiceIdx = 0;
@@ -89,6 +91,7 @@ private:
 	GlShaderProgram *shaderProgram = 0;
 	VertexRGB *skinColor = 0;
 	VertexRGB *hairColor = 0;
+	VertexRGB *underwearColor = 0;
 	Ui::AppearanceEditorFrame *ui;
 	bool isMale;
 	std::wstring gameDataPath;
@@ -96,10 +99,12 @@ private:
 	
 	ZGrannyScene *currentHair = 0;
 	ZGrannyScene *currentHead = 0;
+	ZGrannyScene *currentUnderwear = 0;
 	
-	void updateToCurrentModel(ZGrannyScene *&current, std::vector<fieldValue_t> &values, int index, VertexRGB *foreColor, VertexRGB *backColor);
+	void updateToCurrentModel(ZGrannyScene *&current, std::vector<fieldValue_t> &models, std::vector<fieldValue_t> &textures, int index, VertexRGB *foreColor, VertexRGB *backColor);
 	void updateToCurrentHead();
 	void updateToCurrentHair();
+	void updateToCurrentUnderwear();
 	void updateToCurrentSkinColor();
 	void updateToCurrentHairColor();
 	void setup();

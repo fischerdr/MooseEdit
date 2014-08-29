@@ -83,22 +83,38 @@ void AppearanceEditorFrame::generateFields() {
 			std::ostringstream ss;
 			ss<<"Head "<<(i + 1);
 			heads.push_back({ss.str(), "", ""});
+			headTextures.push_back({ss.str(), "", ""});
 		}
 		heads[0].maleValue = "PL_M_Head_A";
+		headTextures[0].maleValue = "PL_M_Head_A";
 		heads[1].maleValue = "PL_M_Head_B";
+		headTextures[1].maleValue = "PL_M_Head_B";
 		heads[2].maleValue = "PL_M_Head_C";
+		headTextures[2].maleValue = "PL_M_Head_C";
 		heads[3].maleValue = "PL_M_Head_D";
+		headTextures[3].maleValue = "PL_M_Head_D";
 		heads[4].maleValue = "PL_M_Head_E";
+		headTextures[4].maleValue = "PL_M_Head_E";
 		heads[5].maleValue = "PL_M_Head_F";
-		heads[6].maleValue = "PL_M_Head_I";
-		heads[7].maleValue = "PL_M_Head_N";
-		heads[8].maleValue = "PL_M_Head_O";
+		headTextures[5].maleValue = "PL_M_Head_F";
+		heads[6].maleValue = "PL_M_Head_A";
+		headTextures[6].maleValue = "PL_M_Head_G";
+		heads[7].maleValue = "PL_M_Head_A";
+		headTextures[7].maleValue = "PL_M_Head_H";
+		heads[8].maleValue = "PL_M_Head_I";
+		headTextures[8].maleValue = "PL_M_Head_I";
 		heads[9].maleValue = "PL_M_Head_A";
+		headTextures[9].maleValue = "PL_M_Head_L";
 		heads[10].maleValue = "PL_M_Head_A";
-		heads[11].maleValue = "PL_M_Head_A";
-		heads[12].maleValue = "PL_M_Head_A";
-		heads[13].maleValue = "PL_M_Head_A";
-		heads[14].maleValue = "PL_M_Head_A";
+		headTextures[10].maleValue = "PL_M_Head_M";
+		heads[11].maleValue = "PL_M_Head_N";
+		headTextures[11].maleValue = "PL_M_Head_N";
+		heads[12].maleValue = "PL_M_Head_O";
+		headTextures[12].maleValue = "PL_M_Head_O";
+		heads[13].maleValue = "PL_M_Head_I";
+		headTextures[13].maleValue = "PL_M_Head_J";
+		heads[14].maleValue = "PL_M_Head_I";
+		headTextures[14].maleValue = "PL_M_Head_K";
 		
 		for (int i=0; i<NUM_HAIRS; ++i) {
 			std::ostringstream ss;
@@ -125,10 +141,14 @@ void AppearanceEditorFrame::generateFields() {
 			std::ostringstream ss;
 			ss<<"Underwear "<<(i + 1);
 			underwears.push_back({ss.str(), "", ""});
+			underwearTextures.push_back({ss.str(), "", ""});
 		}
 		underwears[0].maleValue = "PL_M_Body_A";
-		underwears[1].maleValue = "PL_M_Body_B";
-		underwears[2].maleValue = "PL_M_Body_C";
+		underwearTextures[0].maleValue = "PL_M_Body_A";
+		underwears[1].maleValue = "PL_M_Body_A";
+		underwearTextures[1].maleValue = "PL_M_Body_B";
+		underwears[2].maleValue = "PL_M_Body_A";
+		underwearTextures[2].maleValue = "PL_M_Body_C";
 		
 		{
 			LsbObject *hairColorsObject = LsbObject::lookupByUniquePath(objects, "CharacterCreationProperties/root/HairColors");
@@ -161,6 +181,7 @@ void AppearanceEditorFrame::generateFields() {
 	updateToCurrentHairColor();
 	updateToCurrentHair();
 	updateToCurrentHead();
+	updateToCurrentUnderwear();
 }
 
 void AppearanceEditorFrame::updateFieldText(QLabel *label, std::vector<fieldValue_t> &updateVector, int index) {
@@ -181,9 +202,11 @@ void AppearanceEditorFrame::setup() {
 	if (skinColor == 0) {
 		skinColor = new VertexRGB({230, 188, 153, 255});
 	}
-	
 	if (hairColor == 0) {
 		hairColor = new VertexRGB({230, 188, 153, 255});
+	}
+	if (underwearColor == 0) {
+		underwearColor = new VertexRGB({93, 12, 8, 255});
 	}
 	
 	QString mText;
@@ -322,7 +345,7 @@ void AppearanceEditorFrame::setup() {
 	ZGrannyScene *grannyScene = 
 			zGrannyCreateScene("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Characters\\Players\\PL_M_Body_A.GR2",
 							   textures);
-	glContext->addGrannyScene(grannyScene, textures, skinColor, 0, shaderProgram);
+	//glContext->addGrannyScene(grannyScene, textures, skinColor, 0, shaderProgram);
 	textures.clear();
 	
 //	textures.push_back(texobj2);
@@ -468,14 +491,15 @@ void AppearanceEditorFrame::on_hairNext_clicked()
 	updateToCurrentHair();
 }
 
-void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::vector<fieldValue_t> &values, int index, VertexRGB *foreColor, VertexRGB *backColor) {
+void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::vector<fieldValue_t> &models, std::vector<fieldValue_t> &textures, int index, VertexRGB *foreColor, VertexRGB *backColor) {
 	GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
-	std::string modelFile = values[index].maleValue;//extract from file
-	std::vector<GLint> textures;
+	std::string modelFile = models[index].maleValue;
+	std::string textureFile = textures[index].maleValue;
+	std::vector<GLint> modelTextures;
 	
 	nv_dds::CDDSImage image3;
 	GLuint texobj3;
-	image3.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + modelFile + "_DM.dds", false);
+	image3.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + textureFile + "_DM.dds", false);
 	glGenTextures(1, &texobj3);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texobj3);
@@ -495,12 +519,12 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 	
 	nv_dds::CDDSImage image10;
 	GLuint texobj10;
-	std::string smDdsPath = "C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + modelFile + "_SM.dds";
+	std::string smDdsPath = "C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + textureFile + "_SM.dds";
 	boost::filesystem::path smPath(smDdsPath);
 	if (boost::filesystem::exists(smPath)) {
 		image10.load(smDdsPath, false);
 	} else {
-		image10.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + modelFile + "_MSK.dds", false);
+		image10.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + textureFile + "_MSK.dds", false);
 	}
 	glGenTextures(1, &texobj10);
 	glEnable(GL_TEXTURE_2D);
@@ -511,9 +535,9 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 		glContext->removeGrannyScene(current);
 		delete current; //call granny free function?
 	}
-	textures.push_back(texobj3);
-	textures.push_back(texobj9);
-	textures.push_back(texobj10);
+	modelTextures.push_back(texobj3);
+	modelTextures.push_back(texobj9);
+	modelTextures.push_back(texobj10);
 	unsigned long fSize;
 	std::string extractPath = "Public/Main/Assets/Characters/Players/" + modelFile + ".GR2";
 	char *fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", extractPath, gameDataPath, false, &fSize);
@@ -522,20 +546,24 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 	}
 	current = 
 			zGrannyCreateSceneFromMemory(fileBytes, fSize,
-							   textures);
+							   modelTextures);
 	if (fileBytes != 0) {
 		delete[] fileBytes;
 	}
-	glContext->addGrannyScene(current, textures, foreColor, backColor, shaderProgram);
-	textures.clear();
+	glContext->addGrannyScene(current, modelTextures, foreColor, backColor, shaderProgram);
+	modelTextures.clear();
 }
 
 void AppearanceEditorFrame::updateToCurrentHair() {
-	updateToCurrentModel(currentHair, hairs, hairIdx, 0, hairColor);
+	updateToCurrentModel(currentHair, hairs, hairs, hairIdx, 0, hairColor);
 }
 
 void AppearanceEditorFrame::updateToCurrentHead() {
-	updateToCurrentModel(currentHead, heads, headIdx, skinColor, hairColor);
+	updateToCurrentModel(currentHead, heads, headTextures, headIdx, skinColor, hairColor);
+}
+
+void AppearanceEditorFrame::updateToCurrentUnderwear() {
+	updateToCurrentModel(currentUnderwear, underwears, underwearTextures, underwearIdx, skinColor, underwearColor);
 }
 
 void AppearanceEditorFrame::on_hairColorPrev_clicked()
@@ -553,11 +581,13 @@ void AppearanceEditorFrame::on_hairColorNext_clicked()
 void AppearanceEditorFrame::on_underwearPrev_clicked()
 {
     changeFieldValue("underwearLabel", underwearIdx, underwears, -1);
+	updateToCurrentUnderwear();
 }
 
 void AppearanceEditorFrame::on_underwearNext_clicked()
 {
     changeFieldValue("underwearLabel", underwearIdx, underwears, 1);
+	updateToCurrentUnderwear();
 }
 
 void AppearanceEditorFrame::on_cancelButton_clicked()
