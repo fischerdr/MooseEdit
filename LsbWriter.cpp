@@ -64,8 +64,8 @@ bool LsbWriter::writeFile(std::vector<LsbObject *>& objects, std::vector<TAG_LSB
 	header.fileLength = 0x0;
 	header.fileTimestamp = time(0);
 	header.verMajor = 2;
-	header.verMinor = 0;
-	header.verBuild = 9;
+	header.verMinor = 1;
+	header.verBuild = 1;
 	header.verRevision = 0;
 	header.tagCount = tagList.size();
 	output.write((char *)&header, sizeof(HEADER_LSB));

@@ -332,6 +332,17 @@ void characterTab::adjustAttribute(long attribId, long newValue) {
 	std::vector<LsbObject *> attributeData = LsbObject::extractPropertyForEachListItem(attributes, "Object");
 	attributeData[attribId]->setData((char *)&newValue, sizeof(long));
 }
+GamePakData *characterTab::getGamePakData() const
+{
+	return gamePakData;
+}
+
+void characterTab::setGamePakData(GamePakData *value)
+{
+	gamePakData = value;
+	appearanceEditorFrame->setGamePakData(gamePakData);
+}
+
 EquipmentHandler *characterTab::getEquipmentHandler() const
 {
 	return equipmentHandler;

@@ -34,6 +34,20 @@ AppearanceEditorFrame::AppearanceEditorFrame(std::wstring gameDataPath, QWidget 
 	ui->setupUi(this);
 }
 
+void AppearanceEditorFrame::generateEquipmentModels() {
+	for (int i=0; i<EQUIP_SLOTS; ++i) {
+		GameItem *item = equipHandler->getItemAtSlot(i);
+		if (item != 0) {
+			ZGrannyScene *scene = createModelForItem(item);
+			GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
+			std::vector<GLint> textures;
+			if (scene != 0) {
+				glContext->addGrannyScene(scene, textures);
+			}
+		}
+	}
+}
+
 void AppearanceEditorFrame::generateFields() {
 	unsigned long fSize;
 	std::string extractPath = "Mods/Main/CharacterCreation/properties.lsx";
@@ -182,13 +196,202 @@ void AppearanceEditorFrame::generateFields() {
 	updateToCurrentHair();
 	updateToCurrentHead();
 	updateToCurrentUnderwear();
+	
+	{
+		std::string extractPath = "Public/Main/Content/Assets/Items/Equipment/[PAK]_Weapons/Weapons.lsb";
+		unsigned long fileSize;
+		char *fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", extractPath, gameDataPath, false, &fileSize);
+		if (fileBytes != 0) {
+			std::stringstream ss;
+			ss.rdbuf()->pubsetbuf(fileBytes, fileSize);
+			LsbReader reader;
+			std::vector<LsbObject *> resourceAssets = reader.loadFile(ss);
+			weaponsResourceBankObject = LsbObject::lookupByUniquePath(resourceAssets, "ResourceBank");
+			delete[] fileBytes;
+		}
+	}
+	{
+		std::string extractPath = "Public/Main/Content/Assets/Items/Armors/[PAK]_Armors_Player/Armors_Player.lsb";
+		unsigned long fileSize;
+		char *fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", extractPath, gameDataPath, false, &fileSize);
+		if (fileBytes != 0) {
+			std::stringstream ss;
+			ss.rdbuf()->pubsetbuf(fileBytes, fileSize);
+			LsbReader reader;
+			std::vector<LsbObject *> resourceAssets = reader.loadFile(ss);
+			armorsPlayerResourceBankObject = LsbObject::lookupByUniquePath(resourceAssets, "ResourceBank");
+			delete[] fileBytes;
+		}
+	}
+	
+	generateEquipmentModels();
+}
+
+std::string AppearanceEditorFrame::getGR2(LsbObject *resourceBankObject, std::string &visualTemplate) {
+	if (visualTemplate.size() == 0) {
+		return "";
+	}
+	LsbObject *visualBankObject = resourceBankObject->lookupByUniquePath("root/VisualBank");
+	std::vector<LsbObject *> matchingResourceObjects = LsbObject::findItemsByAttribute(visualBankObject->getChildren(), "MapKey", visualTemplate.c_str(), visualTemplate.length() + 1);
+	if (matchingResourceObjects.size() == 1) {
+		LsbObject *resourceObject = matchingResourceObjects[0];
+		LsbObject *sourceFileObject = resourceObject->lookupByUniquePath("SourceFile");
+		if (sourceFileObject != 0) {
+			return sourceFileObject->toString();
+		}
+	}
+	return "";
+}
+
+std::string AppearanceEditorFrame::getTextureFromTextureTemplate(LsbObject *resourceBankObject, std::string &textureTemplate) {
+	if (textureTemplate.size() == 0) {
+		return "";
+	}
+	LsbObject *visualBankObject = resourceBankObject->lookupByUniquePath("root/TextureBank");
+	std::vector<LsbObject *> matchingResourceObjects = LsbObject::findItemsByAttribute(visualBankObject->getChildren(), 
+																					   "MapKey", textureTemplate.c_str(), textureTemplate.length() + 1);
+	if (matchingResourceObjects.size() == 1) {
+		LsbObject *resourceObject = matchingResourceObjects[0];
+		LsbObject *sourceFileObject = resourceObject->lookupByUniquePath("SourceFile");
+		if (sourceFileObject != 0) {
+			return sourceFileObject->toString();
+		}
+	}
+	return "";
+}
+
+bool AppearanceEditorFrame::getTextureMaps(LsbObject *resourceBankObject, std::string &visualTemplate, std::string &diffuseMap, std::string &normalMap, std::string &maskMap) {
+	if (visualTemplate.size() == 0) {
+		return false;
+	}
+	LsbObject *visualBankObject = resourceBankObject->lookupByUniquePath("root/VisualBank");
+	std::vector<LsbObject *> matchingResourceObjects = LsbObject::findItemsByAttribute(visualBankObject->getChildren(), 
+																					   "MapKey", visualTemplate.c_str(), visualTemplate.length() + 1);
+	if (matchingResourceObjects.size() == 1) {
+		LsbObject *resourceObject = matchingResourceObjects[0];
+		LsbObject *objectsObject = resourceObject->lookupByUniquePath("Objects");
+		if (objectsObject != 0) {
+			LsbObject *materialIdObject = resourceObject->lookupByUniquePath("MaterialID");
+			if (materialIdObject != 0) {
+				std::string materialId = materialIdObject->getData();
+				LsbObject *materialBankObject = resourceBankObject->lookupByUniquePath("root/MaterialBank");
+				std::vector<LsbObject *> matchingResourceObjects = LsbObject::findItemsByAttribute(materialBankObject->getChildren(), 
+																								   "MapKey", materialId.c_str(), materialId.length() + 1);
+				if (matchingResourceObjects.size() == 1) {
+					LsbObject *resourceObject = matchingResourceObjects[0];
+					std::vector<LsbObject *> texture2DParametersObjects = LsbObject::lookupAllEntitiesWithName(resourceObject, "Texture2DParameters");
+					std::string diffuseTextureTemplate = "";
+					std::string normalTextureTemplate = "";
+					std::string maskTextureTemplate = "";
+					for (int i=0; i<texture2DParametersObjects.size(); ++i) {
+						LsbObject *texture2DParameterObject = texture2DParametersObjects[i];
+						LsbObject *uniformNameObject = texture2DParameterObject->lookupByUniquePath("UniformName");
+						if (uniformNameObject != 0) {
+							std::string uniformName = uniformNameObject->getData();
+							if (uniformName == "Texture2DParameter_DM") {
+								LsbObject *idObject = texture2DParameterObject->lookupByUniquePath("ID");
+								if (idObject != 0) {
+									diffuseTextureTemplate = idObject->getData();
+								}
+							} else if (uniformName == "Texture2DParameter_NM") {
+								LsbObject *idObject = texture2DParameterObject->lookupByUniquePath("ID");
+								if (idObject != 0) {
+									normalTextureTemplate = idObject->getData();
+								}
+							} else if (uniformName == "Texture2DParameter_SM") {
+								LsbObject *idObject = texture2DParameterObject->lookupByUniquePath("ID");
+								if (idObject != 0) {
+									maskTextureTemplate = idObject->getData();
+								}
+							}
+						}
+					}
+					diffuseMap = getTextureFromTextureTemplate(resourceBankObject, diffuseTextureTemplate);
+					normalMap = getTextureFromTextureTemplate(resourceBankObject, normalTextureTemplate);
+					maskMap = getTextureFromTextureTemplate(resourceBankObject, maskTextureTemplate);
+					if (diffuseMap.size() > 0 && normalMap.size() > 0 && maskMap.size() > 0) {
+						return true;
+					}
+				}
+			}
+		}
+	}
+	return false;
 }
 
 ZGrannyScene *AppearanceEditorFrame::createModelForItem(GameItem *item) {
 	LsbObject *itemObject = item->getObject();
 	if (itemObject != 0) {
-		LsbObject *itemTemplateObject = itemObject->lookupByUniquePath("ItemTemplate");
+		LsbObject *itemTemplateObject = itemObject->lookupByUniquePath("CurrentTemplate");
+		if (itemTemplateObject != 0) {
+			std::string itemTemplate = itemTemplateObject->getData();
+			std::map<std::string, LsbObject *> &modTemplateMap = gamePakData->getModTemplateMap();
+			std::map<std::string, LsbObject *> &rootTemplateMap = gamePakData->getRootTemplateMap();
+			LsbObject *gameObject = 0;
+			std::string visualTemplate = "";
+			if (modTemplateMap.find(itemTemplate) != modTemplateMap.end()) {
+				gameObject = modTemplateMap[itemTemplate];
+				LsbObject *visualTemplateObject = gameObject->lookupByUniquePath("VisualTemplate");
+				if (visualTemplateObject != 0) {
+					visualTemplate = visualTemplateObject->getData();
+				}
+				
+				LsbObject *templateNameObject = gameObject->lookupByUniquePath("TemplateName");
+				if (templateNameObject != 0) {
+					itemTemplate = templateNameObject->getData();
+				}
+			}
+			if (visualTemplate.size() == 0 && rootTemplateMap.find(itemTemplate) != rootTemplateMap.end()) {
+				gameObject = rootTemplateMap[itemTemplate];
+				LsbObject *visualTemplateObject = gameObject->lookupByUniquePath("VisualTemplate");
+				if (visualTemplateObject != 0) {
+					visualTemplate = visualTemplateObject->getData();
+				}
+			}
+			if (visualTemplate.size() > 0) {
+				LsbObject *resourceBank = 0;
+				LsbObject *statsObject = itemObject->lookupByUniquePath("Stats");
+				if (statsObject != 0) {
+					std::vector<StatsContainer *> &itemStats = gamePakData->getItemStats();
+					StatsContainer *itemStat = GenStatsReader::getContainer(itemStats, statsObject->getData());
+					if (itemStat != 0) {
+						std::string slot = itemStat->getData("Slot");
+						if (slot == "Weapon") {
+							resourceBank = weaponsResourceBankObject;
+						} else {
+							resourceBank = armorsPlayerResourceBankObject;
+						}
+					}
+				}
+				if (resourceBank != 0) {
+					std::string modelFile = this->getGR2(resourceBank, visualTemplate); //get resource bank object from item stat Slot
+					std::string diffuseMap;
+					std::string normalMap;
+					std::string maskMap;
+					this->getTextureMaps(resourceBank, visualTemplate, diffuseMap, normalMap, maskMap);
+					unsigned long fileSize;
+					std::wstring temp = L"";
+					char *fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", modelFile, temp, false, &fileSize);
+					if (fileBytes != 0) {
+						std::vector<GLint> textures;
+						
+//						nv_dds::CDDSImage &textureImage = nv_dds::CDDSImage();
+//						GLuint diffuseTextureId;
+//						textureImage.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Body_A_DM.dds", false);
+//						glGenTextures(1, &diffuseTextureId);
+//						glEnable(GL_TEXTURE_2D);
+//						glBindTexture(GL_TEXTURE_2D, diffuseTextureId);
+//						textureImage.upload_texture2D();
+						
+						ZGrannyScene *scene = zGrannyCreateSceneFromMemory(fileBytes, fileSize, textures);
+						delete[] fileBytes;
+						return scene;
+					}
+				}
+			}
+		}
 	}
+	return 0;
 }
 
 void AppearanceEditorFrame::updateFieldText(QLabel *label, std::vector<fieldValue_t> &updateVector, int index) {
@@ -629,6 +832,16 @@ void AppearanceEditorFrame::on_hairColorPicker_clicked()
 		hairColor->a = selected.alpha();
 	}
 }
+GamePakData *AppearanceEditorFrame::getGamePakData() const
+{
+	return gamePakData;
+}
+
+void AppearanceEditorFrame::setGamePakData(GamePakData *value)
+{
+	gamePakData = value;
+}
+
 EquipmentHandler *AppearanceEditorFrame::getEquipHandler() const
 {
 	return equipHandler;

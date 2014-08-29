@@ -28,6 +28,9 @@ struct ZGrannyTexture {
 struct ZGrannyMesh {
 	granny_mesh *grannyMesh;
 		// Granny's mesh information
+	
+	granny_skeleton *skeleton;
+		// The mesh skeleton
 
 	granny_mesh_binding *grannyBinding;
 		// The binding between this mesh and the model its deformed with

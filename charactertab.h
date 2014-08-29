@@ -10,6 +10,7 @@
 #include "EquipmentHandler.h"
 #include "CharacterLoader.h"
 #include "AppearanceEditorFrame.h"
+#include "GamePakData.h"
 
 namespace Ui {
 class characterTab;
@@ -51,6 +52,9 @@ public:
 	void onClose(ItemEditFrame *itemEditFrame) {
 		delete itemEditFrame;
 	}
+	
+	GamePakData *getGamePakData() const;
+	void setGamePakData(GamePakData *value);
 	
 private slots:
 	
@@ -120,6 +124,7 @@ private:
 	RelativePositionLayout *relPosLayout = 0;
 	SkillEditFrame *skillEditFrame = 0;
 	AppearanceEditorFrame *appearanceEditorFrame = 0;
+	GamePakData *gamePakData;
 	int lastWidth = 0;
 	void addWidgetsToLayout(QWidget *widget, QLayout *layout);
 	long levelFromExperience(long experience);

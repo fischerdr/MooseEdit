@@ -199,6 +199,7 @@ void zGrannyCreateMesh( ZGrannyMesh *mesh, granny_mesh *grannyMesh, std::vector<
 	  the case of rigid meshes). */
 	granny_skeleton *skeleton = GrannyGetSourceSkeleton( inModel );
 	mesh->grannyBinding = GrannyNewMeshBinding( grannyMesh, skeleton, skeleton );
+	mesh->skeleton = skeleton;
 	
 	/* Because I use GL display lists for rigid meshes, before processing
 	  the vertex data, I make sure I bind the textures.  This is to
