@@ -9,6 +9,10 @@ GlContextWidget::GlContextWidget(QWidget *parent) :
 	posY = 2.0;
 	posZ = -2.0;
 	
+	addX = 0.0;
+	addY = 0.0;
+	addZ = 0.0;
+	
 	radius = 3.0;
 	azimuth = 120.0;
 	inclination = 320.0;
@@ -50,14 +54,6 @@ bool numpadStar = false;
 bool numpadDiv = false;
 
 void GlContextWidget::initializeGL() {
-#ifdef USE_GLEW
-   GLenum err = glewInit();
-   if(GLEW_OK != err) {
-      ERROR("GLEW Error: %s\n", glewGetErrorString(err));
-      std::exit(EXIT_FAILURE);
-   }
-   LOG("Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
-#endif
    glDisable(GL_BLEND);        // Turn Blending Off
    glEnable(GL_DEPTH_TEST);    // Turn Depth Testing On
 
@@ -79,6 +75,7 @@ void GlContextWidget::resizeGL(int w, int h) {
 	updateGL();
 }
 #include <iostream>
+
 void GlContextWidget::paintGL() {
 	if (leftDown) {
 		posX -= movementVelocity / framesPerSecond;
@@ -128,29 +125,68 @@ void GlContextWidget::paintGL() {
    
    if (grannyScenes.size() > 0) {
 	   for (int i=0; i<grannyScenes.size(); ++i) {
-		   zGrannyRenderScene(grannyScenes[i], textureIds[i], vertexRGBs[i], vertexRGB2s[i], shaderPrograms[i]);
+		   GLfloat worldPos[3];
+		   worldPos[0] = 0.0f;
+		   worldPos[1] = 0.0f;
+		   worldPos[2] = 0.0f;
+		   if (attachments[i] != 0) {
+			   MeshAttachmentPoint *attachment = attachments[i];
+			   if (attachment->boneName.size() != 0 && attachment->meshName.size() != 0) {
+				   for (int j=0; j<grannyScenes.size(); ++j) {
+					   ZGrannyScene *scene = grannyScenes[j];
+					   for (int k=0; k<scene->modelCount; ++k) {
+						   ZGrannyModel &model = scene->models[k];
+						   for (int m=0; m<model.meshCount; ++m) {
+							   ZGrannyMesh &mesh = model.meshes[m];
+							   if (mesh.grannyMesh->Name == attachment->meshName) {
+								   zGrannyGetObbCenter(attachment->boneName, &mesh, worldPos);
+							   }
+						   }
+					   }
+				   }
+			   }
+		   }
+		   zGrannyRenderScene(grannyScenes[i], textureIds[i], vertexRGBs[i], vertexRGB2s[i], shaderPrograms[i], worldPos);
 	   }
    }
    
    polarToCartesian();
    glLoadIdentity();
-   gluLookAt(posX + addX, posY + addY, posZ + addZ,
+   double finalX = posX + addX;
+   double finalY = posY + addY;
+   double finalZ = posZ + addZ;
+   gluLookAt(finalX, finalY, finalZ,
    lookatX, lookatY, lookatZ, 
 			 0, 1, 0);
+   ++showCount;
+   if (showCount == 50) {
+	   std::cout<<"pos xyz lookat xyz\n";
+	   std::cout<<finalX<<' '<<
+				  finalY<<' '<<
+				  finalZ<<' '<<
+				  addX<<' '<<
+				  addY<<' '<<
+				  addZ<<' '<<
+				  lookatX<<' '<<
+				  lookatY<<' '<<
+				  lookatZ<<' '<<'\n';
+   }
 }
 
 void GlContextWidget::addGrannyScene(ZGrannyScene *scene, std::vector<GLint> &textures)
 {
-	addGrannyScene(scene, textures, 0, 0, 0);
+	addGrannyScene(scene, textures, 0, 0, 0, 0);
 }
 
-void GlContextWidget::addGrannyScene(ZGrannyScene *scene, std::vector<GLint > &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram)
+void GlContextWidget::addGrannyScene(ZGrannyScene *scene, std::vector<GLint > &textures, 
+									 VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, MeshAttachmentPoint *attachment)
 {
 	grannyScenes.push_back(scene);
 	textureIds.push_back(textures);
 	vertexRGBs.push_back(vertexRgb);
 	vertexRGB2s.push_back(vertexRgb2);
 	shaderPrograms.push_back(shaderProgram);
+	attachments.push_back(attachment);
 }
 
 void GlContextWidget::removeGrannyScene(ZGrannyScene *scene) {
@@ -161,6 +197,7 @@ void GlContextWidget::removeGrannyScene(ZGrannyScene *scene) {
 			vertexRGBs.erase(vertexRGBs.begin() + i);
 			vertexRGB2s.erase(vertexRGB2s.begin() + i);
 			shaderPrograms.erase(shaderPrograms.begin() + i);
+			attachments.erase(attachments.begin() + i);
 			break;
 		}
 	}

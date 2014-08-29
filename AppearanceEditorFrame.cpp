@@ -42,7 +42,44 @@ void AppearanceEditorFrame::generateEquipmentModels() {
 			GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
 			std::vector<GLint> textures;
 			if (scene != 0) {
-				glContext->addGrannyScene(scene, textures);
+				MeshAttachmentPoint *attachment = new MeshAttachmentPoint;
+				attachment->meshName = "PL_M_Body_A";
+				switch (i) {
+//				case SLOT_HELMET:
+//					attachment->boneName = "Bip001 Head";
+//					break;
+//				case SLOT_BREAST:
+//					attachment->boneName = "Bip001 Toe0";
+//					break;
+//				case SLOT_GARMENT:
+//					attachment->boneName = "Bip001 Toe0";
+//					break;
+//				case SLOT_WEAPON:
+//					attachment->boneName = "Bip001 Toe0";
+//					break;
+//				case SLOT_SHIELD:
+//					attachment->boneName = "Bip001 Toe0";
+//					break;
+//				case SLOT_RING_LEFT:
+//					attachment->boneName = "Bip001 Toe0";
+//					break;
+//				case SLOT_BELT:
+//					attachment->boneName = "Bip001 Toe0";
+//					break;
+//				case SLOT_BOOTS:
+//					attachment->boneName = "Bip001 Toe0";
+//					break;
+//				case SLOT_BRACERS:
+//					attachment->boneName = "Bip001 Toe0";
+//					break;
+//				case SLOT_AMULET:
+//					attachment->boneName = "Bip001 Toe0";
+//					break;
+//				case SLOT_RING_RIGHT:
+//					attachment->boneName = "Bip001 Toe0";
+//					break;
+				}
+				glContext->addGrannyScene(scene, textures, 0, 0, 0, attachment);
 			}
 		}
 	}
@@ -760,7 +797,7 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 	if (fileBytes != 0) {
 		delete[] fileBytes;
 	}
-	glContext->addGrannyScene(current, modelTextures, foreColor, backColor, shaderProgram);
+	glContext->addGrannyScene(current, modelTextures, foreColor, backColor, shaderProgram, 0);
 	modelTextures.clear();
 }
 

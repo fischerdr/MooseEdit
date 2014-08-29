@@ -28,9 +28,6 @@ struct ZGrannyTexture {
 struct ZGrannyMesh {
 	granny_mesh *grannyMesh;
 		// Granny's mesh information
-	
-	granny_skeleton *skeleton;
-		// The mesh skeleton
 
 	granny_mesh_binding *grannyBinding;
 		// The binding between this mesh and the model its deformed with
@@ -83,7 +80,10 @@ struct ZGrannyScene {
 		// it's contents don't need to be preserved
 };
 
-
+struct MeshAttachmentPoint {
+	std::string meshName;
+	std::string boneName;
+};
 
 ZGrannyTexture *zGrannyFindTexture( ZGrannyScene *scene, granny_material *grannyMaterial );
 void zGrannyCreateTexture( ZGrannyTexture *texture, granny_texture *grannyTexture );
@@ -101,6 +101,8 @@ ZGrannyScene *zGrannyCreateSceneFromMemory( const char *fileBytes, unsigned long
 ZGrannyScene *zGrannyCreateScene(const char *filename , std::vector<GLint> &textures);
 void zGrannyShutdownScene( ZGrannyScene *scene );
 
-void zGrannyRenderScene(ZGrannyScene *scene , std::vector<GLint> &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram);
+void zGrannyRenderScene(ZGrannyScene *scene , std::vector<GLint> &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, GLfloat worldPos[3] );
+
+bool zGrannyGetObbCenter(std::string boneName, ZGrannyMesh *mesh, GLfloat obbCenter[3]);
 
 #endif

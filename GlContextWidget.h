@@ -22,7 +22,7 @@ public:
 	//ZGrannyScene *getGrannyScene() const;
 	//void setGrannyScene(ZGrannyScene *value);
 	void addGrannyScene(ZGrannyScene *scene, std::vector<GLint> &textures);
-	void addGrannyScene(ZGrannyScene *scene, std::vector<GLint> &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram);
+	void addGrannyScene(ZGrannyScene *scene, std::vector<GLint> &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, MeshAttachmentPoint *attachment);
 	void removeGrannyScene(ZGrannyScene *scene);
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);
@@ -38,6 +38,7 @@ signals:
 public slots:
 	
 private:
+	int showCount = 0;
 	void addAngle(double *angle, double toAdd, bool restricted) {
 		*angle += toAdd;
 		if (restricted) {
@@ -83,6 +84,7 @@ private:
 	std::vector<VertexRGB *> vertexRGBs;
 	std::vector<VertexRGB *> vertexRGB2s;
 	std::vector<GlShaderProgram *> shaderPrograms;
+	std::vector<MeshAttachmentPoint *> attachments;
 	//ZGrannyScene *grannyScene = 0;
 	double posX;
 	double posY;

@@ -199,7 +199,6 @@ void zGrannyCreateMesh( ZGrannyMesh *mesh, granny_mesh *grannyMesh, std::vector<
 	  the case of rigid meshes). */
 	granny_skeleton *skeleton = GrannyGetSourceSkeleton( inModel );
 	mesh->grannyBinding = GrannyNewMeshBinding( grannyMesh, skeleton, skeleton );
-	mesh->skeleton = skeleton;
 	
 	/* Because I use GL display lists for rigid meshes, before processing
 	  the vertex data, I make sure I bind the textures.  This is to
@@ -300,6 +299,7 @@ ZGrannyTexture *zGrannyFindTexture( ZGrannyScene *scene, granny_material *granny
 }
 
 bool shown2 = false;
+int shownCount = 0;
 void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model, std::vector<GLint> &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram ) {
 	/* Before I do any rendering, I enable the arrays for the vertex
 	  format I'm using.  You could do this once for the entire app,
@@ -357,7 +357,7 @@ void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model, std::vector
 				if (shown2 == false) {\
 					shown2 = true;
 					for (int i=0; i<20; ++i) {
-						std::cout<<"pos = "<<vertices->Position[0]<<' '<<vertices->Position[1]<<' '<<vertices->Position[2]<<'\n';
+						std::cout<<"pos = "<<vertices[i].Position[0]<<' '<<vertices[i].Position[1]<<' '<<vertices[i].Position[2]<<'\n';
 					}
 				}
 				zGrannyRenderMesh2( &mesh, vertices, textures, vertexRgb, shaderProgram );
@@ -366,6 +366,14 @@ void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model, std::vector
 				//granny_pwngbt343332_vertex *vertices2 = (granny_pwngbt343332_vertex *)GrannyGetMeshVertices( mesh.grannyMesh );
 				granny_pwngbt343332_vertex *vertices2 = new granny_pwngbt343332_vertex[vertexCount];
 				GrannyCopyMeshVertices( mesh.grannyMesh, GrannyPWNGBT343332VertexType, vertices2 );
+				++shownCount;
+				if (shownCount == 50) {
+					std::cout<<"no deformer"<<'\n';
+					std::cout<<mesh.grannyMesh->Name<<'\n';
+					for (int i=0; i<20; ++i) {
+						std::cout<<"pos = "<<vertices2[i].Position[0]<<' '<<vertices2[i].Position[1]<<' '<<vertices2[i].Position[2]<<'\n';
+					}
+				}
 				zGrannyRenderMesh( &mesh, vertices2, textures, vertexRgb, vertexRgb2, shaderProgram );
 				delete[] vertices2;
 			}
@@ -707,16 +715,38 @@ ZGrannyScene *zGrannyCreateSceneFromMemory( const char *fileBytes, unsigned long
 	return scene;
 }
 
+bool zGrannyGetObbCenter(std::string boneName, ZGrannyMesh *mesh, GLfloat obbCenter[3]) {
+	if (mesh->grannyMesh == 0)
+		return false;
+	for (int i=0; i<mesh->grannyMesh->BoneBindingCount; ++i) {
+		granny_bone_binding &bone = mesh->grannyMesh->BoneBindings[i];
+		if (bone.BoneName == boneName) {
+			obbCenter[0] = (bone.OBBMax[0] + bone.OBBMin[0])/2.0;
+			obbCenter[1] = (bone.OBBMax[1] + bone.OBBMin[1])/2.0;
+			obbCenter[2] = (bone.OBBMax[2] + bone.OBBMin[2])/2.0;
+			return true;
+		}
+	}
+	return false;
+}
+
 void zGrannyShutdownScene( ZGrannyScene *scene ) {
 	GrannyFreeFile( scene->loadedFile );
 }
 
-void zGrannyRenderScene( ZGrannyScene *scene, std::vector<GLint> &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram ) {
+void zGrannyRenderScene( ZGrannyScene *scene, std::vector<GLint> &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, GLfloat worldPos[3]) {
 	if (shaderProgram != 0) {
 		shaderProgram->use();
 	}
+	if (worldPos != 0) {
+		glPushMatrix();
+		glTranslatef(worldPos[0], worldPos[1], worldPos[2]);
+	}
 	for( int i = 0; i < scene->modelCount; ++i ) {
 		zGrannyRenderModel( scene, &scene->models[i], textures, vertexRgb, vertexRgb2, shaderProgram);
+	}
+	if (worldPos != 0) {
+		glPopMatrix();
 	}
 	if (shaderProgram != 0) {
 		shaderProgram->unset();
