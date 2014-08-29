@@ -51,8 +51,8 @@ void AppearanceEditorFrame::generateFields() {
 			std::vector<LsbObject *> aiPersonalityObjects = LsbObject::lookupAllEntitiesWithName(aiPersonalitiesObject, "AiPersonality");
 			for (int i=0; i<aiPersonalityObjects.size(); ++i) {
 				LsbObject *aiPersonalityObject = aiPersonalityObjects[i];
-				LsbObject *nameObject = LsbObject::lookupByUniquePathEntity(aiPersonalityObject, "Name");
-				LsbObject *idObject = LsbObject::lookupByUniquePathEntity(aiPersonalityObject, "ID");
+				LsbObject *nameObject = aiPersonalityObject->lookupByUniquePath("Name");
+				LsbObject *idObject = aiPersonalityObject->lookupByUniquePath("ID");
 				aiPersonalities.push_back({nameObject->getData(), idObject->getData(), idObject->getData()});
 			}
 		}
@@ -61,9 +61,9 @@ void AppearanceEditorFrame::generateFields() {
 			std::vector<LsbObject *> voiceObjects = LsbObject::lookupAllEntitiesWithName(voicesObject, "Voice");
 			for (int i=0; i<voiceObjects.size(); ++i) {
 				LsbObject *voiceObject = voiceObjects[i];
-				LsbObject *nameObject = LsbObject::lookupByUniquePathEntity(voiceObject, "Name");
-				LsbObject *maleSpeakerIdObject = LsbObject::lookupByUniquePathEntity(voiceObject, "MaleSpeakerID");
-				LsbObject *femaleSpeakerIdObject = LsbObject::lookupByUniquePathEntity(voiceObject, "FemaleSpeakerID");
+				LsbObject *nameObject = voiceObject->lookupByUniquePath("Name");
+				LsbObject *maleSpeakerIdObject = voiceObject->lookupByUniquePath("MaleSpeakerID");
+				LsbObject *femaleSpeakerIdObject = voiceObject->lookupByUniquePath("FemaleSpeakerID");
 				voices.push_back({nameObject->getData(), maleSpeakerIdObject->getData(), femaleSpeakerIdObject->getData()});
 			}
 		}
@@ -72,8 +72,8 @@ void AppearanceEditorFrame::generateFields() {
 			std::vector<LsbObject *> colorDescObjects = LsbObject::lookupAllEntitiesWithName(skinColorsObject, "ColorDesc");
 			for (int i=0; i<colorDescObjects.size(); ++i) {
 				LsbObject *colorDescObject = colorDescObjects[i];
-				LsbObject *colorNameObject = LsbObject::lookupByUniquePathEntity(colorDescObject, "ColorName");
-				LsbObject *valueObject = LsbObject::lookupByUniquePathEntity(colorDescObject, "Value");
+				LsbObject *colorNameObject = colorDescObject->lookupByUniquePath("ColorName");
+				LsbObject *valueObject = colorDescObject->lookupByUniquePath("Value");
 				std::ostringstream ss;
 				ss<<*((unsigned long*)valueObject->getData());
 				skinColors.push_back({colorNameObject->getData(), ss.str(), ss.str()});
@@ -155,8 +155,8 @@ void AppearanceEditorFrame::generateFields() {
 			std::vector<LsbObject *> colorDescObjects = LsbObject::lookupAllEntitiesWithName(hairColorsObject, "ColorDesc");
 			for (int i=0; i<colorDescObjects.size(); ++i) {
 				LsbObject *colorDescObject = colorDescObjects[i];
-				LsbObject *colorNameObject = LsbObject::lookupByUniquePathEntity(colorDescObject, "ColorName");
-				LsbObject *valueObject = LsbObject::lookupByUniquePathEntity(colorDescObject, "Value");
+				LsbObject *colorNameObject = colorDescObject->lookupByUniquePath("ColorName");
+				LsbObject *valueObject = colorDescObject->lookupByUniquePath("Value");
 				std::ostringstream ss;
 				ss<<*((unsigned long*)valueObject->getData());
 				hairColors.push_back({colorNameObject->getData(), ss.str(), ss.str()});
@@ -182,6 +182,13 @@ void AppearanceEditorFrame::generateFields() {
 	updateToCurrentHair();
 	updateToCurrentHead();
 	updateToCurrentUnderwear();
+}
+
+void AppearanceEditorFrame::createModelForItem(GameItem *item) {
+	LsbObject *itemObject = item->getObject();
+	if (itemObject != 0) {
+		
+	}
 }
 
 void AppearanceEditorFrame::updateFieldText(QLabel *label, std::vector<fieldValue_t> &updateVector, int index) {
@@ -622,3 +629,13 @@ void AppearanceEditorFrame::on_hairColorPicker_clicked()
 		hairColor->a = selected.alpha();
 	}
 }
+EquipmentHandler *AppearanceEditorFrame::getEquipHandler() const
+{
+	return equipHandler;
+}
+
+void AppearanceEditorFrame::setEquipHandler(EquipmentHandler *value)
+{
+	equipHandler = value;
+}
+

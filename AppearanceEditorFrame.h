@@ -5,6 +5,7 @@
 #include "GlContextWidget.h"
 #include "zgranny.h"
 #include "PakReader.h"
+#include "EquipmentHandler.h"
 
 namespace Ui {
 class AppearanceEditorFrame;
@@ -32,6 +33,9 @@ public:
 		GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
 		glContext->keyReleaseEvent(e);
 	}
+	
+	EquipmentHandler *getEquipHandler() const;
+	void setEquipHandler(EquipmentHandler *value);
 	
 private slots:
 	void on_aiPersonalityNext_clicked();
@@ -96,6 +100,7 @@ private:
 	bool isMale;
 	std::wstring gameDataPath;
 	PakReader mainPak;
+	EquipmentHandler *equipHandler;
 	
 	ZGrannyScene *currentHair = 0;
 	ZGrannyScene *currentHead = 0;

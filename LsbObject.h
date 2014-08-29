@@ -75,7 +75,7 @@ class LsbObject {
 	std::string localized1;
 	std::string localized2;
 public:
-	static LsbObject *lookupByUniquePathEntity(LsbObject *entity, const char *path);
+	LsbObject *lookupByUniquePath(const char *path);
 	static LsbObject *lookupByUniquePath(std::vector<LsbObject *>& entities, const char *path);
 	static std::vector<LsbObject *> lookupAllEntitiesWithName(LsbObject *object, const char *name);
 	static std::vector<LsbObject *> extractPropertyForEachListItem(std::vector<LsbObject *>& list, const char *propertyName);

@@ -29,7 +29,8 @@ void LsbObject::setLocalized2(const std::string &value)
 {
 	localized2 = value;
 }
-LsbObject *LsbObject::lookupByUniquePathEntity(LsbObject *entity, const char *path) {
+LsbObject *LsbObject::lookupByUniquePath(const char *path) {
+	LsbObject *entity = this;
 	char *pathCopy = new char[strlen(path) + 1];
 	strcpy(pathCopy, path);
 	LsbObject *current = entity;
@@ -133,7 +134,7 @@ LsbObject *LsbObject::getObjectCreator(LsbObject *object) {
 	if (objectGroup != 0) {
 		LsbObject *groupContainerObject = objectGroup->getParent();
 		if (groupContainerObject != 0) {
-			LsbObject *creatorsObject = LsbObject::lookupByUniquePathEntity(groupContainerObject, "Creators");
+			LsbObject *creatorsObject = groupContainerObject->lookupByUniquePath("Creators");
 			if (childId < creatorsObject->getChildren().size()) {
 				LsbObject *objectCreator = creatorsObject->getChildren()[childId];
 				return objectCreator;
@@ -149,7 +150,7 @@ LsbObject *LsbObject::getObjectFromCreator(LsbObject *creator, const char *objec
 	if (creators != 0) {
 		LsbObject *groupContainerObject = creators->getParent();
 		if (groupContainerObject != 0) {
-			LsbObject *objectGroup = LsbObject::lookupByUniquePathEntity(groupContainerObject, objectGroupName);
+			LsbObject *objectGroup = groupContainerObject->lookupByUniquePath(objectGroupName);
 			if (childId < objectGroup->getChildren().size()) {
 				LsbObject *object = objectGroup->getChildren()[childId];
 				return object;

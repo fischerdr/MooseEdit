@@ -58,11 +58,11 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 			if (itemObject == 0) {
 				continue;
 			}
-			LsbObject *amountObject = LsbObject::lookupByUniquePathEntity(itemObject, "Amount");
+			LsbObject *amountObject = itemObject->lookupByUniquePath("Amount");
 			if (amountObject != 0) {
 				item->setItemAmount(*((long *)amountObject->getData()));
 			}
-			LsbObject *statsObject = LsbObject::lookupByUniquePathEntity(itemObject, "Stats");
+			LsbObject *statsObject = itemObject->lookupByUniquePath("Stats");
 			std::vector<LsbObject *> statsObjects = LsbObject::lookupAllEntitiesWithName(itemObject, "Stats");
 			LsbObject *statsDirObject = 0;
 			for (int i=0; i<statsObjects.size(); ++i) {
@@ -72,9 +72,9 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 				}
 			}
 			if (statsDirObject != 0) {
-				LsbObject *itemTypeObject = LsbObject::lookupByUniquePathEntity(statsDirObject, "ItemType");
-				LsbObject *levelObject = LsbObject::lookupByUniquePathEntity(statsDirObject, "Level");
-				LsbObject *durabilityObject = LsbObject::lookupByUniquePathEntity(statsDirObject, "Durability");
+				LsbObject *itemTypeObject = statsDirObject->lookupByUniquePath("ItemType");
+				LsbObject *levelObject = statsDirObject->lookupByUniquePath("Level");
+				LsbObject *durabilityObject = statsDirObject->lookupByUniquePath("Durability");
 				char *itemType = itemTypeObject->getData();
 				long level = *((long *)levelObject->getData());
 				long dura = *((long *)durabilityObject->getData());
@@ -95,26 +95,26 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 				item->setHasStatsDirectory(false);
 				item->setItemRarity("Common");
 			}
-			LsbObject *currentTemplateObject = LsbObject::lookupByUniquePathEntity(itemObject, "CurrentTemplate");
+			LsbObject *currentTemplateObject = itemObject->lookupByUniquePath("CurrentTemplate");
 			char *currentTemplate = currentTemplateObject->getData();
-			LsbObject *generationObject = LsbObject::lookupByUniquePathEntity(itemObject, "Generation");
+			LsbObject *generationObject = itemObject->lookupByUniquePath("Generation");
 			char *statsText = statsObject->getData();
 			if (generationObject != 0) {
 				std::vector<LsbObject *> boostObjects = LsbObject::lookupAllEntitiesWithName(generationObject, "Boost");
-				LsbObject *baseObject = LsbObject::lookupByUniquePathEntity(generationObject, "Base");
+				LsbObject *baseObject = generationObject->lookupByUniquePath("Base");
 				if (baseObject != 0) {
 					statsText = baseObject->getData();
 				}
 				item->getBoosts().clear();
 				for (int i=0; i<boostObjects.size(); ++i) {
-					LsbObject *boostObject = LsbObject::lookupByUniquePathEntity(boostObjects[i], "Object");
+					LsbObject *boostObject = boostObjects[i]->lookupByUniquePath("Object");
 					if (boostObject != 0) {
 						char *boostName = boostObject->getData();
 						item->addBoost(GenStatsReader::getContainer(itemStats, boostName));
 					}
 				}
 				
-				LsbObject *randomObject = LsbObject::lookupByUniquePathEntity(generationObject, "Random");
+				LsbObject *randomObject = generationObject->lookupByUniquePath("Random");
 				if (randomObject != 0) {
 					item->setGenerationRandom(*((long *)randomObject->getData()));
 				}
@@ -138,16 +138,16 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 			}
 			if (match != 0) {
 				std::cout<<"mod match for "<<currentTemplate<<'\n';
-				LsbObject *iconObject = LsbObject::lookupByUniquePathEntity(match, "Icon");
+				LsbObject *iconObject = match->lookupByUniquePath("Icon");
 				if (iconObject != 0) {
 					iconName = iconObject->getData();
 				}
-				currentTemplate = LsbObject::lookupByUniquePathEntity(match, "TemplateName")->getData();
-				displayNameObject = LsbObject::lookupByUniquePathEntity(match, "DisplayName");
+				currentTemplate = match->lookupByUniquePath("TemplateName")->getData();
+				displayNameObject = match->lookupByUniquePath("DisplayName");
 				if (displayNameObject != 0) {
 					item->setItemName(displayNameObject->getData());
 				}
-				LsbObject *descriptionObject = LsbObject::lookupByUniquePathEntity(match, "Description");
+				LsbObject *descriptionObject = match->lookupByUniquePath("Description");
 				if (descriptionObject != 0) {
 					description = descriptionObject->getData();
 				}
@@ -160,13 +160,13 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 			}
 			if (match != 0) {
 				if (iconName == 0) {
-					LsbObject *iconObject = LsbObject::lookupByUniquePathEntity(match, "Icon");
+					LsbObject *iconObject = match->lookupByUniquePath("Icon");
 					if (iconObject != 0) {
 						iconName = iconObject->getData();
 					}
 				}
 				if (description == 0) {
-					LsbObject *descriptionObject = LsbObject::lookupByUniquePathEntity(match, "Description");
+					LsbObject *descriptionObject = match->lookupByUniquePath("Description");
 					if (descriptionObject != 0) {
 						description = descriptionObject->getData();
 					}
@@ -178,7 +178,7 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 				}
 				
 				if (displayNameObject == 0) {
-					displayNameObject = LsbObject::lookupByUniquePathEntity(match, "DisplayName");
+					displayNameObject = match->lookupByUniquePath("DisplayName");
 					if (displayNameObject != 0) {
 						item->setItemName(displayNameObject->getData());
 					}

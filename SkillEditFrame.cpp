@@ -31,7 +31,7 @@ void SkillEditFrame::populateSkillList() {
 	std::vector<LsbObject *> skillObjects = character->getSkillList();
 	for (int i=0; i<skillObjects.size(); ++i) {
 		LsbObject *skillObject = skillObjects[i];
-		LsbObject *mapKeyObject = LsbObject::lookupByUniquePathEntity(skillObject, "MapKey");
+		LsbObject *mapKeyObject = skillObject->lookupByUniquePath("MapKey");
 		if (mapKeyObject != 0) {
 			DataListItem *item = new DataListItem(skillList);
 			StatsContainer *skill = GenStatsReader::getContainer(*skillStats, mapKeyObject->getData());

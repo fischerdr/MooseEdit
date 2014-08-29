@@ -76,8 +76,8 @@ void CharacterLoader::load(std::vector<LsbObject *> &globals, std::wstring gameD
 		QWidget *widget = new characterTab(globalTagList, gameDataPath, itemsObject, this, tabWidget, mainWindow);
 		widget->setObjectName(QString(ss.str().c_str()));
 		
-		LsbObject *origTemplate = LsbObject::lookupByUniquePathEntity(character, "OriginalTemplate");
-		LsbObject *playerName = LsbObject::lookupByUniquePathEntity(character, "PlayerData/PlayerCustomData/Name");
+		LsbObject *origTemplate = character->lookupByUniquePath("OriginalTemplate");
+		LsbObject *playerName = character->lookupByUniquePath("PlayerData/PlayerCustomData/Name");
 		std::string origTemplateId = origTemplate->getData();
 		std::wstring charName;
 		if (origTemplateId == "5c5447e5-c1cf-4677-b84b-006d9be3f075") {
@@ -112,7 +112,7 @@ void CharacterLoader::load(std::vector<LsbObject *> &globals, std::wstring gameD
 		std::vector<GameItem *> equipmentSet;
 		for (int j=0; j<matches.size(); ++j) {
 			LsbObject *match = matches[j];
-			LsbObject *slotObject = LsbObject::lookupByUniquePathEntity(match, "Slot");
+			LsbObject *slotObject = match->lookupByUniquePath("Slot");
 			std::vector<LsbObject *> deleteMe;
 			if (slotObject != 0) {
 				unsigned short slot = *((unsigned short *)slotObject->getData());
@@ -139,7 +139,7 @@ void CharacterLoader::load(std::vector<LsbObject *> &globals, std::wstring gameD
 		//if (i != 0)
 			//continue;
 		LsbObject *character = this->getCharacterGroup().getCharacters()[i]->getObject();
-		long inventoryId = *((long *)LsbObject::lookupByUniquePathEntity(character, "Inventory")->getData());
+		long inventoryId = *((long *)character->lookupByUniquePath("Inventory")->getData());
 		LsbObject *inventoryCreators = LsbObject::lookupByUniquePath(globals, "Inventories/root/InventoryFactory/Creators");
 		std::vector<LsbObject *> creatorMatches = LsbObject::findItemsByAttribute(inventoryCreators->getChildren(), "Object", (const char *)&inventoryId, sizeof(long));
 		if (creatorMatches.size() == 1) {
@@ -151,15 +151,15 @@ void CharacterLoader::load(std::vector<LsbObject *> &globals, std::wstring gameD
 			std::vector<LsbObject *> views = LsbObject::lookupAllEntitiesWithName(inventory, "Views");
 			if (views.size() > 0) {
 				for (int k=0; k<views.size(); ++k) {
-					LsbObject *viewMapKey = LsbObject::lookupByUniquePathEntity(views[k], "MapKey");
+					LsbObject *viewMapKey = views[k]->lookupByUniquePath("MapKey");
 					unsigned long viewId = *((unsigned long*)viewMapKey->getData());
-					LsbObject *viewMapValue = LsbObject::lookupByUniquePathEntity(views[k], "MapValue");
+					LsbObject *viewMapValue = views[k]->lookupByUniquePath("MapValue");
 					if (viewMapValue != 0) {
 						std::vector<LsbObject *> indicesList = LsbObject::lookupAllEntitiesWithName(viewMapValue, "Indices");
 						for (int j=0; j<indicesList.size(); ++j) {
 							LsbObject *index = indicesList[j];
-							unsigned long itemCreatorHandle = *((unsigned long *)LsbObject::lookupByUniquePathEntity(index, "MapKey")->getData());
-							unsigned long slot = *((unsigned long *)LsbObject::lookupByUniquePathEntity(index, "MapValue")->getData());
+							unsigned long itemCreatorHandle = *((unsigned long *)index->lookupByUniquePath("MapKey")->getData());
+							unsigned long slot = *((unsigned long *)index->lookupByUniquePath("MapValue")->getData());
 							if (i == 0){
 								std::cout<<"slot = "<<slot<<'\n';
 							}

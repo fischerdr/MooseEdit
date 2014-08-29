@@ -221,7 +221,7 @@ LsbObject *GameItem::getCreatorsObject(LsbObject *itemsObject) {
 	if (itemsObject != 0) {
 		LsbObject *itemFactoryObject = itemsObject->getParent();
 		
-		LsbObject *creatorsObject = LsbObject::lookupByUniquePathEntity(itemFactoryObject, "Creators");
+		LsbObject *creatorsObject = itemFactoryObject->lookupByUniquePath("Creators");
 
 		return creatorsObject;
 	}
@@ -232,7 +232,7 @@ LsbObject *GameItem::createNewItemCreator(std::vector<TAG_LSB*> *tagList, LsbObj
 	if (itemsObject != 0 && itemObject != 0) {
 		LsbObject *itemFactoryObject = itemsObject->getParent();
 		
-		LsbObject *creatorsObject = LsbObject::lookupByUniquePathEntity(itemFactoryObject, "Creators");
+		LsbObject *creatorsObject = itemFactoryObject->lookupByUniquePath("Creators");
 		
 		TAG_LSB *creatorTag = LsbObject::createTagIfNeeded("Creator", tagList);
 		LsbObject *creatorObject = new LsbObject(true, creatorTag->index, creatorTag->tag, 0, creatorsObject, tagList);
@@ -244,12 +244,12 @@ LsbObject *GameItem::createNewItemCreator(std::vector<TAG_LSB*> *tagList, LsbObj
 		
 		TAG_LSB *templateIDTag = LsbObject::createTagIfNeeded("TemplateID", tagList);
 		LsbObject *templateIDObject = new LsbObject(false, templateIDTag->index, templateIDTag->tag, 0x16, creatorObject, tagList);
-		LsbObject *currentTemplateObject = LsbObject::lookupByUniquePathEntity(itemObject, "CurrentTemplate");
+		LsbObject *currentTemplateObject = itemObject->lookupByUniquePath("CurrentTemplate");
 		templateIDObject->setData(currentTemplateObject->getData(), currentTemplateObject->getDataSize());
 		
 		TAG_LSB *templateTypeTag = LsbObject::createTagIfNeeded("TemplateType", tagList);
 		LsbObject *templateTypeObject = new LsbObject(false, templateTypeTag->index, templateTypeTag->tag, 0x01, creatorObject, tagList);
-		LsbObject *currentTemplateTypeObject = LsbObject::lookupByUniquePathEntity(itemObject, "CurrentTemplateType");
+		LsbObject *currentTemplateTypeObject = itemObject->lookupByUniquePath("CurrentTemplateType");
 		if (currentTemplateTypeObject != 0) {
 			templateTypeObject->setData(currentTemplateTypeObject->getData(), currentTemplateTypeObject->getDataSize());
 		} else {
@@ -272,7 +272,7 @@ unsigned long GameItem::getNewItemCreatorHandle(LsbObject *itemsObject) {
 	if (itemsObject != 0) {
 		LsbObject *itemFactoryObject = itemsObject->getParent();
 		if (itemFactoryObject != 0) {
-			LsbObject *creatorsObject = LsbObject::lookupByUniquePathEntity(itemFactoryObject, "Creators");
+			LsbObject *creatorsObject = itemFactoryObject->lookupByUniquePath("Creators");
 			short largestHandle = 0;
 			unsigned long handleBase = 0x4008000;
 			handle = handleBase;
@@ -280,7 +280,7 @@ unsigned long GameItem::getNewItemCreatorHandle(LsbObject *itemsObject) {
 				unsigned long handleIdMask = 0x7FFF;
 				for (int i=0; i<creatorsObject->getChildren().size(); ++i) {
 					LsbObject *creatorObject = creatorsObject->getChildren()[i];
-					unsigned long creatorHandle = *((unsigned long *)LsbObject::lookupByUniquePathEntity(creatorObject, "Handle")->getData());
+					unsigned long creatorHandle = *((unsigned long *)creatorObject->lookupByUniquePath("Handle")->getData());
 					short handleId = creatorHandle & handleIdMask;
 					if (handleId > largestHandle) {
 						largestHandle = handleId;
@@ -288,10 +288,10 @@ unsigned long GameItem::getNewItemCreatorHandle(LsbObject *itemsObject) {
 				}
 				++largestHandle;
 				//LsbObject *specificCreatorObject = creatorsObject->getChildren()[customItemCount];
-				//handle = *((unsigned long *)LsbObject::lookupByUniquePathEntity(specificCreatorObject, "Handle")->getData());
+				//handle = *((unsigned long *)specificCreatorObject->lookupByUniquePath("Handle")->getData());
 				handle = handleBase | largestHandle;
 //				LsbObject *lastCreatorObject = creatorsObject->getChildren()[creatorsObject->getChildren().size() - 1];
-//				handle = *((unsigned long *)LsbObject::lookupByUniquePathEntity(lastCreatorObject, "Handle")->getData());
+//				handle = *((unsigned long *)lastCreatorObject->lookupByUniquePath("Handle")->getData());
 //				++handle;
 			}
 		}
@@ -308,7 +308,7 @@ LsbObject *GameItem::createGenerationDirectory() {
 		generationObject = new LsbObject(true, generationTag->index, generationTag->tag, 0, itemObject, tagList);
 		itemObject->addChild(generationObject);
 		
-		LsbObject *statsObject = LsbObject::lookupByUniquePathEntity(itemObject, "Stats");
+		LsbObject *statsObject = itemObject->lookupByUniquePath("Stats");
 
 		LsbObject *statsDirectory = 0;
 		std::vector<LsbObject *> statsObjects = LsbObject::lookupAllEntitiesWithName(itemObject, "Stats");
@@ -320,12 +320,12 @@ LsbObject *GameItem::createGenerationDirectory() {
 			}
 		}
 		
-		LsbObject *isGeneratedObject = LsbObject::lookupByUniquePathEntity(itemObject, "IsGenerated");
+		LsbObject *isGeneratedObject = itemObject->lookupByUniquePath("IsGenerated");
 		bool isGen = true;
 		isGeneratedObject->setData((char *)&isGen, sizeof(bool));
 		
 		if (statsDirectory != 0) {
-			LsbObject *isIdentObject = LsbObject::lookupByUniquePathEntity(statsDirectory, "IsIdentified");
+			LsbObject *isIdentObject = statsDirectory->lookupByUniquePath("IsIdentified");
 			long isIdent = 1;
 			isIdentObject->setData((char *)&isIdent, sizeof(long));
 		}
@@ -339,7 +339,7 @@ LsbObject *GameItem::createGenerationDirectory() {
 		std::string itemTypeDefault = "Common";
 		newItemType->setData(itemTypeDefault.c_str(), itemTypeDefault.length() + 1);
 		if (statsDirectory != 0) {
-			LsbObject *itemTypeObject = LsbObject::lookupByUniquePathEntity(statsDirectory, "ItemType");
+			LsbObject *itemTypeObject = statsDirectory->lookupByUniquePath("ItemType");
 			std::string commonText = "Common";
 			if (itemTypeObject->getData() == commonText) {
 				itemTypeObject->setData(itemTypeDefault.c_str(), itemTypeDefault.length() + 1);
@@ -432,7 +432,7 @@ LsbObject *GameItem::getStatsDirectory() {
 }
 
 LsbObject *GameItem::getGenerationDirectory() {
-	LsbObject *generationDir = LsbObject::lookupByUniquePathEntity(this->getObject(), "Generation");
+	LsbObject *generationDir = this->getObject()->lookupByUniquePath("Generation");
 	return generationDir;
 }
 
@@ -447,9 +447,9 @@ bool GameItem::removeStatsDirectory()
 
 bool GameItem::removeGenerationDirectory()
 {
-	LsbObject *generationDir = LsbObject::lookupByUniquePathEntity(this->getObject(), "Generation");
+	LsbObject *generationDir = this->getObject()->lookupByUniquePath("Generation");
 	if (generationDir != 0) {
-		LsbObject *isGeneratedObject = LsbObject::lookupByUniquePathEntity(this->getObject(), "IsGenerated");
+		LsbObject *isGeneratedObject = this->getObject()->lookupByUniquePath("IsGenerated");
 		bool isGen = false;
 		isGeneratedObject->setData((char *)&isGen, sizeof(bool));
 		return this->getObject()->removeChild(generationDir);
