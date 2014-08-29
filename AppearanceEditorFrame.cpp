@@ -184,10 +184,10 @@ void AppearanceEditorFrame::generateFields() {
 	updateToCurrentUnderwear();
 }
 
-void AppearanceEditorFrame::createModelForItem(GameItem *item) {
+ZGrannyScene *AppearanceEditorFrame::createModelForItem(GameItem *item) {
 	LsbObject *itemObject = item->getObject();
 	if (itemObject != 0) {
-		
+		LsbObject *itemTemplateObject = itemObject->lookupByUniquePath("ItemTemplate");
 	}
 }
 

@@ -80,7 +80,7 @@ LsbObject *LsbObject::lookupByUniquePath(std::vector<LsbObject *>& entities, con
 				if (tokens.size() > 1) {
 					int prefixLen = tok.length() + 1;
 					finalPath = finalPath.substr(prefixLen, strlen(path) - prefixLen);
-					return lookupByUniquePathEntity(entities[j], finalPath.c_str());
+					return entities[j]->lookupByUniquePath(finalPath.c_str());
 				}
 				return entities[j];
 			}

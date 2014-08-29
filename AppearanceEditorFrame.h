@@ -112,6 +112,7 @@ private:
 	void updateToCurrentUnderwear();
 	void updateToCurrentSkinColor();
 	void updateToCurrentHairColor();
+	ZGrannyScene *createModelForItem(GameItem *item);
 	void setup();
 	void generateFields();
 	QLabel *field(const char *fieldName);
