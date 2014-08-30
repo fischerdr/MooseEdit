@@ -31,6 +31,7 @@
 #include "zgranny.h"
 #include <stdio.h>
 #include <windows.h>
+#include <cmath>
 
 granny_data_type_definition *GrannyPNT332VertexType = *(granny_data_type_definition **)GetProcAddress(LoadLibraryW(L"granny2.dll"), "GrannyPNT332VertexType");
 granny_data_type_definition *GrannyPWNGBT343332VertexType = *(granny_data_type_definition **)GetProcAddress(LoadLibraryW(L"granny2.dll"), "GrannyPWNGBT343332VertexType");
@@ -163,6 +164,7 @@ void zGrannyCreateModel( ZGrannyModel *model, ZGrannyScene *inScene, granny_mode
 	if( inScene->maxBoneCount < boneCount ) {
 		inScene->maxBoneCount = boneCount;
 	}
+	model->skeleton = grannyModel->Skeleton;
 	/* Now I ask Granny for two objects I'm going to use to animate
 	  the ZGrannyModel.  The first is the granny_model_instance, which keeps
 	  track of what animations are playing on the ZGrannyModel... */
@@ -173,6 +175,8 @@ void zGrannyCreateModel( ZGrannyModel *model, ZGrannyScene *inScene, granny_mode
 	  so that I can use them for rendering (or collision detection,
 	  etc.) at any time. */
 	model->worldPose = GrannyNewWorldPose( boneCount );
+	
+	model->localPose = GrannyNewLocalPose( boneCount );
 	
 	/* Now, I loop through all the meshes in the ZGrannyModel and process
 	  them. */
@@ -715,12 +719,91 @@ ZGrannyScene *zGrannyCreateSceneFromMemory( const char *fileBytes, unsigned long
 	return scene;
 }
 
+bool zGrannyGetObbCenter2(std::string boneName, ZGrannyModel *attachTo, ZGrannyModel *toAttach, GLfloat obbCenter[3]) {
+	if (attachTo == 0 || attachTo->skeleton == 0)
+		return false;
+	
+	for (int i=0; i<attachTo->skeleton->BoneCount; ++i) {
+		granny_bone &bone = attachTo->skeleton->Bones[i];
+		if (bone.Name == boneName) {
+			GrannySampleModelAnimations(attachTo->grannyInstance,
+			                                0, attachTo->skeleton->BoneCount,
+			                                attachTo->localPose);
+			
+			granny_matrix_4x4 BaseMatrix;
+			    GrannyGetWorldMatrixFromLocalPose(attachTo->skeleton,
+			                                      i,
+			                                      attachTo->localPose,
+			                                      0,
+			                                      (granny_real32*)BaseMatrix,
+			                                      NULL, NULL);
+			
+			granny_matrix_4x4 AttachmentMatrix;
+		    GrannyGetAttachmentOffset(attachTo->skeleton,
+		                              i,
+		                              attachTo->localPose,
+		                              0,
+		                              (granny_real32*)AttachmentMatrix,
+		                              0, 0);
+		
+//		    /* Now build the world pose using the attachment offset multiplied by the matrix of
+//		       the base model bone we're attaching to.  As noted in
+//		       $AnimationInDepth_AttachmentSection, you can use either your own matrix routines,
+//		       or the provided Granny routine $ColumnMatrixMultiply4x3 to construct the Offset4x4
+//		       matrix. */
+//		    granny_matrix_4x4 Offset4x4;
+//		    GrannyColumnMatrixMultiply4x3((granny_real32*)Offset4x4,
+//		                                  (granny_real32*)AttachmentMatrix,
+//		                                  (granny_real32*)BaseMatrix);
+		
+//		    GrannyBuildWorldPose(AttachSkeleton, 0, AttachSkeleton->BoneCount,
+//		                         GlobalScene.SharedLocalPose,
+//		                         (granny_real32*)Offset4x4,
+//		                         GlobalScene.SharedWorldPose);
+			
+//			std::cout<<"Attachment Matrix: \n";
+//			std::cout<<toAttach->meshes[0].grannyMesh->Name<<'\n';
+//			for (int j=0; j<4; ++j) {
+//				for (int k=0; k<4; ++k) {
+//					std::cout<<AttachmentMatrix[j][k]<<' ';
+//				}
+//			}
+//			std::cout<<'\n';
+//			float *transform = GrannyGetWorldPose4x4( attachTo->worldPose, i );
+//			std::cout<<"World Pose Matrix: \n";
+//			std::cout<<toAttach->meshes[0].grannyMesh->Name<<'\n';
+//			for (int j=0; j<16; ++j) {
+//				std::cout<<transform[j]<<' ';
+//			}
+//			std::cout<<'\n';
+//			granny_transform *gtransform = GrannyGetLocalPoseTransform(attachTo->localPose, i);
+//			for (int j=0; j<17; ++j) {
+//				std::cout<<((float *)gtransform)[j]<<' ';
+//			}
+			
+			//std::cout<<"obbCenter "<<boneName<<"\n";
+			obbCenter[0] = ((float *)AttachmentMatrix)[0];
+			obbCenter[1] = (float)fabs((float)((float *)AttachmentMatrix)[12]);
+			obbCenter[2] = ((float *)AttachmentMatrix)[3];
+			//obbCenter[0] = ((float *)bone.InverseWorld4x4)[0];
+			//obbCenter[1] = (float)fabs((float)(((float *)bone.InverseWorld4x4)[12]));
+			//obbCenter[2] = ((float *)bone.InverseWorld4x4)[3];
+			//obbCenter[0] = (bone.OBBMax[0] + bone.OBBMin[0])/2.0;
+			//obbCenter[1] = (bone.OBBMax[1] + bone.OBBMin[1])/2.0;
+			//obbCenter[2] = (bone.OBBMax[2] + bone.OBBMin[2])/2.0;
+			return true;
+		}
+	}
+	return false;
+}
+
 bool zGrannyGetObbCenter(std::string boneName, ZGrannyMesh *mesh, GLfloat obbCenter[3]) {
 	if (mesh->grannyMesh == 0)
 		return false;
 	for (int i=0; i<mesh->grannyMesh->BoneBindingCount; ++i) {
 		granny_bone_binding &bone = mesh->grannyMesh->BoneBindings[i];
 		if (bone.BoneName == boneName) {
+			std::cout<<"obbCenter "<<boneName<<"\n";
 			obbCenter[0] = (bone.OBBMax[0] + bone.OBBMin[0])/2.0;
 			obbCenter[1] = (bone.OBBMax[1] + bone.OBBMin[1])/2.0;
 			obbCenter[2] = (bone.OBBMax[2] + bone.OBBMin[2])/2.0;

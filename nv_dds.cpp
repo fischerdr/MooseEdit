@@ -295,7 +295,7 @@ void CDDSImage::create_textureCubemap(unsigned int format, unsigned int componen
 //
 // filename - fully qualified name of DDS image
 // flipImage - specifies whether image is flipped on load, default is true
-bool CDDSImage::load(string filename, bool flipImage)
+bool CDDSImage::load2(string filename, bool flipImage)
 {
     assert(filename.length() != 0);
     
@@ -475,6 +475,185 @@ bool CDDSImage::load(string filename, bool flipImage)
     }
     
     fclose(fp);
+
+    m_valid = true;
+
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// loads DDS image
+//
+// filename - fully qualified name of DDS image
+// flipImage - specifies whether image is flipped on load, default is true
+bool CDDSImage::load(std::istream &file, bool flipImage)
+{
+    // clear any previously loaded images
+    clear();
+
+    // read in file marker, make sure its a DDS file
+    char filecode[4];
+    file.read(filecode,  1* 4);
+    if (strncmp(filecode, "DDS ", 4) != 0)
+    {
+        return false;
+    }
+
+    // read in DDS header
+    DDS_HEADER ddsh;
+    file.read((char *)&ddsh,  sizeof(DDS_HEADER)* 1);
+
+    swap_endian(&ddsh.dwSize);
+    swap_endian(&ddsh.dwFlags);
+    swap_endian(&ddsh.dwHeight);
+    swap_endian(&ddsh.dwWidth);
+    swap_endian(&ddsh.dwPitchOrLinearSize);
+    swap_endian(&ddsh.dwMipMapCount);
+    swap_endian(&ddsh.ddspf.dwSize);
+    swap_endian(&ddsh.ddspf.dwFlags);
+    swap_endian(&ddsh.ddspf.dwFourCC);
+    swap_endian(&ddsh.ddspf.dwRGBBitCount);
+    swap_endian(&ddsh.dwCaps1);
+    swap_endian(&ddsh.dwCaps2);
+
+    // default to flat texture type (1D, 2D, or rectangle)
+    m_type = TextureFlat;
+
+    // check if image is a cubemap
+    if (ddsh.dwCaps2 & DDSF_CUBEMAP)
+        m_type = TextureCubemap;
+
+    // check if image is a volume texture
+    if ((ddsh.dwCaps2 & DDSF_VOLUME) && (ddsh.dwDepth > 0))
+        m_type = Texture3D;
+
+    // figure out what the image format is
+    if (ddsh.ddspf.dwFlags & DDSF_FOURCC) 
+    {
+        switch(ddsh.ddspf.dwFourCC)
+        {
+            case FOURCC_DXT1:
+                m_format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+                m_components = 3;
+                break;
+            case FOURCC_DXT3:
+                m_format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+                m_components = 4;
+                break;
+            case FOURCC_DXT5:
+                m_format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+                m_components = 4;
+                break;
+            default:
+                return false;
+        }
+    }
+    else if (ddsh.ddspf.dwFlags == DDSF_RGBA && ddsh.ddspf.dwRGBBitCount == 32)
+    {
+        m_format = GL_BGRA_EXT; 
+        m_components = 4;
+    }
+    else if (ddsh.ddspf.dwFlags == DDSF_RGB  && ddsh.ddspf.dwRGBBitCount == 32)
+    {
+        m_format = GL_BGRA_EXT; 
+        m_components = 4;
+    }
+    else if (ddsh.ddspf.dwFlags == DDSF_RGB  && ddsh.ddspf.dwRGBBitCount == 24)
+    {
+        m_format = GL_BGR_EXT; 
+        m_components = 3;
+    }
+	else if (ddsh.ddspf.dwRGBBitCount == 8)
+	{
+		m_format = GL_LUMINANCE; 
+		m_components = 1;
+	}
+    else 
+    {
+        return false;
+    }
+    
+    // store primary surface width/height/depth
+    unsigned int width, height, depth;
+    width = ddsh.dwWidth;
+    height = ddsh.dwHeight;
+    depth = clamp_size(ddsh.dwDepth);   // set to 1 if 0
+    
+    // use correct size calculation function depending on whether image is 
+    // compressed
+    unsigned int (CDDSImage::*sizefunc)(unsigned int, unsigned int);
+    sizefunc = (is_compressed() ? &CDDSImage::size_dxtc : &CDDSImage::size_rgb);
+
+    // load all surfaces for the image (6 surfaces for cubemaps)
+    for (unsigned int n = 0; n < (unsigned int)(m_type == TextureCubemap ? 6 : 1); n++)
+    {
+        // add empty texture object
+        m_images.push_back(CTexture());
+
+        // get reference to newly added texture object
+        CTexture &img = m_images[n];
+        
+        // calculate surface size
+        unsigned int size = (this->*sizefunc)(width, height)*depth;
+
+        // load surface
+        unsigned char *pixels = new unsigned char[size];
+        file.read((char *)pixels,  1* size);
+
+        img.create(width, height, depth, size, pixels);
+        
+        delete [] pixels;
+
+        if (flipImage) flip(img);
+        
+        unsigned int w = clamp_size(width >> 1);
+        unsigned int h = clamp_size(height >> 1);
+        unsigned int d = clamp_size(depth >> 1); 
+
+        // store number of mipmaps
+        unsigned int numMipmaps = ddsh.dwMipMapCount;
+
+        // number of mipmaps in file includes main surface so decrease count 
+        // by one
+        if (numMipmaps != 0)
+            numMipmaps--;
+
+        // load all mipmaps for current surface
+        for (unsigned int i = 0; i < numMipmaps && (w || h); i++)
+        {
+            // add empty surface
+            img.add_mipmap(CSurface());
+
+            // get reference to newly added mipmap
+            CSurface &mipmap = img.get_mipmap(i);
+
+            // calculate mipmap size
+            size = (this->*sizefunc)(w, h)*d;
+
+            unsigned char *pixels = new unsigned char[size];
+            file.read((char *)pixels,  1* size);
+
+            mipmap.create(w, h, d, size, pixels);
+            
+            delete [] pixels;
+
+            if (flipImage) flip(mipmap);
+
+            // shrink to next power of 2
+            w = clamp_size(w >> 1);
+            h = clamp_size(h >> 1);
+            d = clamp_size(d >> 1); 
+        }
+    }
+
+    // swap cubemaps on y axis (since image is flipped in OGL)
+    if (m_type == TextureCubemap && flipImage)
+    {
+        CTexture tmp;
+        tmp = m_images[3];
+        m_images[3] = m_images[2];
+        m_images[2] = tmp;
+    }
 
     m_valid = true;
 

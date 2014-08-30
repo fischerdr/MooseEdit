@@ -19,6 +19,7 @@
 //#include <GL/gl.h>
 //#include <GL/glext.h>
 #endif
+#include <istream>
 
 namespace nv_dds
 {
@@ -200,7 +201,8 @@ namespace nv_dds
                                        const CTexture &positiveZ, const CTexture &negativeZ);
 
             void clear();
-			bool load(std::string filename, bool flipImage = true);
+			bool load(std::istream &file, bool flipImage = true);
+			bool load2(std::string filename, bool flipImage = true);
             //bool loadFromMemory(const char *memory, unsigned long size, bool flipImage = true);
             bool save(std::string filename, bool flipImage = true);
 

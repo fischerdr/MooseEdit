@@ -48,11 +48,15 @@ struct ZGrannyModel {
 	float matrix[4][4];
 		// The matrix that says where this ZGrannyModel should be placed in the world
 	
+	granny_skeleton *skeleton;
+	
 	granny_model_instance *grannyInstance;
 		// Granny's instance of this model
 
 	granny_world_pose *worldPose;
 		// The current world-space state of the model
+	
+	granny_local_pose *localPose;
 
 	int meshCount;	  
 	ZGrannyMesh *meshes;
@@ -104,5 +108,7 @@ void zGrannyShutdownScene( ZGrannyScene *scene );
 void zGrannyRenderScene(ZGrannyScene *scene , std::vector<GLint> &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, GLfloat worldPos[3] );
 
 bool zGrannyGetObbCenter(std::string boneName, ZGrannyMesh *mesh, GLfloat obbCenter[3]);
+
+bool zGrannyGetObbCenter2(std::string boneName, ZGrannyModel *attachTo, ZGrannyModel *toAttach, GLfloat obbCenter[3]);
 
 #endif

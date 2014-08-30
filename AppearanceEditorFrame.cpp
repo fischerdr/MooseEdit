@@ -31,6 +31,7 @@ AppearanceEditorFrame::AppearanceEditorFrame(std::wstring gameDataPath, QWidget 
 	ui(new Ui::AppearanceEditorFrame)
 {
 	mainPak.loadFile(gameDataPath + L"Main.pak");
+	texturesPak.loadFile(gameDataPath + L"Textures.pak");
 	ui->setupUi(this);
 }
 
@@ -38,48 +39,49 @@ void AppearanceEditorFrame::generateEquipmentModels() {
 	for (int i=0; i<EQUIP_SLOTS; ++i) {
 		GameItem *item = equipHandler->getItemAtSlot(i);
 		if (item != 0) {
-			ZGrannyScene *scene = createModelForItem(item);
-			GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
 			std::vector<GLint> textures;
+			ZGrannyScene *scene = createModelForItem(item, textures);
+			GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
 			if (scene != 0) {
 				MeshAttachmentPoint *attachment = new MeshAttachmentPoint;
 				attachment->meshName = "PL_M_Body_A";
 				switch (i) {
-//				case SLOT_HELMET:
-//					attachment->boneName = "Bip001 Head";
-//					break;
-//				case SLOT_BREAST:
-//					attachment->boneName = "Bip001 Toe0";
-//					break;
-//				case SLOT_GARMENT:
-//					attachment->boneName = "Bip001 Toe0";
-//					break;
-//				case SLOT_WEAPON:
-//					attachment->boneName = "Bip001 Toe0";
-//					break;
-//				case SLOT_SHIELD:
-//					attachment->boneName = "Bip001 Toe0";
-//					break;
-//				case SLOT_RING_LEFT:
-//					attachment->boneName = "Bip001 Toe0";
-//					break;
-//				case SLOT_BELT:
-//					attachment->boneName = "Bip001 Toe0";
-//					break;
-//				case SLOT_BOOTS:
-//					attachment->boneName = "Bip001 Toe0";
-//					break;
-//				case SLOT_BRACERS:
-//					attachment->boneName = "Bip001 Toe0";
-//					break;
-//				case SLOT_AMULET:
-//					attachment->boneName = "Bip001 Toe0";
-//					break;
-//				case SLOT_RING_RIGHT:
-//					attachment->boneName = "Bip001 Toe0";
-//					break;
+				case SLOT_HELMET:
+					attachment->boneName = "Bip001 Head";
+					break;
+				case SLOT_BREAST:
+					attachment->boneName = "Bip001 Spine1";
+					break;
+				case SLOT_GARMENT:
+					attachment->boneName = "Bip001 Pelvis";
+					break;
+				case SLOT_WEAPON:
+					attachment->boneName = "Bip001 R Hand";
+					break;
+				case SLOT_SHIELD:
+					attachment->boneName = "Bip001 L Hand";
+					break;
+				case SLOT_RING_LEFT:
+					attachment->boneName = "Bip001 L Finger0";
+					break;
+				case SLOT_BELT:
+					attachment->boneName = "Bip001 Pelvis";
+					break;
+				case SLOT_BOOTS:
+					attachment->boneName = "Bip001 L Foot";
+					break;
+				case SLOT_BRACERS:
+					attachment->boneName = "Bip001 L Forearm";
+					break;
+				case SLOT_AMULET:
+					attachment->boneName = "Bip001 Neck";
+					break;
+				case SLOT_RING_RIGHT:
+					attachment->boneName = "Bip001 R Finger0";
+					break;
 				}
-				glContext->addGrannyScene(scene, textures, 0, 0, 0, attachment);
+				equippedItems.push_back({scene, textures, attachment});
+				glContext->addGrannyScene(scene, textures, 0, 0, shaderProgram, attachment);
 			}
 		}
 	}
@@ -260,6 +262,19 @@ void AppearanceEditorFrame::generateFields() {
 			delete[] fileBytes;
 		}
 	}
+	{
+		std::string extractPath = "Public/Main/Content/Assets/Characters/[PAK]_Player_Male/Player_Male.lsb";
+		unsigned long fileSize;
+		char *fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", extractPath, gameDataPath, false, &fileSize);
+		if (fileBytes != 0) {
+			std::stringstream ss;
+			ss.rdbuf()->pubsetbuf(fileBytes, fileSize);
+			LsbReader reader;
+			std::vector<LsbObject *> resourceAssets = reader.loadFile(ss);
+			playerMaleResourceBankObject = LsbObject::lookupByUniquePath(resourceAssets, "ResourceBank");
+			delete[] fileBytes;
+		}
+	}
 	
 	generateEquipmentModels();
 }
@@ -297,7 +312,7 @@ std::string AppearanceEditorFrame::getTextureFromTextureTemplate(LsbObject *reso
 	return "";
 }
 
-bool AppearanceEditorFrame::getTextureMaps(LsbObject *resourceBankObject, std::string &visualTemplate, std::string &diffuseMap, std::string &normalMap, std::string &maskMap) {
+bool AppearanceEditorFrame::getTextureMaps(LsbObject *resourceBankObject, LsbObject *materialsResourceBankObject, std::string &visualTemplate, std::string &diffuseMap, std::string &normalMap, std::string &maskMap) {
 	if (visualTemplate.size() == 0) {
 		return false;
 	}
@@ -308,10 +323,10 @@ bool AppearanceEditorFrame::getTextureMaps(LsbObject *resourceBankObject, std::s
 		LsbObject *resourceObject = matchingResourceObjects[0];
 		LsbObject *objectsObject = resourceObject->lookupByUniquePath("Objects");
 		if (objectsObject != 0) {
-			LsbObject *materialIdObject = resourceObject->lookupByUniquePath("MaterialID");
+			LsbObject *materialIdObject = objectsObject->lookupByUniquePath("MaterialID");
 			if (materialIdObject != 0) {
 				std::string materialId = materialIdObject->getData();
-				LsbObject *materialBankObject = resourceBankObject->lookupByUniquePath("root/MaterialBank");
+				LsbObject *materialBankObject = materialsResourceBankObject->lookupByUniquePath("root/MaterialBank");
 				std::vector<LsbObject *> matchingResourceObjects = LsbObject::findItemsByAttribute(materialBankObject->getChildren(), 
 																								   "MapKey", materialId.c_str(), materialId.length() + 1);
 				if (matchingResourceObjects.size() == 1) {
@@ -343,9 +358,9 @@ bool AppearanceEditorFrame::getTextureMaps(LsbObject *resourceBankObject, std::s
 							}
 						}
 					}
-					diffuseMap = getTextureFromTextureTemplate(resourceBankObject, diffuseTextureTemplate);
-					normalMap = getTextureFromTextureTemplate(resourceBankObject, normalTextureTemplate);
-					maskMap = getTextureFromTextureTemplate(resourceBankObject, maskTextureTemplate);
+					diffuseMap = getTextureFromTextureTemplate(materialsResourceBankObject, diffuseTextureTemplate);
+					normalMap = getTextureFromTextureTemplate(materialsResourceBankObject, normalTextureTemplate);
+					maskMap = getTextureFromTextureTemplate(materialsResourceBankObject, maskTextureTemplate);
 					if (diffuseMap.size() > 0 && normalMap.size() > 0 && maskMap.size() > 0) {
 						return true;
 					}
@@ -356,7 +371,7 @@ bool AppearanceEditorFrame::getTextureMaps(LsbObject *resourceBankObject, std::s
 	return false;
 }
 
-ZGrannyScene *AppearanceEditorFrame::createModelForItem(GameItem *item) {
+ZGrannyScene *AppearanceEditorFrame::createModelForItem(GameItem *item, std::vector<GLint> &textures) {
 	LsbObject *itemObject = item->getObject();
 	if (itemObject != 0) {
 		LsbObject *itemTemplateObject = itemObject->lookupByUniquePath("CurrentTemplate");
@@ -405,21 +420,61 @@ ZGrannyScene *AppearanceEditorFrame::createModelForItem(GameItem *item) {
 					std::string diffuseMap;
 					std::string normalMap;
 					std::string maskMap;
-					this->getTextureMaps(resourceBank, visualTemplate, diffuseMap, normalMap, maskMap);
+					if (resourceBank == armorsPlayerResourceBankObject && this->isMale) {
+						this->getTextureMaps(resourceBank, playerMaleResourceBankObject, visualTemplate, diffuseMap, normalMap, maskMap);
+					} else if (resourceBank == armorsPlayerResourceBankObject && !this->isMale) {
+						//this->getTextureMaps(resourceBank, playerFemaleResourceBankObject, visualTemplate, diffuseMap, normalMap, maskMap);
+					} else {
+						this->getTextureMaps(resourceBank, resourceBank, visualTemplate, diffuseMap, normalMap, maskMap);
+					}
 					unsigned long fileSize;
 					std::wstring temp = L"";
 					char *fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", modelFile, temp, false, &fileSize);
 					if (fileBytes != 0) {
-						std::vector<GLint> textures;
-						
-//						nv_dds::CDDSImage &textureImage = nv_dds::CDDSImage();
-//						GLuint diffuseTextureId;
-//						textureImage.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Body_A_DM.dds", false);
-//						glGenTextures(1, &diffuseTextureId);
-//						glEnable(GL_TEXTURE_2D);
-//						glBindTexture(GL_TEXTURE_2D, diffuseTextureId);
-//						textureImage.upload_texture2D();
-						
+						GLuint diffuseTextureId = -1;
+						GLuint normalTextureId = -1;
+						GLuint maskTextureId = -1;
+						std::wstring tmp;
+						unsigned long textureFileSize;
+						char *diffuseBytes = texturesPak.extractFileIntoMemory(gameDataPath + L"Textures.pak", diffuseMap, tmp, false, &textureFileSize);
+						if (diffuseBytes != 0) {
+							nv_dds::CDDSImage textureImage;
+							std::stringstream ss;
+							ss.rdbuf()->pubsetbuf(diffuseBytes, textureFileSize);
+							textureImage.load(ss, false);
+							glGenTextures(1, &diffuseTextureId);
+							glEnable(GL_TEXTURE_2D);
+							glBindTexture(GL_TEXTURE_2D, diffuseTextureId);
+							textureImage.upload_texture2D();
+							textures.push_back(diffuseTextureId);
+							delete[] diffuseBytes;
+						}
+						char *normalBytes = texturesPak.extractFileIntoMemory(gameDataPath + L"Textures.pak", normalMap, tmp, false, &textureFileSize);
+						if (normalBytes != 0) {
+							nv_dds::CDDSImage textureImage;
+							std::stringstream ss;
+							ss.rdbuf()->pubsetbuf(normalBytes, textureFileSize);
+							textureImage.load(ss, false);
+							glGenTextures(1, &normalTextureId);
+							glEnable(GL_TEXTURE_2D);
+							glBindTexture(GL_TEXTURE_2D, normalTextureId);
+							textureImage.upload_texture2D();
+							textures.push_back(normalTextureId);
+							delete[] normalBytes;
+						}
+						char *maskBytes = texturesPak.extractFileIntoMemory(gameDataPath + L"Textures.pak", maskMap, tmp, false, &textureFileSize);
+						if (maskBytes != 0) {
+							nv_dds::CDDSImage textureImage;
+							std::stringstream ss;
+							ss.rdbuf()->pubsetbuf(maskBytes, textureFileSize);
+							textureImage.load(ss, false);
+							glGenTextures(1, &maskTextureId);
+							glEnable(GL_TEXTURE_2D);
+							glBindTexture(GL_TEXTURE_2D, maskTextureId);
+							textureImage.upload_texture2D();
+							textures.push_back(maskTextureId);
+							delete[] maskBytes;
+						}
 						ZGrannyScene *scene = zGrannyCreateSceneFromMemory(fileBytes, fileSize, textures);
 						delete[] fileBytes;
 						return scene;
@@ -506,7 +561,9 @@ void AppearanceEditorFrame::setup() {
 	
 	nv_dds::CDDSImage image;
 	GLuint texobj;
-	image.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Body_A_DM.dds", false);
+	boost::filesystem::ifstream stream("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Body_A_DM.dds",
+									   std::ios_base::binary);
+	image.load(stream, false);
 	glGenTextures(1, &texobj);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texobj);
@@ -514,7 +571,10 @@ void AppearanceEditorFrame::setup() {
 	
 	nv_dds::CDDSImage image5;
 	GLuint texobj5;
-	image5.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Body_A_NM.dds", false);
+	boost::filesystem::ifstream stream5(
+				"C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Body_A_NM.dds",
+				std::ios_base::binary);
+	image5.load(stream5, false);
 	glGenTextures(1, &texobj5);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texobj5);
@@ -522,7 +582,10 @@ void AppearanceEditorFrame::setup() {
 	
 	nv_dds::CDDSImage image6;
 	GLuint texobj6;
-	image6.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Body_A_SM.dds", false);
+	boost::filesystem::ifstream stream6(
+				"C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Body_A_SM.dds",
+				std::ios_base::binary);
+	image6.load(stream6, false);
 	glGenTextures(1, &texobj6);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texobj6);
@@ -530,7 +593,10 @@ void AppearanceEditorFrame::setup() {
 	
 	nv_dds::CDDSImage image2;
 	GLuint texobj2;
-	image2.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Head_A_DM.dds", false);
+	boost::filesystem::ifstream stream2(
+				"C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Head_A_DM.dds",
+				std::ios_base::binary);
+	image2.load(stream2, false);
 	glGenTextures(1, &texobj2);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texobj2);
@@ -538,7 +604,10 @@ void AppearanceEditorFrame::setup() {
 	
 	nv_dds::CDDSImage image7;
 	GLuint texobj7;
-	image7.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Head_A_NM.dds", false);
+	boost::filesystem::ifstream stream7(
+				"C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Head_A_NM.dds",
+				std::ios_base::binary);
+	image7.load(stream7, false);
 	glGenTextures(1, &texobj7);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texobj7);
@@ -546,7 +615,10 @@ void AppearanceEditorFrame::setup() {
 	
 	nv_dds::CDDSImage image8;
 	GLuint texobj8;
-	image8.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Head_A_SM.dds", false);
+	boost::filesystem::ifstream stream8(
+				"C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Head_A_SM.dds",
+				std::ios_base::binary);
+	image8.load(stream8, false);
 	glGenTextures(1, &texobj8);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texobj8);
@@ -554,7 +626,10 @@ void AppearanceEditorFrame::setup() {
 	
 	nv_dds::CDDSImage image3;
 	GLuint texobj3;
-	image3.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Hair_A_DM.dds", false);
+	boost::filesystem::ifstream stream3(
+				"C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Hair_A_DM.dds",
+				std::ios_base::binary);
+	image3.load(stream3, false);
 	glGenTextures(1, &texobj3);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texobj3);
@@ -562,7 +637,10 @@ void AppearanceEditorFrame::setup() {
 	
 	nv_dds::CDDSImage image9;
 	GLuint texobj9;
-	image9.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Hair_A_NM.dds", false);
+	boost::filesystem::ifstream stream9(
+				"C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Hair_A_NM.dds",
+				std::ios_base::binary);
+	image9.load(stream9, false);
 	glGenTextures(1, &texobj9);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texobj9);
@@ -570,7 +648,10 @@ void AppearanceEditorFrame::setup() {
 	
 	nv_dds::CDDSImage image10;
 	GLuint texobj10;
-	image10.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Hair_A_SM.dds", false);
+	boost::filesystem::ifstream stream10(
+				"C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Hair_A_SM.dds",
+				std::ios_base::binary);
+	image10.load(stream10, false);
 	glGenTextures(1, &texobj10);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texobj10);
@@ -578,7 +659,10 @@ void AppearanceEditorFrame::setup() {
 	
 	nv_dds::CDDSImage image4;
 	GLuint texobj4;
-	image4.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_ARM_Cloth_A_Torso_ABC_Tx_00_DM.dds", false);
+	boost::filesystem::ifstream stream4(
+				"C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_ARM_Cloth_A_Torso_ABC_Tx_00_DM.dds",
+				std::ios_base::binary);
+	image4.load(stream4, false);
 	glGenTextures(1, &texobj4);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texobj4);
@@ -746,7 +830,10 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 	
 	nv_dds::CDDSImage image3;
 	GLuint texobj3;
-	image3.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + textureFile + "_DM.dds", false);
+	boost::filesystem::ifstream stream3(
+				"C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + textureFile + "_DM.dds",
+				std::ios_base::binary);
+	image3.load(stream3, false);
 	glGenTextures(1, &texobj3);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texobj3);
@@ -757,7 +844,10 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 	std::string nmDdsPath = "C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + textureFile + "_NM.dds";
 	boost::filesystem::path nmPath(nmDdsPath);
 	if (boost::filesystem::exists(nmPath)) {
-		image9.load(nmDdsPath, false);
+		boost::filesystem::ifstream stream9(
+					nmDdsPath,
+					std::ios_base::binary);
+		image9.load(stream9, false);
 		glGenTextures(1, &texobj9);
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, texobj9);
@@ -769,9 +859,15 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 	std::string smDdsPath = "C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + textureFile + "_SM.dds";
 	boost::filesystem::path smPath(smDdsPath);
 	if (boost::filesystem::exists(smPath)) {
-		image10.load(smDdsPath, false);
+		boost::filesystem::ifstream stream10(
+					smDdsPath,
+					std::ios_base::binary);
+		image10.load(stream10, false);
 	} else {
-		image10.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + textureFile + "_MSK.dds", false);
+		boost::filesystem::ifstream stream10(
+					"C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + textureFile + "_MSK.dds",
+					std::ios_base::binary);
+		image10.load(stream10, false);
 	}
 	glGenTextures(1, &texobj10);
 	glEnable(GL_TEXTURE_2D);
@@ -889,3 +985,17 @@ void AppearanceEditorFrame::setEquipHandler(EquipmentHandler *value)
 	equipHandler = value;
 }
 
+
+void AppearanceEditorFrame::on_armorToggleButton_clicked()
+{
+	showEquipped = !showEquipped;
+	GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
+	for (int i=0; i<equippedItems.size(); ++i) {
+		equippedItemData_t &eid = equippedItems[i];
+		if (showEquipped) {
+			glContext->addGrannyScene(eid.scene, eid.textures, 0, 0, shaderProgram, eid.attachmentPoint);
+		} else {
+			glContext->removeGrannyScene(eid.scene);
+		}
+	}
+}

@@ -38,7 +38,6 @@ signals:
 public slots:
 	
 private:
-	int showCount = 0;
 	void addAngle(double *angle, double toAdd, bool restricted) {
 		*angle += toAdd;
 		if (restricted) {

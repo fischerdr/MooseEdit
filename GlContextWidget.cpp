@@ -77,6 +77,10 @@ void GlContextWidget::resizeGL(int w, int h) {
 #include <iostream>
 
 void GlContextWidget::paintGL() {
+	if (!this->isVisible()) {
+		return;
+	}
+	
 	if (leftDown) {
 		posX -= movementVelocity / framesPerSecond;
 	}
@@ -136,10 +140,22 @@ void GlContextWidget::paintGL() {
 					   ZGrannyScene *scene = grannyScenes[j];
 					   for (int k=0; k<scene->modelCount; ++k) {
 						   ZGrannyModel &model = scene->models[k];
+						   if (zGrannyGetObbCenter2(attachment->boneName, &model, &grannyScenes[i]->models[0], worldPos)) {
+							   //std::cout<<grannyScenes[i]->models[0].meshes[0].grannyMesh->Name<<'\n';
+//							   std::cout<<worldPos[0]<<' '<<
+//										worldPos[1]<<' '<<
+//													   worldPos[2]<<' '<<'\n';
+						   }
+						   
 						   for (int m=0; m<model.meshCount; ++m) {
 							   ZGrannyMesh &mesh = model.meshes[m];
 							   if (mesh.grannyMesh->Name == attachment->meshName) {
-								   zGrannyGetObbCenter(attachment->boneName, &mesh, worldPos);
+//								   if (zGrannyGetObbCenter(attachment->boneName, &mesh, worldPos)) {
+//									   std::cout<<grannyScenes[i]->models[0].meshes[0].grannyMesh->Name<<'\n';
+//									   std::cout<<worldPos[0]<<' '<<
+//												worldPos[1]<<' '<<
+//															   worldPos[2]<<' '<<'\n';
+//								   }
 							   }
 						   }
 					   }
@@ -147,6 +163,7 @@ void GlContextWidget::paintGL() {
 			   }
 		   }
 		   zGrannyRenderScene(grannyScenes[i], textureIds[i], vertexRGBs[i], vertexRGB2s[i], shaderPrograms[i], worldPos);
+		   //zGrannyRenderSkeleton(grannyScenes[i]->models[0].skeleton, grannyScenes[i]->models[0].worldPose);
 	   }
    }
    
@@ -158,19 +175,6 @@ void GlContextWidget::paintGL() {
    gluLookAt(finalX, finalY, finalZ,
    lookatX, lookatY, lookatZ, 
 			 0, 1, 0);
-   ++showCount;
-   if (showCount == 50) {
-	   std::cout<<"pos xyz lookat xyz\n";
-	   std::cout<<finalX<<' '<<
-				  finalY<<' '<<
-				  finalZ<<' '<<
-				  addX<<' '<<
-				  addY<<' '<<
-				  addZ<<' '<<
-				  lookatX<<' '<<
-				  lookatY<<' '<<
-				  lookatZ<<' '<<'\n';
-   }
 }
 
 void GlContextWidget::addGrannyScene(ZGrannyScene *scene, std::vector<GLint> &textures)
