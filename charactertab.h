@@ -105,6 +105,7 @@ private:
 	CharacterLoader *characterLoader;
 	StatTemplateMap *statToTemplateMap;
 	std::vector<long> experienceRequired;
+	std::wstring gameDataPath;
 	QTabWidget *tabWidget;
 	bool loadExperienceData();
 	LsbObject *itemsObject;

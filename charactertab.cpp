@@ -13,7 +13,7 @@
 #include "TraitWidget.h"
 
 characterTab::characterTab(std::vector<TAG_LSB *> *tagList, std::wstring gameDataPath, LsbObject *itemsObject, CharacterLoader *characterLoader, QTabWidget *tabWidget, QWidget *parent) :
-	QWidget(parent), tagList(tagList), itemsObject(itemsObject), tabWidget(tabWidget), statToTemplateMap(statToTemplateMap), characterLoader(characterLoader),
+	QWidget(parent), tagList(tagList), itemsObject(itemsObject), tabWidget(tabWidget), statToTemplateMap(statToTemplateMap), characterLoader(characterLoader), gameDataPath(gameDataPath),
 	ui(new Ui::characterTab)
 {
 	ui->setupUi(this);
@@ -25,8 +25,6 @@ characterTab::characterTab(std::vector<TAG_LSB *> *tagList, std::wstring gameDat
 	QScrollArea *inventoryScrollArea = this->findChild<QScrollArea *>("inventoryScrollArea");
 	inventoryScrollArea->setContextMenuPolicy(Qt::CustomContextMenu);
 	talentList->setContextMenuPolicy(Qt::CustomContextMenu);
-	
-	appearanceEditorFrame = new AppearanceEditorFrame(gameDataPath);
 }
 
 long characterTab::levelFromExperience(long experience) {
@@ -293,6 +291,8 @@ void characterTab::setCharacter(GameCharacter *character) {
 		ss<<level;
 		levelEdit->setText(ss.str().c_str());
 	}
+	
+	appearanceEditorFrame = new AppearanceEditorFrame(gameDataPath, character);
 }
 
 characterTab::~characterTab()

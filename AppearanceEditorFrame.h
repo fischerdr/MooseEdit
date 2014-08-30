@@ -6,6 +6,7 @@
 #include "zgranny.h"
 #include "PakReader.h"
 #include "EquipmentHandler.h"
+#include "GameCharacter.h"
 
 namespace Ui {
 class AppearanceEditorFrame;
@@ -15,6 +16,13 @@ typedef struct {
 	std::string name;
 	std::string maleValue;
 	std::string femaleValue;
+	std::string &currentValue(bool isMale) {
+		if (isMale) {
+			return maleValue;
+		} else {
+			return femaleValue;
+		}
+	}
 } fieldValue_t;
 
 typedef struct {
@@ -28,7 +36,7 @@ class AppearanceEditorFrame : public QFrame
 	Q_OBJECT
 	
 public:
-	explicit AppearanceEditorFrame(std::wstring gameDataPath, QWidget *parent = 0);
+	explicit AppearanceEditorFrame(std::wstring gameDataPath, GameCharacter *character, QWidget *parent = 0);
 	~AppearanceEditorFrame();
 	void showEvent(QShowEvent *);
 	void keyPressEvent(QKeyEvent* e) {
@@ -83,7 +91,12 @@ private slots:
 	
 	void on_armorToggleButton_clicked();
 	
+	void on_femaleButton_clicked();
+	
+	void on_maleButton_clicked();
+	
 private:
+	std::vector<fieldValue_t> portraits;
 	std::vector<fieldValue_t> aiPersonalities;
 	std::vector<fieldValue_t> voices;
 	std::vector<fieldValue_t> skinColors;
@@ -115,16 +128,23 @@ private:
 	EquipmentHandler *equipHandler;
 	GamePakData *gamePakData;
 	bool showEquipped = true;
+	GameCharacter *character;
+	LsbObject *oldPlayerCustomDataObject = 0;
+	LsbObject *playerCustomDataObject = 0;
 	
 	LsbObject *weaponsResourceBankObject = 0;
 	LsbObject *armorsPlayerResourceBankObject = 0;
 	LsbObject *playerMaleResourceBankObject = 0;
+	LsbObject *playerFemaleResourceBankObject = 0;
 	
 	ZGrannyScene *currentHair = 0;
 	ZGrannyScene *currentHead = 0;
 	ZGrannyScene *currentUnderwear = 0;
 	std::vector<equippedItemData_t> equippedItems;
 	
+	void loadEquipmentData();
+	void updateAllFields();
+	void initIndexesToCustomData();
 	void generateEquipmentModels();
 	std::string getGR2(LsbObject *resourceBankObject, std::string &visualTemplate);
 	std::string getTextureFromTextureTemplate(LsbObject *resourceBankObject, std::string &textureTemplate);
