@@ -6,7 +6,7 @@ GlContextWidget::GlContextWidget(QWidget *parent) :
 	QGLWidget(parent)
 {
 	posX = 1.0;
-	posY = 2.0;
+	posY = 2.15;
 	posZ = -2.0;
 	
 	addX = 0.0;
@@ -18,19 +18,30 @@ GlContextWidget::GlContextWidget(QWidget *parent) :
 	inclination = 320.0;
 	
 	lookatX = 0.0;
-	lookatY = 1.0;
+	lookatY = 1.15;
 	lookatZ = 0.0;
-
 }
 
 void GlContextWidget::showEvent(QShowEvent *event)
 {
-	connect(&frameTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
+	if (!timerConnected) {
+		timerConnected = true;
+		connect(&frameTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
+		
+		double secondsPerFrame = 1.0/framesPerSecond;
+		unsigned long msPerFrame = 1000 * secondsPerFrame;
+		frameTimer.start(msPerFrame);
+	}
 }
 
 void GlContextWidget::hideEvent(QHideEvent *event)
 {
-	disconnect(&frameTimer);
+	frameTimer.stop();
+}
+
+void GlContextWidget::closeEvent(QCloseEvent *event)
+{
+	frameTimer.stop();
 }
 
 double movementVelocity = 5;
@@ -56,10 +67,6 @@ bool numpadDiv = false;
 void GlContextWidget::initializeGL() {
    glDisable(GL_BLEND);        // Turn Blending Off
    glEnable(GL_DEPTH_TEST);    // Turn Depth Testing On
-
-   double secondsPerFrame = 1.0/framesPerSecond;
-   unsigned long msPerFrame = 1000 * secondsPerFrame;
-   frameTimer.start(msPerFrame);
 }
 
 void GlContextWidget::resizeGL(int w, int h) {
@@ -177,12 +184,45 @@ void GlContextWidget::paintGL() {
 			 0, 1, 0);
 }
 
-void GlContextWidget::addGrannyScene(ZGrannyScene *scene, std::vector<GLint> &textures)
+void GlContextWidget::cleanup() {
+	frameTimer.stop();
+	for (int i=0; i<grannyScenes.size(); ++i) {
+		zGrannyShutdownScene(grannyScenes[i]);
+		std::vector<GLuint > &textures = textureIds[i];
+		if (textures.size() > 0) {
+			GLuint *textureArray = new GLuint[textures.size()];
+			for (int i=0; i<textures.size(); ++i) {
+				textureArray[i] = textures[i];
+			}
+			glDeleteTextures(textures.size(), textureArray);
+			delete[] textureArray;
+		}
+		if (shaderPrograms[i] != 0) {
+			GlShaderProgram *program = shaderPrograms[i];
+			glDeleteProgram(program->getProgram());
+		}
+		removeGrannyScene(grannyScenes[i]);
+		--i;
+	}
+	frameTimer.start();
+}
+
+void GlContextWidget::pauseRendering()
+{
+	frameTimer.stop();
+}
+
+void GlContextWidget::resumeRendering()
+{
+	frameTimer.start();
+}
+
+void GlContextWidget::addGrannyScene(ZGrannyScene *scene, std::vector<GLuint> &textures)
 {
 	addGrannyScene(scene, textures, 0, 0, 0, 0);
 }
 
-void GlContextWidget::addGrannyScene(ZGrannyScene *scene, std::vector<GLint > &textures, 
+void GlContextWidget::addGrannyScene(ZGrannyScene *scene, std::vector<GLuint > &textures, 
 									 VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, MeshAttachmentPoint *attachment)
 {
 	grannyScenes.push_back(scene);

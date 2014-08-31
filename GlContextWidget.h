@@ -21,8 +21,8 @@ public:
 	
 	//ZGrannyScene *getGrannyScene() const;
 	//void setGrannyScene(ZGrannyScene *value);
-	void addGrannyScene(ZGrannyScene *scene, std::vector<GLint> &textures);
-	void addGrannyScene(ZGrannyScene *scene, std::vector<GLint> &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, MeshAttachmentPoint *attachment);
+	void addGrannyScene(ZGrannyScene *scene, std::vector<GLuint> &textures);
+	void addGrannyScene(ZGrannyScene *scene, std::vector<GLuint> &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, MeshAttachmentPoint *attachment);
 	void removeGrannyScene(ZGrannyScene *scene);
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);
@@ -32,6 +32,10 @@ public:
 	void wheelEvent(QWheelEvent *event);
 	void showEvent(QShowEvent *event);
 	void hideEvent(QHideEvent *event);
+	void closeEvent(QCloseEvent *);
+	void cleanup();
+	void pauseRendering();
+	void resumeRendering();
 	
 signals:
 	
@@ -79,11 +83,12 @@ private:
 	const long framesPerSecond = 60;
 	QTimer frameTimer;
 	std::vector<ZGrannyScene *> grannyScenes;
-	std::vector<std::vector<GLint> > textureIds;
+	std::vector<std::vector<GLuint> > textureIds;
 	std::vector<VertexRGB *> vertexRGBs;
 	std::vector<VertexRGB *> vertexRGB2s;
 	std::vector<GlShaderProgram *> shaderPrograms;
 	std::vector<MeshAttachmentPoint *> attachments;
+	bool timerConnected = false;
 	//ZGrannyScene *grannyScene = 0;
 	double posX;
 	double posY;

@@ -29,15 +29,6 @@ AppearanceEditorFrame::AppearanceEditorFrame(std::wstring gameDataPath, GameChar
 {
 	mainPak.loadFile(gameDataPath + L"Main.pak");
 	texturesPak.loadFile(gameDataPath + L"Textures.pak");
-	LsbObject *characterObject = character->getObject();
-	if (characterObject != 0) {
-		LsbObject *playerDataObject = characterObject->lookupByUniquePath("PlayerData");
-		if (playerDataObject != 0) {
-			LsbObject *playerCustomDataObject = playerDataObject->lookupByUniquePath("PlayerCustomData");
-			oldPlayerCustomDataObject = playerCustomDataObject;
-			this->playerCustomDataObject = new LsbObject(*oldPlayerCustomDataObject);
-		}
-	}
 	ui->setupUi(this);
 }
 
@@ -45,7 +36,7 @@ void AppearanceEditorFrame::generateEquipmentModels() {
 	for (int i=0; i<EQUIP_SLOTS; ++i) {
 		GameItem *item = equipHandler->getItemAtSlot(i);
 		if (item != 0) {
-			std::vector<GLint> textures;
+			std::vector<GLuint> textures;
 			ZGrannyScene *scene = createModelForItem(item, textures);
 			GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
 			if (scene != 0) {
@@ -458,7 +449,7 @@ bool AppearanceEditorFrame::getTextureMaps(LsbObject *resourceBankObject, LsbObj
 	return false;
 }
 
-ZGrannyScene *AppearanceEditorFrame::createModelForItem(GameItem *item, std::vector<GLint> &textures) {
+ZGrannyScene *AppearanceEditorFrame::createModelForItem(GameItem *item, std::vector<GLuint > &textures) {
 	LsbObject *itemObject = item->getObject();
 	if (itemObject != 0) {
 		LsbObject *itemTemplateObject = itemObject->lookupByUniquePath("CurrentTemplate");
@@ -659,13 +650,76 @@ void AppearanceEditorFrame::initIndexesToCustomData() {
 	}
 }
 
+void AppearanceEditorFrame::cleanup() {
+	GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
+	glContext->cleanup();
+	if (skinColor != 0) {
+		delete skinColor;
+		skinColor = 0;
+	}
+	if (hairColor != 0) {
+		delete hairColor;
+		hairColor = 0;
+	}
+	if (underwearColor != 0) {
+		delete underwearColor;
+		underwearColor = 0;
+	}
+	if (shaderProgram != 0) {
+		delete shaderProgram;
+		shaderProgram = 0;
+	}
+	for (int i=0; i<equippedItems.size(); ++i) {
+		equippedItemData_t &equippedItem = equippedItems[i];
+		delete equippedItem.scene;
+		delete equippedItem.attachmentPoint;
+	}
+	equippedItems.clear();
+	if (currentHead != 0) {
+		delete currentHead;
+		currentHead = 0;
+	}
+	if (currentHair != 0) {
+		delete currentHair;
+		currentHair = 0;
+	}
+	if (currentUnderwear != 0) {
+		delete currentUnderwear;
+		currentUnderwear = 0;
+	}
+	if (playerCustomDataObject != 0) {
+		delete playerCustomDataObject;
+		playerCustomDataObject = 0;
+	}
+	portraits.clear();
+	aiPersonalities.clear();
+	voices.clear();
+	skinColors.clear();
+	heads.clear();
+	headTextures.clear();
+	hairs.clear();
+	hairColors.clear();
+	underwears.clear();
+	underwearTextures.clear();
+}
+
 void AppearanceEditorFrame::setup() {
 	if (!didInitGlew) {
 		didInitGlew = true;
 		glewInit();
 	}
 			
-	//cleanup();
+	cleanup();
+	
+	LsbObject *characterObject = character->getObject();
+	if (characterObject != 0) {
+		LsbObject *playerDataObject = characterObject->lookupByUniquePath("PlayerData");
+		if (playerDataObject != 0) {
+			LsbObject *playerCustomDataObject = playerDataObject->lookupByUniquePath("PlayerCustomData");
+			oldPlayerCustomDataObject = playerCustomDataObject;
+			this->playerCustomDataObject = new LsbObject(*oldPlayerCustomDataObject);
+		}
+	}
 	
 	isMale = true;
 	
@@ -722,14 +776,7 @@ void AppearanceEditorFrame::setup() {
 	generateFields();
 	initIndexesToCustomData();
 	updateAllFields();
-	
-	GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
-	//DDSLoader ddsLoader;
-	//ddsLoader.load("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Body_A_DM.dds");
-	//loadTexture(ddsLoader.getDataBuffer(), ddsLoader.getDataBufferSize(), ddsLoader.getWidth(), ddsLoader.getHeight(), ddsLoader.getFormat());
-	//loadDDSTexture("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\PL_M_Body_A_DM.dds");
-	
-	
+	//loadEquipmentData();
 }
 
 AppearanceEditorFrame::~AppearanceEditorFrame()
@@ -740,6 +787,14 @@ AppearanceEditorFrame::~AppearanceEditorFrame()
 void AppearanceEditorFrame::showEvent(QShowEvent *)
 {
 	setup();
+	GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
+	glContext->resumeRendering();
+}
+
+void AppearanceEditorFrame::closeEvent(QCloseEvent *)
+{
+	GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
+	glContext->pauseRendering();
 }
 
 QLabel *AppearanceEditorFrame::field(const char *fieldName) {
@@ -853,65 +908,116 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 	GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
 	std::string modelFile = models[index].currentValue(isMale);
 	std::string textureFile = textures[index].currentValue(isMale);
-	std::vector<GLint> modelTextures;
+	std::vector<GLuint> modelTextures;
 	
 	nv_dds::CDDSImage image3;
 	GLuint texobj3;
 	boost::filesystem::ifstream stream3(
 				"C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + textureFile + "_DM.dds",
 				std::ios_base::binary);
-	image3.load(stream3, false);
-	glGenTextures(1, &texobj3);
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, texobj3);
-	image3.upload_texture2D();
+	unsigned long textureFileSize;
+	std::wstring tmp = L"";
+	std::string texturePath;
+	char *fileBytes = 0;
 	
-	nv_dds::CDDSImage image9;
-	GLuint texobj9;
-	std::string nmDdsPath = "C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + textureFile + "_NM.dds";
-	boost::filesystem::path nmPath(nmDdsPath);
-	if (boost::filesystem::exists(nmPath)) {
-		boost::filesystem::ifstream stream9(
-					nmDdsPath,
-					std::ios_base::binary);
-		image9.load(stream9, false);
-		glGenTextures(1, &texobj9);
+	texturePath = "Public/Main/Assets/Textures/Characters/Player/" + textureFile + "_DM.dds";
+	fileBytes = texturesPak.extractFileIntoMemory(gameDataPath + L"Textures.pak", texturePath, tmp, false, &textureFileSize);
+	if (fileBytes != 0) {
+		std::stringstream ss;
+		ss.rdbuf()->pubsetbuf(fileBytes, textureFileSize);
+		nv_dds::CDDSImage image3;
+		GLuint texobj3;
+		image3.load(ss, false);
+		glGenTextures(1, &texobj3);
 		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, texobj9);
-		image9.upload_texture2D();
+		glBindTexture(GL_TEXTURE_2D, texobj3);
+		image3.upload_texture2D();
+		modelTextures.push_back(texobj3);
+		delete[] fileBytes;
 	}
 	
-	nv_dds::CDDSImage image10;
-	GLuint texobj10;
-	std::string smDdsPath = "C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + textureFile + "_SM.dds";
-	boost::filesystem::path smPath(smDdsPath);
-	if (boost::filesystem::exists(smPath)) {
-		boost::filesystem::ifstream stream10(
-					smDdsPath,
-					std::ios_base::binary);
-		image10.load(stream10, false);
-	} else {
-		boost::filesystem::ifstream stream10(
-					"C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + textureFile + "_MSK.dds",
-					std::ios_base::binary);
-		image10.load(stream10, false);
+	texturePath = "Public/Main/Assets/Textures/Characters/Player/" + textureFile + "_NM.dds";
+	fileBytes = texturesPak.extractFileIntoMemory(gameDataPath + L"Textures.pak", texturePath, tmp, false, &textureFileSize);
+	if (fileBytes != 0) {
+		std::stringstream ss;
+		ss.rdbuf()->pubsetbuf(fileBytes, textureFileSize);
+		nv_dds::CDDSImage image3;
+		GLuint texobj3;
+		image3.load(ss, false);
+		glGenTextures(1, &texobj3);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, texobj3);
+		image3.upload_texture2D();
+		modelTextures.push_back(texobj3);
+		delete[] fileBytes;
 	}
-	glGenTextures(1, &texobj10);
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, texobj10);
-	image10.upload_texture2D();
+	
+	texturePath = "Public/Main/Assets/Textures/Characters/Player/" + textureFile + "_SM.dds";
+	fileBytes = texturesPak.extractFileIntoMemory(gameDataPath + L"Textures.pak", texturePath, tmp, false, &textureFileSize);
+	if (fileBytes == 0) {
+		texturePath = "Public/Main/Assets/Textures/Characters/Player/" + textureFile + "_MSK.dds";
+		fileBytes = texturesPak.extractFileIntoMemory(gameDataPath + L"Textures.pak", texturePath, tmp, false, &textureFileSize);
+	}
+	if (fileBytes != 0) {
+		std::stringstream ss;
+		ss.rdbuf()->pubsetbuf(fileBytes, textureFileSize);
+		nv_dds::CDDSImage image3;
+		GLuint texobj3;
+		image3.load(ss, false);
+		glGenTextures(1, &texobj3);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, texobj3);
+		image3.upload_texture2D();
+		modelTextures.push_back(texobj3);
+		delete[] fileBytes;
+	}
+	
+//	nv_dds::CDDSImage image9;
+//	GLuint texobj9;
+//	std::string nmDdsPath = "C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + textureFile + "_NM.dds";
+//	boost::filesystem::path nmPath(nmDdsPath);
+//	if (boost::filesystem::exists(nmPath)) {
+//		boost::filesystem::ifstream stream9(
+//					nmDdsPath,
+//					std::ios_base::binary);
+//		image9.load(stream9, false);
+//		glGenTextures(1, &texobj9);
+//		glEnable(GL_TEXTURE_2D);
+//		glBindTexture(GL_TEXTURE_2D, texobj9);
+//		image9.upload_texture2D();
+//	}
+	
+//	nv_dds::CDDSImage image10;
+//	GLuint texobj10;
+//	std::string smDdsPath = "C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + textureFile + "_SM.dds";
+//	boost::filesystem::path smPath(smDdsPath);
+//	if (boost::filesystem::exists(smPath)) {
+//		boost::filesystem::ifstream stream10(
+//					smDdsPath,
+//					std::ios_base::binary);
+//		image10.load(stream10, false);
+//	} else {
+//		boost::filesystem::ifstream stream10(
+//					"C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + textureFile + "_MSK.dds",
+//					std::ios_base::binary);
+//		image10.load(stream10, false);
+//	}
+//	glGenTextures(1, &texobj10);
+//	glEnable(GL_TEXTURE_2D);
+//	glBindTexture(GL_TEXTURE_2D, texobj10);
+//	image10.upload_texture2D();
 	
 	if (current != 0) {
 		glContext->removeGrannyScene(current);
 		zGrannyShutdownScene(current);
 		delete current; //call granny free function?
 	}
-	modelTextures.push_back(texobj3);
-	modelTextures.push_back(texobj9);
-	modelTextures.push_back(texobj10);
+//	modelTextures.push_back(texobj3);
+//	modelTextures.push_back(texobj9);
+//	modelTextures.push_back(texobj10);
 	unsigned long fSize;
 	std::string extractPath = "Public/Main/Assets/Characters/Players/" + modelFile + ".GR2";
-	char *fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", extractPath, gameDataPath, false, &fSize);
+	fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", extractPath, gameDataPath, false, &fSize);
 	if (fileBytes == 0) {
 		MessageBoxA(0, "Failed to load model from game data", 0, 0);
 	}

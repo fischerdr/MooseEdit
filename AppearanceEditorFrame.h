@@ -27,7 +27,7 @@ typedef struct {
 
 typedef struct {
 	ZGrannyScene *scene;
-	std::vector<GLint> textures;
+	std::vector<GLuint> textures;
 	MeshAttachmentPoint *attachmentPoint;
 } equippedItemData_t;
 
@@ -39,6 +39,7 @@ public:
 	explicit AppearanceEditorFrame(std::wstring gameDataPath, GameCharacter *character, QWidget *parent = 0);
 	~AppearanceEditorFrame();
 	void showEvent(QShowEvent *);
+	void closeEvent(QCloseEvent *);
 	void keyPressEvent(QKeyEvent* e) {
 		GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
 		glContext->keyPressEvent(e);
@@ -115,6 +116,7 @@ private:
 	int hairColorIdx = 0;
 	int underwearIdx = 0;
 	
+	bool shouldRender = true;
 	static bool didInitGlew;
 	GlShaderProgram *shaderProgram = 0;
 	VertexRGB *skinColor = 0;
@@ -142,6 +144,7 @@ private:
 	ZGrannyScene *currentUnderwear = 0;
 	std::vector<equippedItemData_t> equippedItems;
 	
+	void cleanup();
 	void loadEquipmentData();
 	void updateAllFields();
 	void initIndexesToCustomData();
@@ -155,7 +158,7 @@ private:
 	void updateToCurrentUnderwear();
 	void updateToCurrentSkinColor();
 	void updateToCurrentHairColor();
-	ZGrannyScene *createModelForItem(GameItem *item, std::vector<GLint> &textures);
+	ZGrannyScene *createModelForItem(GameItem *item, std::vector<GLuint > &textures);
 	void setup();
 	void generateFields();
 	QLabel *field(const char *fieldName);

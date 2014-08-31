@@ -36,11 +36,11 @@ LsbObject *LsxReader::addChildToCurrentDirectory(LsbObject *child, LsbObject *di
 	if (directory->getTotalNodesRemaining() == 0) {
 		if (!directory->isEntity()) {
 			directoryStack.pop();
-			std::cout<<"Popping dir "<<directory->getName()<<", dirstack size = "<<directoryStack.size()<<'\n';
+			//std::cout<<"Popping dir "<<directory->getName()<<", dirstack size = "<<directoryStack.size()<<'\n';
 		}
 	}
 	else {
-		std::cout<<"Decremented dir "<<directory->getName()<<" to size = d:"<<directory->getDirectoriesLeft()<<" i:"<<directory->getItemsLeft()<<'\n';
+		//std::cout<<"Decremented dir "<<directory->getName()<<" to size = d:"<<directory->getDirectoriesLeft()<<" i:"<<directory->getItemsLeft()<<'\n';
 	}
 	return child;
 }
@@ -50,7 +50,7 @@ void LsxReader::addItemListToDirectory(long& entitiesBuilt, long& builtEntityTag
 	builtEntityTagCount = arrayEntity.size();
 	readTagCount = 1;
 	if (arrayEntity.size() == 0) {
-		//std::cout<<"Attempted to add empty item list!\n";
+		////std::cout<<"Attempted to add empty item list!\n";
 	}
 	else {
 		LsbObject *objPtr = arrayEntity[0];
@@ -145,14 +145,14 @@ bool LsxReader::readTagData(TiXmlElement *node, long readSize, std::stack<LsbObj
 			}
 			type = attributes.size();
 			value = nodes.size();
-			std::cout<<id<<": "<<type<<' '<<value<<'\n';
+			//std::cout<<id<<": "<<type<<' '<<value<<'\n';
 		}
 		
 		TAG_LSB *tagPtr = LsbObject::createTagIfNeeded(id, &tagList);
 		
 		LsbObject *currentDirectoryObject = directoryStack.top();
 		if (currentDirectoryObject == 0) {
-			//std::cout<<"Warning! Invalid array on top of stack!\n";
+			////std::cout<<"Warning! Invalid array on top of stack!\n";
 		}
 		
 		bool isStr = false;
@@ -258,7 +258,7 @@ bool LsxReader::readTagData(TiXmlElement *node, long readSize, std::stack<LsbObj
 				isUniStr = true;
 				break;
 			default:
-				//std::cout<<"Unknown type ("<<(void*)type<<")!"<<'\n';
+				////std::cout<<"Unknown type ("<<(void*)type<<")!"<<'\n';
 				return false;
 				break;
 			}
@@ -273,9 +273,9 @@ bool LsxReader::readTagData(TiXmlElement *node, long readSize, std::stack<LsbObj
 		} else {
 			memcpy(readBuf, &value, sizeof(value));
 		}
-		////std::cout<<":BLb:"<<bytesLeft<<"s:"<<dataSize<<":";
+		//////std::cout<<":BLb:"<<bytesLeft<<"s:"<<dataSize<<":";
 		//input.read(readBuf, dataSize);
-		////std::cout<<":BLa:"<<bytesLeft<<":";
+		//////std::cout<<":BLa:"<<bytesLeft<<":";
 		bytesLeft -= dataSize;
 		
 	//					currentDirectory->
@@ -311,10 +311,10 @@ bool LsxReader::readTagData(TiXmlElement *node, long readSize, std::stack<LsbObj
 			if (currentNodeIsDirectory) {
 				if (object->getTotalNodesRemaining() != 0) {
 					directoryStack.push(object);
-					std::cout<<"Pushing dir "<<object->getName()<<", dirstack size = "<<directoryStack.size()<<'\n';
+					//std::cout<<"Pushing dir "<<object->getName()<<", dirstack size = "<<directoryStack.size()<<'\n';
 				}
 				//if ((int)alloc < 3) {
-					std::cout<<"Looking at dir "<<id<<'\n';
+					//std::cout<<"Looking at dir "<<id<<'\n';
 					bool ret = readTagData(child, 0, directoryStack, bytesLeft, tagList, ++alloc);
 					if (!ret) {
 						return false;
@@ -335,7 +335,7 @@ void LsxReader::readDataHeader(std::istream& input, int& bytesLeft, char *alloc)
 			*(entityHeaderList[entityHeaderList.size() - 1]) = *((ENTITY_HEADER_LSB*)alloc);
 		}
 		else {
-			//std::cout<<"error\n";
+			////std::cout<<"error\n";
 		}
 	}
 	dataHeaderCached = true;
@@ -436,7 +436,7 @@ std::vector<LsbObject *> LsxReader::loadFile(std::istream& input) {
 	if (readerProgressCallback != 0) {
 		readerProgressCallback->onLoadBegin(regions.size());
 	}
-	std::cout<<"Region count = "<<regions.size()<<'\n';
+	//std::cout<<"Region count = "<<regions.size()<<'\n';
 	for (int i=0; i<regions.size(); ++i) {
 		TiXmlElement *regionNode = regions[i];
 		const char *id = regionNode->Attribute("id");
@@ -455,7 +455,7 @@ std::vector<LsbObject *> LsxReader::loadFile(std::istream& input) {
 		std::stack<LsbObject *> arrayStack;
 		arrayStack.push(obj);
 		
-		std::cout<<"Processing region "<<id<<'\n';
+		//std::cout<<"Processing region "<<id<<'\n';
 		if (!readTagData(regionNode, 0, arrayStack, bytesLeft, tagList, 0)) {
 			return empty;
 		}
@@ -491,7 +491,7 @@ std::vector<LsbObject *> LsxReader::loadFile(std::istream& input) {
 //		}
 //		readDataHeader(input, bytesLeft, alloc);
 //		//        for (int i=0; i<entityHeaderList.size(); ++i) {
-//		//            //std::cout<<"Offset "<<(i+1)<<": "<<(void*)entityHeaderList[i].dataOffset<<
+//		//            ////std::cout<<"Offset "<<(i+1)<<": "<<(void*)entityHeaderList[i].dataOffset<<
 //		//                       "   id="<<entityHeaderList[i].id<<'\n';
 //		//        }
 //		if (readerProgressCallback != 0) {
@@ -511,7 +511,7 @@ std::vector<LsbObject *> LsxReader::loadFile(std::istream& input) {
 //			if (tagPtr != 0) {
 //				tag = tagPtr->tag;
 //			}
-//			//std::cout<<"Entity "<<(i + 1)<<"------------------ Offset:"
+//			////std::cout<<"Entity "<<(i + 1)<<"------------------ Offset:"
 ////					<<(void*) entityHeaderList[i].dataOffset<<" Id: "
 //	//			   <<(void*) entityHeaderList[i].id<<" ("<<tag<<")"<<'\n';
 //			objects.push_back(new LsbObject());
@@ -533,7 +533,7 @@ std::vector<LsbObject *> LsxReader::loadFile(std::istream& input) {
 //			}
 //		}
 //		if (bytesLeft > 0) {
-//			//std::cout<<"Warning: extra bytes leftover: "<<bytesLeft<<'\n';
+//			////std::cout<<"Warning: extra bytes leftover: "<<bytesLeft<<'\n';
 //		}
 //		////freeTagList(tagList);
 //	}
