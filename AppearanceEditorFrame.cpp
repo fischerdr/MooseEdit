@@ -91,6 +91,7 @@ void AppearanceEditorFrame::generateEquipmentModels() {
 }
 
 void AppearanceEditorFrame::loadEquipmentData() {
+	showEquipped = true;
 	{
 		std::string extractPath = "Public/Main/Content/Assets/Items/Equipment/[PAK]_Weapons/Weapons.lsb";
 		unsigned long fileSize;
