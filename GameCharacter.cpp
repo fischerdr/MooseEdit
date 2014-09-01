@@ -69,6 +69,18 @@ unsigned long GameCharacter::getCreatorId() {
 	return 0;
 }
 
+LsbObject *GameCharacter::getPlayerCustomDataObject() {
+	LsbObject *characterObject = this->getObject();
+	if (characterObject != 0) {
+		LsbObject *playerDataObject = characterObject->lookupByUniquePath("PlayerData");
+		if (playerDataObject != 0) {
+			LsbObject *playerCustomDataObject = playerDataObject->lookupByUniquePath("PlayerCustomData");
+			return playerCustomDataObject;
+		}
+	}
+	return 0;
+}
+
 void GameCharacter::ensureInventoryCapacity(LsbObject *viewMapValueObject, unsigned long viewSlot) {
 	std::vector<LsbObject *> itemsObjects = LsbObject::lookupAllEntitiesWithName(viewMapValueObject, "Items");
 	long additionalSlotsRequired = (viewSlot + 1) - itemsObjects.size();

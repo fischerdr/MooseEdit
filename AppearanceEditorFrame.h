@@ -31,6 +31,11 @@ typedef struct {
 	MeshAttachmentPoint *attachmentPoint;
 } equippedItemData_t;
 
+class AppearanceChangeCallback {
+public:
+	virtual void onAppearanceChange(LsbObject *oldPlayerCustomDataObject, LsbObject *newPlayerCustomDataObject) = 0;
+};
+
 class AppearanceEditorFrame : public QFrame
 {
 	Q_OBJECT
@@ -54,6 +59,7 @@ public:
 	
 	GamePakData *getGamePakData() const;
 	void setGamePakData(GamePakData *value);
+	void registerAppearanceChangeCallback(AppearanceChangeCallback *appearanceChangeCallback);
 	
 private slots:
 	void on_aiPersonalityNext_clicked();
@@ -100,6 +106,8 @@ private slots:
 	
 	void on_portraitNext_clicked();
 	
+	void on_applyButton_clicked();
+	
 private:
 	std::vector<fieldValue_t> portraits;
 	std::vector<fieldValue_t> aiPersonalities;
@@ -136,6 +144,7 @@ private:
 	GameCharacter *character;
 	LsbObject *oldPlayerCustomDataObject = 0;
 	LsbObject *playerCustomDataObject = 0;
+	AppearanceChangeCallback *appearanceChangeCallback = 0;
 	
 	std::string portrait;
 	VertexRGB *skinColor = 0;
@@ -161,6 +170,7 @@ private:
 	std::string getTextureFromTextureTemplate(LsbObject *resourceBankObject, std::string &textureTemplate);
 	bool getTextureMaps(LsbObject *resourceBankObject, LsbObject *materialsResourceBankObject, std::string &visualTemplate, std::string &diffuseMap, std::string &normalMap, std::string &maskMap);
 	void updateToCurrentModel(ZGrannyScene *&current, std::vector<fieldValue_t> &models, std::vector<fieldValue_t> &textures, int index, VertexRGB *foreColor, VertexRGB *backColor);
+	void updatePortraitData();
 	void updateToCurrentPortrait();
 	void updatePortraitImage();
 	void updateToCurrentHead();
@@ -168,6 +178,7 @@ private:
 	void updateToCurrentUnderwear();
 	void updateToCurrentSkinColor();
 	void updateToCurrentHairColor();
+	void updateColorData(const char *colorPath, VertexRGB *colorInfo);
 	ZGrannyScene *createModelForItem(GameItem *item, std::vector<GLuint > &textures);
 	void setup();
 	void generateFields();

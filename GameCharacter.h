@@ -68,6 +68,7 @@ public:
 	LsbObject *getInventoryObject();
 	unsigned long getInventoryId();
 	unsigned long getCreatorId();
+	LsbObject *getPlayerCustomDataObject();
 	bool addItemToInventoryObject(LsbObject *itemCreatorObject, unsigned long viewSlot, unsigned long extraInventoryTab, unsigned long extraViewSlot, bool equippedItem);
 };
 

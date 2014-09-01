@@ -191,11 +191,11 @@ void AppearanceEditorFrame::updateAllFields() {
 	changeFieldValue("underwearLabel", underwearIdx, underwears);
 	
 	updateToCurrentPortrait();
-	updateToCurrentSkinColor();
-	updateToCurrentHairColor();
 	updateToCurrentHair();
 	updateToCurrentHead();
 	updateToCurrentUnderwear();
+	
+	updatePortraitData();
 }
 
 void AppearanceEditorFrame::generateFields() {
@@ -674,8 +674,8 @@ void AppearanceEditorFrame::initIndexesToCustomData() {
 	LsbObject *randomObject = playerCustomDataObject->lookupByUniquePath("Random");
 	if (randomObject != 0) {
 		unsigned long random = *((unsigned long*)randomObject->getData());
-		hairIdx = (random & 0xF0) >> 4;
-		underwearIdx = (random & 0xF00) >> 8;
+		hairIdx = (random & 0xF00) >> 4;
+		underwearIdx = (random & 0xF0) >> 8;
 		headIdx = (random & 0x0F);
 	}
 	LsbObject *hairColorObject = playerCustomDataObject->lookupByUniquePath("HairColor");
@@ -841,7 +841,7 @@ void AppearanceEditorFrame::setup() {
 	generateFields();
 	initIndexesToCustomData();
 	updateAllFields();
-	loadEquipmentData();
+	//loadEquipmentData();
 }
 
 AppearanceEditorFrame::~AppearanceEditorFrame()
@@ -906,6 +906,22 @@ void AppearanceEditorFrame::updatePortraitImage() {
 //	}
 }
 
+void AppearanceEditorFrame::updatePortraitData() {
+	LsbObject *iconObject = playerCustomDataObject->lookupByUniquePath("Icon");
+	if (iconObject != 0) {
+		iconObject->setData(portrait.c_str(), portrait.length() + 1);
+	}
+	updatePortraitImage();
+}
+
+void AppearanceEditorFrame::updateColorData(const char *colorPath, VertexRGB *colorInfo) {
+	LsbObject *colorObject = playerCustomDataObject->lookupByUniquePath(colorPath);
+	if (colorObject != 0) {
+		unsigned long color = (colorInfo->a << 24) | (colorInfo->r << 16) | (colorInfo->g << 8) | (colorInfo->b);
+		colorObject->setData((char *)&color, sizeof(color));
+	}
+}
+
 void AppearanceEditorFrame::updateObjectValue(const char *labelName, int& idx, std::vector<fieldValue_t> &vec) {
 	std::string label;
 	fieldValue_t &newFieldValue = vec[idx];
@@ -914,11 +930,7 @@ void AppearanceEditorFrame::updateObjectValue(const char *labelName, int& idx, s
 	label = "portraitLabel";
 	if (labelName == label) {
 		portrait = newValue;
-		LsbObject *iconObject = playerCustomDataObject->lookupByUniquePath("Icon");
-		if (iconObject != 0) {
-			iconObject->setData(portrait.c_str(), portrait.length() + 1);
-		}
-		updatePortraitImage();
+		updatePortraitData();
 		return;
 	}
 	label = "aiPersonalityLabel";
@@ -939,11 +951,7 @@ void AppearanceEditorFrame::updateObjectValue(const char *labelName, int& idx, s
 	}
 	label = "skinColorLabel";
 	if (labelName == label) {
-		LsbObject *skinColorObject = playerCustomDataObject->lookupByUniquePath("SkinColor");
-		if (skinColorObject != 0) {
-			unsigned long color = (skinColor->a << 24) | (skinColor->r << 16) | (skinColor->g << 8) | (skinColor->b);
-			skinColorObject->setData((char *)&color, sizeof(color));
-		}
+		updateColorData("SkinColor", skinColor);
 		return;
 	}
 	label = "headLabel";
@@ -961,18 +969,14 @@ void AppearanceEditorFrame::updateObjectValue(const char *labelName, int& idx, s
 		LsbObject *randomObject = playerCustomDataObject->lookupByUniquePath("Random");
 		if (randomObject != 0) {
 			unsigned long random = *((unsigned long*)randomObject->getData());
-			random = (random & 0xFFFFFF0F) | hairIdx;
+			random = (random & 0xFFFFF0FF) | (hairIdx << 8);
 			randomObject->setData((char *)&random, sizeof(random));
 		}
 		return;
 	}
 	label = "hairColorLabel";
 	if (labelName == label) {
-		LsbObject *hairColorObject = playerCustomDataObject->lookupByUniquePath("HairColor");
-		if (hairColorObject != 0) {
-			unsigned long color = (hairColor->a << 24) | (hairColor->r << 16) | (hairColor->g << 8) | (hairColor->b);
-			hairColorObject->setData((char *)&color, sizeof(color));
-		}
+		updateColorData("HairColor", hairColor);
 		return;
 	}
 	label = "underwearLabel";
@@ -980,7 +984,7 @@ void AppearanceEditorFrame::updateObjectValue(const char *labelName, int& idx, s
 		LsbObject *randomObject = playerCustomDataObject->lookupByUniquePath("Random");
 		if (randomObject != 0) {
 			unsigned long random = *((unsigned long*)randomObject->getData());
-			random = (random & 0xFFFFF0FF) | underwearIdx;
+			random = (random & 0xFFFFFF0F) | (underwearIdx << 4);
 			randomObject->setData((char *)&random, sizeof(random));
 		}
 		return;
@@ -1058,12 +1062,14 @@ void AppearanceEditorFrame::on_skinColorPrev_clicked()
 {
     changeFieldValue("skinColorLabel", skinColorIdx, skinColors, -1);
 	updateToCurrentSkinColor();
+	updateColorData("SkinColor", skinColor);
 }
 
 void AppearanceEditorFrame::on_skinColorNext_clicked()
 {
     changeFieldValue("skinColorLabel", skinColorIdx, skinColors, 1);
 	updateToCurrentSkinColor();
+	updateColorData("SkinColor", skinColor);
 }
 
 void AppearanceEditorFrame::on_headPrev_clicked()
@@ -1255,12 +1261,14 @@ void AppearanceEditorFrame::on_hairColorPrev_clicked()
 {
     changeFieldValue("hairColorLabel", hairColorIdx, hairColors, -1);
 	updateToCurrentHairColor();
+	updateColorData("HairColor", hairColor);
 }
 
 void AppearanceEditorFrame::on_hairColorNext_clicked()
 {
     changeFieldValue("hairColorLabel", hairColorIdx, hairColors, 1);
 	updateToCurrentHairColor();
+	updateColorData("HairColor", hairColor);
 }
 
 void AppearanceEditorFrame::on_underwearPrev_clicked()
@@ -1291,7 +1299,7 @@ void AppearanceEditorFrame::on_skinColorPicker_clicked()
 		skinColor->g = selected.green();
 		skinColor->b = selected.blue();
 		skinColor->a = selected.alpha();
-		updateObjectValue("skinColorLabel", skinColorIdx, skinColors);
+		updateColorData("SkinColor", skinColor);
 	}
 }
 
@@ -1306,7 +1314,7 @@ void AppearanceEditorFrame::on_hairColorPicker_clicked()
 		hairColor->g = selected.green();
 		hairColor->b = selected.blue();
 		hairColor->a = selected.alpha();
-		updateObjectValue("hairColorLabel", hairColorIdx, hairColors);
+		updateColorData("HairColor", hairColor);
 	}
 }
 GamePakData *AppearanceEditorFrame::getGamePakData() const
@@ -1317,6 +1325,11 @@ GamePakData *AppearanceEditorFrame::getGamePakData() const
 void AppearanceEditorFrame::setGamePakData(GamePakData *value)
 {
 	gamePakData = value;
+}
+
+void AppearanceEditorFrame::registerAppearanceChangeCallback(AppearanceChangeCallback *appearanceChangeCallback)
+{
+	this->appearanceChangeCallback = appearanceChangeCallback;
 }
 
 EquipmentHandler *AppearanceEditorFrame::getEquipHandler() const
@@ -1344,9 +1357,6 @@ void AppearanceEditorFrame::on_armorToggleButton_clicked()
 			success = success && glContext->removeGrannyScene(eid.scene);
 		}
 	}
-	if (!success || sceneCount == glContext->getSceneCount()) {
-		MessageBoxA(0, "Toggle failure", 0, 0);
-	}
 }
 
 void AppearanceEditorFrame::on_femaleButton_clicked()
@@ -1371,4 +1381,12 @@ void AppearanceEditorFrame::on_portraitNext_clicked()
 {
 	changeFieldValue("portraitLabel", portraitIdx, portraits, 1);
 	updatePortraitImage();
+}
+
+void AppearanceEditorFrame::on_applyButton_clicked()
+{
+	if (appearanceChangeCallback != 0) {
+		appearanceChangeCallback->onAppearanceChange(this->oldPlayerCustomDataObject, this->playerCustomDataObject);
+	}
+	this->close();
 }

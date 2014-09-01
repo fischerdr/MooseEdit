@@ -131,6 +131,8 @@ public:
 		this->bIsDirectory = other.bIsDirectory;
 		this->parent = other.parent;
 		this->tagList = other.tagList;
+		this->localized1 = other.localized1;
+		this->localized2 = other.localized2;
 	}
 	
 	static TAG_LSB *getTagByName(const char *name, std::vector<TAG_LSB *> *tagList)

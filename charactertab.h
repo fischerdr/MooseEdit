@@ -12,11 +12,14 @@
 #include "AppearanceEditorFrame.h"
 #include "GamePakData.h"
 
+#define ROOT_TEMPLATE_FEMALE	"878372b3-9280-4819-b8b0-4ca76dea8ad1"
+#define ROOT_TEMPLATE_MALE		"878372b3-9280-4819-b8b0-4ca76dea8ad2"
+
 namespace Ui {
 class characterTab;
 }
 
-class characterTab : public QWidget, ItemEditCallback, ItemEditorCloseCallback
+class characterTab : public QWidget, ItemEditCallback, ItemEditorCloseCallback, AppearanceChangeCallback
 {
 	Q_OBJECT
 	
@@ -56,6 +59,7 @@ public:
 	
 	GamePakData *getGamePakData() const;
 	void setGamePakData(GamePakData *value);
+	void onAppearanceChange(LsbObject *oldPlayerCustomDataObject, LsbObject *newPlayerCustomDataObject);
 	
 private slots:
 	

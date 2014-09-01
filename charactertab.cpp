@@ -293,6 +293,7 @@ void characterTab::setCharacter(GameCharacter *character) {
 	}
 	
 	appearanceEditorFrame = new AppearanceEditorFrame(gameDataPath, character);
+	appearanceEditorFrame->registerAppearanceChangeCallback(this);
 }
 
 characterTab::~characterTab()
@@ -343,25 +344,78 @@ void characterTab::setGamePakData(GamePakData *value)
 	appearanceEditorFrame->setGamePakData(gamePakData);
 }
 
-void characterTab::updateToCurrentPortrait() {
-	QLabel *portraitLabel = this->findChild<QLabel *>("portraitLabel");
-	LsbObject *characterObject = character->getObject();
-	if (characterObject != 0) {
-		LsbObject *playerDataObject = characterObject->lookupByUniquePath("PlayerData");
+void characterTab::onAppearanceChange(LsbObject *oldPlayerCustomDataObject, LsbObject *newPlayerCustomDataObject) {
+	if (oldPlayerCustomDataObject == 0 || newPlayerCustomDataObject == 0) {
+		return;
+	}
+	LsbObject *copyOldPlayerCustomDataObject = new LsbObject(*oldPlayerCustomDataObject);
+	LsbObject *copyPlayerCustomDataObject = new LsbObject(*newPlayerCustomDataObject);
+	bool success = false;
+	LsbObject *playerCustomDataObject = character->getPlayerCustomDataObject();
+	if (playerCustomDataObject != 0) {
+		LsbObject *playerDataObject = playerCustomDataObject->getParent();
 		if (playerDataObject != 0) {
-			LsbObject *playerCustomDataObject = playerDataObject->lookupByUniquePath("PlayerCustomData");
-			if (playerCustomDataObject != 0) {
-				LsbObject *iconObject = playerCustomDataObject->lookupByUniquePath("Icon");
-				if (iconObject != 0) {
-					std::string icon = iconObject->getData();
-					if (gamePakData != 0) {
-						QImage image;
-						bool success = gamePakData->getPortraitAtlas().getNamedTexture(icon.c_str(), &image);
-						if (success) {
-							if (portraitLabel != 0) {
-								portraitLabel->setPixmap(QPixmap::fromImage(image));
+			if (playerDataObject->replaceChild(playerCustomDataObject, copyPlayerCustomDataObject)) {
+				success = true;
+				LsbObject *oldIsMaleObject = copyOldPlayerCustomDataObject->lookupByUniquePath("IsMale");
+				LsbObject *newIsMaleObject = copyPlayerCustomDataObject->lookupByUniquePath("IsMale");
+				if (oldIsMaleObject != 0 && newIsMaleObject != 0) {
+					bool oldIsMale = *((bool *)oldIsMaleObject->getData());
+					bool newIsMale = *((bool *)newIsMaleObject->getData());
+					if (oldIsMale != newIsMale) {
+						LsbObject *characterObject = character->getObject();
+						LsbObject *currentTemplateObject = characterObject->lookupByUniquePath("CurrentTemplate");
+						if (currentTemplateObject != 0) {
+							std::string currentTemplate = currentTemplateObject->getData();
+							if (currentTemplate == ROOT_TEMPLATE_FEMALE || currentTemplate == ROOT_TEMPLATE_MALE) {
+								if (newIsMale == true) {
+									currentTemplate = ROOT_TEMPLATE_MALE;
+								} else {
+									currentTemplate = ROOT_TEMPLATE_FEMALE;
+								}
+								currentTemplateObject->setData(currentTemplate.c_str(), currentTemplate.length() + 1);
 							}
 						}
+					}
+				}
+			}
+		}
+	}
+	updateToCurrentPortrait();
+	if (!success) {
+		MessageBoxA(0, "Failed to change appearance", 0, 0);
+	}
+	delete copyOldPlayerCustomDataObject;
+}
+
+void characterTab::updateToCurrentPortrait() {
+	QLabel *portraitLabel = this->findChild<QLabel *>("portraitLabel");
+	LsbObject *playerCustomDataObject = character->getPlayerCustomDataObject();
+	if (playerCustomDataObject != 0) {
+		LsbObject *iconObject = playerCustomDataObject->lookupByUniquePath("Icon");
+		if (iconObject != 0) {
+			std::string icon = iconObject->getData();
+			if (gamePakData != 0) {
+				
+				LsbObject *characterObject = character->getObject();
+				if (characterObject != 0) {
+					LsbObject *originalTemplateIdObject = characterObject->lookupByUniquePath("OriginalTemplate");
+					std::string origTemplateId = "";
+					if (originalTemplateIdObject != 0) {
+						origTemplateId = originalTemplateIdObject->getData();
+					}
+					if (origTemplateId == "5c5447e5-c1cf-4677-b84b-006d9be3f075") {
+						icon = "Portrait_CP_Madora";
+					} else if (origTemplateId == "80240f83-778e-4753-850b-48b05729589c") {
+						icon = "Portrait_CP_Jahan";
+					}
+				}
+				
+				QImage image;
+				bool success = gamePakData->getPortraitAtlas().getNamedTexture(icon.c_str(), &image);
+				if (success) {
+					if (portraitLabel != 0) {
+						portraitLabel->setPixmap(QPixmap::fromImage(image));
 					}
 				}
 			}
