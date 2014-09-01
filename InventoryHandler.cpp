@@ -43,8 +43,8 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 	slotsToDisplay = std::max(minSlots, slotsToDisplay);
 	slotsToDisplay = std::min(maxSlots, slotsToDisplay);
 	iconAtlas.setAbsoluteSize(iconSize);
-	std::cout<<"Root templates = "<<rootTemplates.size()<<'\n';
-	std::cout<<"Iterating through "<<slotsToDisplay<<" slots"<<'\n';
+	//std::cout<<"Root templates = "<<rootTemplates.size()<<'\n';
+	//std::cout<<"Iterating through "<<slotsToDisplay<<" slots"<<'\n';
 	for (int i=0; i<slotsToDisplay; ++i) {
 		ItemLabel *label = new ItemLabel(itemStats, parent, 0);
 		itemLabels.push_back(label);
@@ -52,7 +52,7 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 		label->move(getItemX(i), getItemY(i));
 		GameItem *item = items.getItemByRenderSlot(i);
 		if (item != 0) {
-			std::cout<<"Processing item "<<i<<'\n';
+			//std::cout<<"Processing item "<<i<<'\n';
 			label->setItem(item);
 			LsbObject *itemObject = item->getObject();
 			if (itemObject == 0) {
@@ -137,7 +137,6 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 				match = modTemplateMap[currentTemplate];
 			}
 			if (match != 0) {
-				std::cout<<"mod match for "<<currentTemplate<<'\n';
 				LsbObject *iconObject = match->lookupByUniquePath("Icon");
 				if (iconObject != 0) {
 					iconName = iconObject->getData();
@@ -263,9 +262,6 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 						std::cout<<"Failed to find texture "<<iconName<<'\n';
 					}
 				}
-			}
-			if (matchCount != 1) {
-				std::cout<<"Mismatch for template ID "<<currentTemplate<<", matchCount = "<<matchCount<<"("<<statsText<<")"<<'\n';
 			}
 			std::string prefix = "";
 			std::string suffix = "";

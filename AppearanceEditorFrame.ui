@@ -47,16 +47,16 @@
           </rect>
          </property>
          <property name="styleSheet">
-          <string notr="true"/>
+          <string notr="true">border-image: url(:/portraitBorder.png);</string>
          </property>
          <property name="text">
           <string/>
          </property>
-         <property name="pixmap">
-          <pixmap resource="resources.qrc">:/appearance-portrait.png</pixmap>
-         </property>
          <property name="scaledContents">
-          <bool>false</bool>
+          <bool>true</bool>
+         </property>
+         <property name="margin">
+          <number>5</number>
          </property>
         </widget>
         <widget class="QPushButton" name="portraitPrev">
@@ -940,8 +940,6 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

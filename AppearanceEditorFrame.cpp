@@ -22,13 +22,19 @@
 #define NUM_UNDERWEARS	3
 
 bool AppearanceEditorFrame::didInitGlew = false;
+bool AppearanceEditorFrame::loadedPaks = false;
+PakReader AppearanceEditorFrame::texturesPak;
+PakReader AppearanceEditorFrame::mainPak;
 
 AppearanceEditorFrame::AppearanceEditorFrame(std::wstring gameDataPath, GameCharacter *character, QWidget *parent) :
 	QFrame(parent), gameDataPath(gameDataPath), character(character),
 	ui(new Ui::AppearanceEditorFrame)
 {
-	mainPak.loadFile(gameDataPath + L"Main.pak");
-	texturesPak.loadFile(gameDataPath + L"Textures.pak");
+	if (!loadedPaks) {
+		loadedPaks = true;
+		mainPak.loadFile(gameDataPath + L"Main.pak");
+		texturesPak.loadFile(gameDataPath + L"Textures.pak");
+	}
 	ui->setupUi(this);
 }
 
@@ -142,6 +148,39 @@ void AppearanceEditorFrame::loadEquipmentData() {
 }
 
 void AppearanceEditorFrame::updateAllFields() {
+	QPushButton *maleButton = this->findChild<QPushButton *>("maleButton");
+	QPushButton *femaleButton = this->findChild<QPushButton *>("femaleButton");
+	if (isMale) {
+		std::ostringstream ss;
+		ss
+			 <<"QPushButton {"
+		     <<"	border-image: url(:/appearance-button-male-activated.png);"
+		     <<"}";
+		maleButton->setStyleSheet(ss.str().c_str());
+		ss.str("");
+		ss
+			 <<"QPushButton {"
+		     <<"	border-image: url(:/appearance-button-female-deactivated.png);"
+		     <<"}";
+		femaleButton->setStyleSheet(ss.str().c_str());
+	} else {
+		std::ostringstream ss;
+		ss
+			 <<"QPushButton {"
+		     <<"	border-image: url(:/appearance-button-male-deactivated.png);"
+		     <<"}";
+		maleButton->setStyleSheet(ss.str().c_str());
+		ss.str("");
+		ss
+			 <<"QPushButton {"
+		     <<"	border-image: url(:/appearance-button-female-activated.png);"
+		     <<"}";
+		femaleButton->setStyleSheet(ss.str().c_str());
+	}
+	LsbObject *isMaleObject = playerCustomDataObject->lookupByUniquePath("IsMale");
+	if (isMaleObject != 0) {
+		isMaleObject->setData((char *)&this->isMale, sizeof(this->isMale));
+	}
 	changeFieldValue("aiPersonalityLabel", aiPersonalityIdx, aiPersonalities);
 	changeFieldValue("voiceLabel", voiceIdx, voices);
 	changeFieldValue("skinColorLabel", skinColorIdx, skinColors);
@@ -150,6 +189,7 @@ void AppearanceEditorFrame::updateAllFields() {
 	changeFieldValue("hairColorLabel", hairColorIdx, hairColors);
 	changeFieldValue("underwearLabel", underwearIdx, underwears);
 	
+	updateToCurrentPortrait();
 	updateToCurrentSkinColor();
 	updateToCurrentHairColor();
 	updateToCurrentHair();
@@ -575,6 +615,17 @@ void AppearanceEditorFrame::initIndexesToCustomData() {
 		bool isMale = *((bool *)isMaleObject->getData());
 		this->isMale = isMale;
 	}
+	LsbObject *iconObject = playerCustomDataObject->lookupByUniquePath("Icon");
+	if (iconObject != 0) {
+		portrait = iconObject->getData();
+		for (int i=0; i<portraits.size(); ++i) {
+			fieldValue_t &portraitValue = portraits[i];
+			if (portraitValue.currentValue(isMale) == portrait) {
+				portraitIdx = i;
+				break;
+			}
+		}
+	}
 	LsbObject *aiPersonalityObject = playerCustomDataObject->lookupByUniquePath("AiPersonality");
 	if (aiPersonalityObject != 0) {
 		std::string personality = aiPersonalityObject->getData();
@@ -733,6 +784,13 @@ void AppearanceEditorFrame::setup() {
 		underwearColor = new VertexRGB({93, 12, 8, 255});
 	}
 	
+	GLenum err;
+	if ((err = glGetError()) != GL_NO_ERROR) {
+		std::ostringstream ss;
+		ss<<"x: "<<gluErrorString(err);
+		MessageBoxA(0, ss.str().c_str(), 0, 0);
+	}
+	
 	QString mText;
 	std::vector<GlShader> allShaders;
 	
@@ -772,11 +830,17 @@ void AppearanceEditorFrame::setup() {
 	if (!shaderProgram->link()) {
 		MessageBoxA(0, shaderProgram->getLastError().c_str(), 0, 0);
 	}
+
+	if ((err = glGetError()) != GL_NO_ERROR) {
+		std::ostringstream ss;
+		ss<<"0: "<<gluErrorString(err);
+		MessageBoxA(0, ss.str().c_str(), 0, 0);
+	}
 	
 	generateFields();
 	initIndexesToCustomData();
 	updateAllFields();
-	//loadEquipmentData();
+	loadEquipmentData();
 }
 
 AppearanceEditorFrame::~AppearanceEditorFrame()
@@ -794,11 +858,132 @@ void AppearanceEditorFrame::showEvent(QShowEvent *)
 void AppearanceEditorFrame::closeEvent(QCloseEvent *)
 {
 	GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
+	this->cleanup();
 	glContext->pauseRendering();
+	GLenum err;
+	if ((err = glGetError()) != GL_NO_ERROR) {
+		std::ostringstream ss;
+		ss<<"exit: "<<gluErrorString(err);
+		MessageBoxA(0, ss.str().c_str(), 0, 0);
+	}
 }
 
 QLabel *AppearanceEditorFrame::field(const char *fieldName) {
 	return this->findChild<QLabel *>(fieldName);
+}
+
+void AppearanceEditorFrame::updateToCurrentPortrait() {
+	fieldValue_t &fieldValue = portraits[portraitIdx];
+	portrait = fieldValue.currentValue(isMale);
+	updatePortraitImage();
+}
+
+void AppearanceEditorFrame::updatePortraitImage() {
+	QLabel *portraitLabel = this->findChild<QLabel *>("portraitLabel");
+	QImage image;
+	bool success = gamePakData->getPortraitAtlas().getNamedTexture(portrait.c_str(), &image);
+	if (success) {
+		if (portraitLabel != 0) {
+			portraitLabel->setPixmap(QPixmap::fromImage(image));
+		}
+	}
+//	QLabel *portraitLabel = this->findChild<QLabel *>("portraitLabel");
+//	if (playerCustomDataObject != 0) {
+//		LsbObject *iconObject = playerCustomDataObject->lookupByUniquePath("Icon");
+//		if (iconObject != 0) {
+//			std::string icon = iconObject->getData();
+//			if (gamePakData != 0) {
+//				QImage image;
+//				bool success = gamePakData->getPortraitAtlas().getNamedTexture(icon.c_str(), &image);
+//				if (success) {
+//					if (portraitLabel != 0) {
+//						portraitLabel->setPixmap(QPixmap::fromImage(image));
+//					}
+//				}
+//			}
+//		}
+//	}
+}
+
+void AppearanceEditorFrame::updateObjectValue(const char *labelName, int& idx, std::vector<fieldValue_t> &vec) {
+	std::string label;
+	fieldValue_t &newFieldValue = vec[idx];
+	std::string newValue = newFieldValue.currentValue(isMale);
+	
+	label = "portraitLabel";
+	if (labelName == label) {
+		portrait = newValue;
+		LsbObject *iconObject = playerCustomDataObject->lookupByUniquePath("Icon");
+		if (iconObject != 0) {
+			iconObject->setData(portrait.c_str(), portrait.length() + 1);
+		}
+		updatePortraitImage();
+		return;
+	}
+	label = "aiPersonalityLabel";
+	if (labelName == label) {
+		LsbObject *aiPersonalityObject = playerCustomDataObject->lookupByUniquePath("AiPersonality");
+		if (aiPersonalityObject != 0) {
+			aiPersonalityObject->setData(newValue.c_str(), newValue.length() + 1);
+		}
+		return;
+	}
+	label = "voiceLabel";
+	if (labelName == label) {
+		LsbObject *speakerObject = playerCustomDataObject->lookupByUniquePath("Speaker");
+		if (speakerObject != 0) {
+			speakerObject->setData(newValue.c_str(), newValue.length() + 1);
+		}
+		return;
+	}
+	label = "skinColorLabel";
+	if (labelName == label) {
+		LsbObject *skinColorObject = playerCustomDataObject->lookupByUniquePath("SkinColor");
+		if (skinColorObject != 0) {
+			unsigned long color = (skinColor->a << 24) | (skinColor->r << 16) | (skinColor->g << 8) | (skinColor->b);
+			skinColorObject->setData((char *)&color, sizeof(color));
+		}
+		return;
+	}
+	label = "headLabel";
+	if (labelName == label) {
+		LsbObject *randomObject = playerCustomDataObject->lookupByUniquePath("Random");
+		if (randomObject != 0) {
+			unsigned long random = *((unsigned long*)randomObject->getData());
+			random = (random & 0xFFFFFFF0) | headIdx;
+			randomObject->setData((char *)&random, sizeof(random));
+		}
+		return;
+	}
+	label = "hairLabel";
+	if (labelName == label) {
+		LsbObject *randomObject = playerCustomDataObject->lookupByUniquePath("Random");
+		if (randomObject != 0) {
+			unsigned long random = *((unsigned long*)randomObject->getData());
+			random = (random & 0xFFFFFF0F) | hairIdx;
+			randomObject->setData((char *)&random, sizeof(random));
+		}
+		return;
+	}
+	label = "hairColorLabel";
+	if (labelName == label) {
+		LsbObject *hairColorObject = playerCustomDataObject->lookupByUniquePath("HairColor");
+		if (hairColorObject != 0) {
+			unsigned long color = (hairColor->a << 24) | (hairColor->r << 16) | (hairColor->g << 8) | (hairColor->b);
+			hairColorObject->setData((char *)&color, sizeof(color));
+		}
+		return;
+	}
+	label = "underwearLabel";
+	if (labelName == label) {
+		LsbObject *randomObject = playerCustomDataObject->lookupByUniquePath("Random");
+		if (randomObject != 0) {
+			unsigned long random = *((unsigned long*)randomObject->getData());
+			random = (random & 0xFFFFF0FF) | underwearIdx;
+			randomObject->setData((char *)&random, sizeof(random));
+		}
+		return;
+	}
 }
 
 void AppearanceEditorFrame::changeFieldValue(const char *labelName, int& idx, std::vector<fieldValue_t> &vec, int increment) {
@@ -808,7 +993,7 @@ void AppearanceEditorFrame::changeFieldValue(const char *labelName, int& idx, st
     idx = newValue;
 	updateFieldText(field(labelName), vec, idx);
 	if (increment != 0) {
-		
+		updateObjectValue(labelName, idx, vec);
 	}
 }
 
@@ -894,7 +1079,7 @@ void AppearanceEditorFrame::on_headNext_clicked()
 
 void AppearanceEditorFrame::on_hairPrev_clicked()
 {
-    changeFieldValue("hairLabel", hairIdx, hairs, -1);
+	changeFieldValue("hairLabel", hairIdx, hairs, -1);
 	updateToCurrentHair();
 }
 
@@ -910,15 +1095,18 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 	std::string textureFile = textures[index].currentValue(isMale);
 	std::vector<GLuint> modelTextures;
 	
-	nv_dds::CDDSImage image3;
-	GLuint texobj3;
-	boost::filesystem::ifstream stream3(
-				"C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + textureFile + "_DM.dds",
-				std::ios_base::binary);
+
 	unsigned long textureFileSize;
 	std::wstring tmp = L"";
 	std::string texturePath;
 	char *fileBytes = 0;
+	
+	GLenum err;
+	if ((err = glGetError()) != GL_NO_ERROR) {
+		std::ostringstream ss;
+		ss<<"1: "<<gluErrorString(err);
+		MessageBoxA(0, ss.str().c_str(), 0, 0);
+	}
 	
 	texturePath = "Public/Main/Assets/Textures/Characters/Player/" + textureFile + "_DM.dds";
 	fileBytes = texturesPak.extractFileIntoMemory(gameDataPath + L"Textures.pak", texturePath, tmp, false, &textureFileSize);
@@ -936,6 +1124,12 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 		delete[] fileBytes;
 	}
 	
+	if ((err = glGetError()) != GL_NO_ERROR) {
+		std::ostringstream ss;
+		ss<<"2: "<<gluErrorString(err);
+		MessageBoxA(0, ss.str().c_str(), 0, 0);
+	}
+	
 	texturePath = "Public/Main/Assets/Textures/Characters/Player/" + textureFile + "_NM.dds";
 	fileBytes = texturesPak.extractFileIntoMemory(gameDataPath + L"Textures.pak", texturePath, tmp, false, &textureFileSize);
 	if (fileBytes != 0) {
@@ -946,6 +1140,12 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 		image3.load(ss, false);
 		glGenTextures(1, &texobj3);
 		glEnable(GL_TEXTURE_2D);
+		err;
+		if ((err = glGetError()) != GL_NO_ERROR) {
+			std::ostringstream ss;
+			ss<<"3: "<<gluErrorString(err);
+			MessageBoxA(0, ss.str().c_str(), 0, 0);
+		}
 		glBindTexture(GL_TEXTURE_2D, texobj3);
 		image3.upload_texture2D();
 		modelTextures.push_back(texobj3);
@@ -970,6 +1170,13 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 		image3.upload_texture2D();
 		modelTextures.push_back(texobj3);
 		delete[] fileBytes;
+	}
+	
+	err;
+	if ((err = glGetError()) != GL_NO_ERROR) {
+		std::ostringstream ss;
+		ss<<"4: "<<gluErrorString(err);
+		MessageBoxA(0, ss.str().c_str(), 0, 0);
 	}
 	
 //	nv_dds::CDDSImage image9;
@@ -1083,6 +1290,7 @@ void AppearanceEditorFrame::on_skinColorPicker_clicked()
 		skinColor->g = selected.green();
 		skinColor->b = selected.blue();
 		skinColor->a = selected.alpha();
+		updateObjectValue("skinColorLabel", skinColorIdx, skinColors);
 	}
 }
 
@@ -1097,6 +1305,7 @@ void AppearanceEditorFrame::on_hairColorPicker_clicked()
 		hairColor->g = selected.green();
 		hairColor->b = selected.blue();
 		hairColor->a = selected.alpha();
+		updateObjectValue("hairColorLabel", hairColorIdx, hairColors);
 	}
 }
 GamePakData *AppearanceEditorFrame::getGamePakData() const
@@ -1124,13 +1333,18 @@ void AppearanceEditorFrame::on_armorToggleButton_clicked()
 {
 	showEquipped = !showEquipped;
 	GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
+	int sceneCount = glContext->getSceneCount();
+	bool success = true;
 	for (int i=0; i<equippedItems.size(); ++i) {
 		equippedItemData_t &eid = equippedItems[i];
 		if (showEquipped) {
 			glContext->addGrannyScene(eid.scene, eid.textures, 0, 0, shaderProgram, eid.attachmentPoint);
 		} else {
-			glContext->removeGrannyScene(eid.scene);
+			success = success && glContext->removeGrannyScene(eid.scene);
 		}
+	}
+	if (!success || sceneCount == glContext->getSceneCount()) {
+		MessageBoxA(0, "Toggle failure", 0, 0);
 	}
 }
 
@@ -1144,4 +1358,16 @@ void AppearanceEditorFrame::on_maleButton_clicked()
 {
 	isMale = true;
     updateAllFields();
+}
+
+void AppearanceEditorFrame::on_portraitPrev_clicked()
+{
+	changeFieldValue("portraitLabel", portraitIdx, portraits, -1);
+	updatePortraitImage();
+}
+
+void AppearanceEditorFrame::on_portraitNext_clicked()
+{
+	changeFieldValue("portraitLabel", portraitIdx, portraits, 1);
+	updatePortraitImage();
 }

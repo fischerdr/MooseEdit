@@ -343,6 +343,32 @@ void characterTab::setGamePakData(GamePakData *value)
 	appearanceEditorFrame->setGamePakData(gamePakData);
 }
 
+void characterTab::updateToCurrentPortrait() {
+	QLabel *portraitLabel = this->findChild<QLabel *>("portraitLabel");
+	LsbObject *characterObject = character->getObject();
+	if (characterObject != 0) {
+		LsbObject *playerDataObject = characterObject->lookupByUniquePath("PlayerData");
+		if (playerDataObject != 0) {
+			LsbObject *playerCustomDataObject = playerDataObject->lookupByUniquePath("PlayerCustomData");
+			if (playerCustomDataObject != 0) {
+				LsbObject *iconObject = playerCustomDataObject->lookupByUniquePath("Icon");
+				if (iconObject != 0) {
+					std::string icon = iconObject->getData();
+					if (gamePakData != 0) {
+						QImage image;
+						bool success = gamePakData->getPortraitAtlas().getNamedTexture(icon.c_str(), &image);
+						if (success) {
+							if (portraitLabel != 0) {
+								portraitLabel->setPixmap(QPixmap::fromImage(image));
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 EquipmentHandler *characterTab::getEquipmentHandler() const
 {
 	return equipmentHandler;

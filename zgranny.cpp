@@ -496,12 +496,18 @@ void zGrannyRenderMesh2( ZGrannyMesh *mesh, granny_pnt332_vertex *vertices, std:
 		++group;
 	}
 }
-
+#include <sstream>
 void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices, std::vector<GLuint > &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram) {
 	glVertexPointer( 3, GL_FLOAT, sizeof(*vertices), vertices->Position );
 	glNormalPointer( GL_FLOAT, sizeof(*vertices), vertices->Normal );
 	glTexCoordPointer( 2, GL_FLOAT, sizeof(*vertices), vertices->UV );
-	
+
+	GLenum err;
+	if ((err = glGetError()) != GL_NO_ERROR) {
+		std::ostringstream ss;
+		ss<<"err2: "<<gluErrorString(err);
+		std::cout<<ss.str()<<'\n';
+	}
 	if (shaderProgram != 0) {
 		shaderProgram->set3dVectorAttribute("vertex", sizeof(*vertices), vertices->Position);
 		shaderProgram->set3dVectorAttribute("normal", sizeof(*vertices), vertices->Normal);
@@ -540,6 +546,7 @@ void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices,
 		} else {
 			shaderProgram->setUniformFloat("useBackColor", 0.0f);
 		}
+		glGetError(); //clear errors
 	}
 	
 	/* Now both the indices and vertices are loaded, so I can
@@ -572,6 +579,11 @@ void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices,
 				);
 		
 		++group;
+	}
+	if ((err = glGetError()) != GL_NO_ERROR) {
+		std::ostringstream ss;
+		ss<<"err4: "<<gluErrorString(err);
+		std::cout<<ss.str()<<'\n';
 	}
 }
 
@@ -818,8 +830,19 @@ void zGrannyShutdownScene( ZGrannyScene *scene ) {
 }
 
 void zGrannyRenderScene( ZGrannyScene *scene, std::vector<GLuint > &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, GLfloat worldPos[3]) {
+	GLenum err;
+	if ((err = glGetError()) != GL_NO_ERROR) {
+		std::ostringstream ss;
+		ss<<"err19: "<<gluErrorString(err)<<'\n';
+		std::cout<<ss.str()<<'\n';
+	}
 	if (shaderProgram != 0) {
 		shaderProgram->use();
+	}
+	if ((err = glGetError()) != GL_NO_ERROR) {
+		std::ostringstream ss;
+		ss<<"err20: "<<gluErrorString(err)<<' '<<shaderProgram->getProgram();
+		std::cout<<ss.str()<<'\n';
 	}
 	if (worldPos != 0) {
 		glPushMatrix();
@@ -831,7 +854,17 @@ void zGrannyRenderScene( ZGrannyScene *scene, std::vector<GLuint > &textures, Ve
 	if (worldPos != 0) {
 		glPopMatrix();
 	}
+	if ((err = glGetError()) != GL_NO_ERROR) {
+		std::ostringstream ss;
+		ss<<"err6: "<<gluErrorString(err);
+		std::cout<<ss.str()<<'\n';
+	}
 	if (shaderProgram != 0) {
 		shaderProgram->unset();
+	}
+	if ((err = glGetError()) != GL_NO_ERROR) {
+		std::ostringstream ss;
+		ss<<"err7: "<<gluErrorString(err);
+		std::cout<<ss.str()<<'\n';
 	}
 }

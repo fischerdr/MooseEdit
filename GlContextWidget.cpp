@@ -32,6 +32,7 @@ void GlContextWidget::showEvent(QShowEvent *event)
 		unsigned long msPerFrame = 1000 * secondsPerFrame;
 		frameTimer.start(msPerFrame);
 	}
+	this->makeCurrent();
 }
 
 void GlContextWidget::hideEvent(QHideEvent *event)
@@ -82,6 +83,7 @@ void GlContextWidget::resizeGL(int w, int h) {
 	updateGL();
 }
 #include <iostream>
+#include <sstream>
 
 void GlContextWidget::paintGL() {
 	if (!this->isVisible()) {
@@ -125,86 +127,132 @@ void GlContextWidget::paintGL() {
 		lookatZ += movementVelocity / framesPerSecond;
 	}
 	
-   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-   glScalef(-1.0f, 1.0f, 1.0f);
-   glEnable( GL_LINE_SMOOTH );
-   glEnable( GL_POLYGON_SMOOTH );
-   glHint( GL_LINE_SMOOTH_HINT, GL_NICEST );
-   glHint( GL_POLYGON_SMOOTH_HINT, GL_NICEST );
-   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-   glEnable(GL_MULTISAMPLE);
-   
-   if (grannyScenes.size() > 0) {
-	   for (int i=0; i<grannyScenes.size(); ++i) {
-		   GLfloat worldPos[3];
-		   worldPos[0] = 0.0f;
-		   worldPos[1] = 0.0f;
-		   worldPos[2] = 0.0f;
-		   if (attachments[i] != 0) {
-			   MeshAttachmentPoint *attachment = attachments[i];
-			   if (attachment->boneName.size() != 0 && attachment->meshName.size() != 0) {
-				   for (int j=0; j<grannyScenes.size(); ++j) {
-					   ZGrannyScene *scene = grannyScenes[j];
-					   for (int k=0; k<scene->modelCount; ++k) {
-						   ZGrannyModel &model = scene->models[k];
-						   if (zGrannyGetObbCenter2(attachment->boneName, &model, &grannyScenes[i]->models[0], worldPos)) {
-							   //std::cout<<grannyScenes[i]->models[0].meshes[0].grannyMesh->Name<<'\n';
-//							   std::cout<<worldPos[0]<<' '<<
-//										worldPos[1]<<' '<<
-//													   worldPos[2]<<' '<<'\n';
-						   }
-						   
-						   for (int m=0; m<model.meshCount; ++m) {
-							   ZGrannyMesh &mesh = model.meshes[m];
-							   if (mesh.grannyMesh->Name == attachment->meshName) {
-//								   if (zGrannyGetObbCenter(attachment->boneName, &mesh, worldPos)) {
-//									   std::cout<<grannyScenes[i]->models[0].meshes[0].grannyMesh->Name<<'\n';
-//									   std::cout<<worldPos[0]<<' '<<
-//												worldPos[1]<<' '<<
-//															   worldPos[2]<<' '<<'\n';
-//								   }
-							   }
-						   }
-					   }
-				   }
-			   }
-		   }
-		   zGrannyRenderScene(grannyScenes[i], textureIds[i], vertexRGBs[i], vertexRGB2s[i], shaderPrograms[i], worldPos);
-		   //zGrannyRenderSkeleton(grannyScenes[i]->models[0].skeleton, grannyScenes[i]->models[0].worldPose);
-	   }
-   }
-   
-   polarToCartesian();
-   glLoadIdentity();
-   double finalX = posX + addX;
-   double finalY = posY + addY;
-   double finalZ = posZ + addZ;
-   gluLookAt(finalX, finalY, finalZ,
-   lookatX, lookatY, lookatZ, 
-			 0, 1, 0);
+	GLenum err;
+	if ((err = glGetError()) != GL_NO_ERROR) {
+		std::ostringstream ss;
+		ss<<"err1: "<<gluErrorString(err);
+		std::cout<<ss.str()<<'\n';
+	}
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glScalef(-1.0f, 1.0f, 1.0f);
+	glEnable( GL_LINE_SMOOTH );
+	glEnable( GL_POLYGON_SMOOTH );
+	glHint( GL_LINE_SMOOTH_HINT, GL_NICEST );
+	glHint( GL_POLYGON_SMOOTH_HINT, GL_NICEST );
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+	glEnable(GL_MULTISAMPLE);
+	
+	if (grannyScenes.size() > 0) {
+		for (int i=0; i<grannyScenes.size(); ++i) {
+			GLfloat worldPos[3];
+			worldPos[0] = 0.0f;
+			worldPos[1] = 0.0f;
+			worldPos[2] = 0.0f;
+			if (attachments[i] != 0) {
+				MeshAttachmentPoint *attachment = attachments[i];
+				if (attachment->boneName.size() != 0 && attachment->meshName.size() != 0) {
+					for (int j=0; j<grannyScenes.size(); ++j) {
+						ZGrannyScene *scene = grannyScenes[j];
+						for (int k=0; k<scene->modelCount; ++k) {
+							ZGrannyModel &model = scene->models[k];
+							if (zGrannyGetObbCenter2(attachment->boneName, &model, &grannyScenes[i]->models[0], worldPos)) {
+								//std::cout<<grannyScenes[i]->models[0].meshes[0].grannyMesh->Name<<'\n';
+								//							   std::cout<<worldPos[0]<<' '<<
+								//										worldPos[1]<<' '<<
+								//													   worldPos[2]<<' '<<'\n';
+							}
+							
+							for (int m=0; m<model.meshCount; ++m) {
+								ZGrannyMesh &mesh = model.meshes[m];
+								if (mesh.grannyMesh->Name == attachment->meshName) {
+									//								   if (zGrannyGetObbCenter(attachment->boneName, &mesh, worldPos)) {
+									//									   std::cout<<grannyScenes[i]->models[0].meshes[0].grannyMesh->Name<<'\n';
+									//									   std::cout<<worldPos[0]<<' '<<
+									//												worldPos[1]<<' '<<
+									//															   worldPos[2]<<' '<<'\n';
+									//								   }
+								}
+							}
+						}
+					}
+				}
+			}
+			//		   std::string vText = "none";
+			//		   if (vertexRGBs[i] != 0) {
+			//			   std::ostringstream ss;
+			//			   ss<<vertexRGBs[i]->r<<' '<<
+			//				   vertexRGBs[i]->g<<' '<<
+			//				   vertexRGBs[i]->b<<' ';
+			//			   vText = ss.str();
+			//		   }
+			//		   std::cout<<"Rendering "<<grannyScenes[i]->models[0].meshes[0].grannyMesh->Name<<' '<<vText<<'\n';
+			zGrannyRenderScene(grannyScenes[i], textureIds[i], vertexRGBs[i], vertexRGB2s[i], shaderPrograms[i], worldPos);
+			//zGrannyRenderSkeleton(grannyScenes[i]->models[0].skeleton, grannyScenes[i]->models[0].worldPose);
+		}
+	}
+	
+	if ((err = glGetError()) != GL_NO_ERROR) {
+		std::ostringstream ss;
+		ss<<"err5: "<<gluErrorString(err);
+		std::cout<<ss.str()<<'\n';
+	}
+	polarToCartesian();
+	glLoadIdentity();
+	double finalX = posX + addX;
+	double finalY = posY + addY;
+	double finalZ = posZ + addZ;
+	gluLookAt(finalX, finalY, finalZ,
+			  lookatX, lookatY, lookatZ, 
+			  0, 1, 0);
+
+	if ((err = glGetError()) != GL_NO_ERROR) {
+		std::ostringstream ss;
+		ss<<"err3: "<<gluErrorString(err);
+		std::cout<<ss.str()<<'\n';
+	}
 }
 
 void GlContextWidget::cleanup() {
 	frameTimer.stop();
+	GLenum err;
+	if ((err = glGetError()) != GL_NO_ERROR) {
+		std::ostringstream ss;
+		ss<<"err0: "<<gluErrorString(err);
+		std::cout<<ss.str()<<'\n';
+	}
 	for (int i=0; i<grannyScenes.size(); ++i) {
 		zGrannyShutdownScene(grannyScenes[i]);
 		std::vector<GLuint > &textures = textureIds[i];
 		if (textures.size() > 0) {
 			GLuint *textureArray = new GLuint[textures.size()];
-			for (int i=0; i<textures.size(); ++i) {
-				textureArray[i] = textures[i];
+			for (int j=0; j<textures.size(); ++j) {
+				textureArray[j] = textures[j];
 			}
 			glDeleteTextures(textures.size(), textureArray);
 			delete[] textureArray;
 		}
+		GLenum err;
+		if ((err = glGetError()) != GL_NO_ERROR) {
+			std::ostringstream ss;
+			ss<<"err02: "<<gluErrorString(err);
+			std::cout<<ss.str()<<'\n';
+		}
 		if (shaderPrograms[i] != 0) {
 			GlShaderProgram *program = shaderPrograms[i];
-			glDeleteProgram(program->getProgram());
+			if (glIsProgram(program->getProgram()) == GL_TRUE) {
+				std::cout<<"Delete p = "<<program->getProgram()<<'\n';
+				glDeleteProgram(program->getProgram());
+			}
+			if ((err = glGetError()) != GL_NO_ERROR) {
+				std::ostringstream ss;
+				ss<<"err01: "<<gluErrorString(err)<<' '<<shaderPrograms[i]->getProgram();
+				std::cout<<ss.str()<<'\n';
+			}
 		}
 		removeGrannyScene(grannyScenes[i]);
 		--i;
 	}
-	frameTimer.start();
+	//frameTimer.start();
 }
 
 void GlContextWidget::pauseRendering()
@@ -233,7 +281,11 @@ void GlContextWidget::addGrannyScene(ZGrannyScene *scene, std::vector<GLuint > &
 	attachments.push_back(attachment);
 }
 
-void GlContextWidget::removeGrannyScene(ZGrannyScene *scene) {
+int GlContextWidget::getSceneCount() {
+	return grannyScenes.size();
+}
+
+bool GlContextWidget::removeGrannyScene(ZGrannyScene *scene) {
 	for (int i=0; i<grannyScenes.size(); ++i) {
 		if (grannyScenes[i] == scene) {
 			grannyScenes.erase(grannyScenes.begin() + i);
@@ -242,9 +294,10 @@ void GlContextWidget::removeGrannyScene(ZGrannyScene *scene) {
 			vertexRGB2s.erase(vertexRGB2s.begin() + i);
 			shaderPrograms.erase(shaderPrograms.begin() + i);
 			attachments.erase(attachments.begin() + i);
-			break;
+			return true;
 		}
 	}
+	return false;
 }
 
 void GlContextWidget::keyPressEvent(QKeyEvent* e) {

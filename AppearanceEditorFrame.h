@@ -96,6 +96,10 @@ private slots:
 	
 	void on_maleButton_clicked();
 	
+	void on_portraitPrev_clicked();
+	
+	void on_portraitNext_clicked();
+	
 private:
 	std::vector<fieldValue_t> portraits;
 	std::vector<fieldValue_t> aiPersonalities;
@@ -108,6 +112,7 @@ private:
 	std::vector<fieldValue_t> underwears;
 	std::vector<fieldValue_t> underwearTextures;
 	
+	int portraitIdx = 0;
 	int aiPersonalityIdx = 0;
 	int voiceIdx = 0;
 	int skinColorIdx = 0;
@@ -119,20 +124,23 @@ private:
 	bool shouldRender = true;
 	static bool didInitGlew;
 	GlShaderProgram *shaderProgram = 0;
-	VertexRGB *skinColor = 0;
-	VertexRGB *hairColor = 0;
-	VertexRGB *underwearColor = 0;
 	Ui::AppearanceEditorFrame *ui;
 	bool isMale;
 	std::wstring gameDataPath;
-	PakReader mainPak;
-	PakReader texturesPak;
+	static bool loadedPaks;
+	static PakReader mainPak;
+	static PakReader texturesPak;
 	EquipmentHandler *equipHandler;
 	GamePakData *gamePakData;
 	bool showEquipped = true;
 	GameCharacter *character;
 	LsbObject *oldPlayerCustomDataObject = 0;
 	LsbObject *playerCustomDataObject = 0;
+	
+	std::string portrait;
+	VertexRGB *skinColor = 0;
+	VertexRGB *hairColor = 0;
+	VertexRGB *underwearColor = 0;
 	
 	LsbObject *weaponsResourceBankObject = 0;
 	LsbObject *armorsPlayerResourceBankObject = 0;
@@ -153,6 +161,8 @@ private:
 	std::string getTextureFromTextureTemplate(LsbObject *resourceBankObject, std::string &textureTemplate);
 	bool getTextureMaps(LsbObject *resourceBankObject, LsbObject *materialsResourceBankObject, std::string &visualTemplate, std::string &diffuseMap, std::string &normalMap, std::string &maskMap);
 	void updateToCurrentModel(ZGrannyScene *&current, std::vector<fieldValue_t> &models, std::vector<fieldValue_t> &textures, int index, VertexRGB *foreColor, VertexRGB *backColor);
+	void updateToCurrentPortrait();
+	void updatePortraitImage();
 	void updateToCurrentHead();
 	void updateToCurrentHair();
 	void updateToCurrentUnderwear();
@@ -164,6 +174,7 @@ private:
 	QLabel *field(const char *fieldName);
 	void changeFieldValue(const char *labelName, int& idx, std::vector<fieldValue_t> &vec, int increment = 0);
 	void updateFieldText(QLabel *label, std::vector<fieldValue_t> &updateVector, int index);
+	void updateObjectValue(const char *labelName, int& idx, std::vector<fieldValue_t> &vec);
 };
 
 #endif // APPEARANCEEDITORFRAME_H

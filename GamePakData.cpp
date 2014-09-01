@@ -88,6 +88,17 @@ void GamePakData::setIconAtlas(const TextureAtlas &value)
 {
 	iconAtlas = value;
 }
+
+TextureAtlas &GamePakData::getPortraitAtlas()
+{
+	return portraitAtlas;
+}
+
+void GamePakData::setPortraitAtlas(const TextureAtlas &value)
+{
+	portraitAtlas = value;
+}
+
 void GamePakData::buildNameMappings()
 {
 	LsbObject *stringKeysRoot = LsbObject::lookupByUniquePath(stats, "TranslatedStringKeys/root");
@@ -437,31 +448,52 @@ void GamePakData::load(std::wstring gameDataPath) {
 	boost::replace_all(tempDirectory, "/", "\\");
 	std::wstring iconsLsxPath = tempDirectory;
 	iconsLsxPath += L"\\icons.lsx";
+	std::wstring portraitsLsxPath = tempDirectory;
+	portraitsLsxPath += L"\\portraits.lsx";
 	std::wstring iconsDdsPath = tempDirectory;
 	iconsDdsPath += L"\\icons.dds";
 	std::wstring inventoryCellDdsPath = tempDirectory;
 	inventoryCellDdsPath += L"\\inventoryCell.dds";
-	std::wstring portraitsLsbPath = tempDirectory;
-	portraitsLsbPath += L"\\portraits.dds";
+	std::wstring portraitsDdsPath = tempDirectory;
+	portraitsDdsPath += L"\\portraits.dds";
 	
 	boost::filesystem::ifstream iconDdsFin(iconsDdsPath, std::ios::binary);
 	int start = iconDdsFin.tellg();
 	iconDdsFin.seekg(0, std::ios_base::end);
-	int fileLengthDds = iconDdsFin.tellg() - start;
+	int iconFileLengthDds = iconDdsFin.tellg() - start;
 	iconDdsFin.seekg(0, std::ios_base::beg);
-	char *fileBytesDds = new char[fileLengthDds];
-	iconDdsFin.read(fileBytesDds, fileLengthDds);
+	char *iconFileBytesDds = new char[iconFileLengthDds];
+	iconDdsFin.read(iconFileBytesDds, iconFileLengthDds);
 	iconDdsFin.close();
 	
 	boost::filesystem::ifstream iconLsxFin(iconsLsxPath, std::ios::binary);
 	start = iconLsxFin.tellg();
 	iconLsxFin.seekg(0, std::ios_base::end);
-	int fileLengthLsx = iconLsxFin.tellg() - start;
+	int iconFileLengthLsx = iconLsxFin.tellg() - start;
 	iconLsxFin.seekg(0, std::ios_base::beg);
-	char *fileBytesLsx = new char[fileLengthLsx];
-	iconLsxFin.read(fileBytesLsx, fileLengthLsx);
+	char *iconFileBytesLsx = new char[iconFileLengthLsx];
+	iconLsxFin.read(iconFileBytesLsx, iconFileLengthLsx);
 	iconLsxFin.close();
-	std::string lsxBytes(fileBytesLsx);
+	std::string iconLsxBytes(iconFileBytesLsx);
+	
+	boost::filesystem::ifstream portraitDdsFin(portraitsDdsPath, std::ios::binary);
+	start = portraitDdsFin.tellg();
+	portraitDdsFin.seekg(0, std::ios_base::end);
+	int portraitFileLengthDds = portraitDdsFin.tellg() - start;
+	portraitDdsFin.seekg(0, std::ios_base::beg);
+	char *portraitFileBytesDds = new char[portraitFileLengthDds];
+	portraitDdsFin.read(portraitFileBytesDds, portraitFileLengthDds);
+	portraitDdsFin.close();
+	
+	boost::filesystem::ifstream portraitLsxFin(portraitsLsxPath, std::ios::binary);
+	start = portraitLsxFin.tellg();
+	portraitLsxFin.seekg(0, std::ios_base::end);
+	int portraitFileLengthLsx = portraitLsxFin.tellg() - start;
+	portraitLsxFin.seekg(0, std::ios_base::beg);
+	char *portraitFileBytesLsx = new char[portraitFileLengthLsx];
+	portraitLsxFin.read(portraitFileBytesLsx, portraitFileLengthLsx);
+	portraitLsxFin.close();
+	std::string portraitLsxBytes(portraitFileBytesLsx);
 	
 	boost::filesystem::ifstream inventoryCellDdsFin(inventoryCellDdsPath, std::ios::binary);
 	start = inventoryCellDdsFin.tellg();
@@ -472,16 +504,22 @@ void GamePakData::load(std::wstring gameDataPath) {
 	inventoryCellDdsFin.read(fileBytesInventoryCell, fileLengthInventoryCellDds);
 	inventoryCellDdsFin.close();
 
-	if (!iconAtlas.loadTextureAtlas(fileBytesDds, fileLengthDds, lsxBytes)) {
-		MessageBoxA(0, "failed to load Atlas", 0, 0);
+	if (!iconAtlas.loadTextureAtlas(iconFileBytesDds, iconFileLengthDds, iconLsxBytes)) {
+		MessageBoxA(0, "failed to load icon Atlas", 0, 0);
+	}
+	
+	if (!portraitAtlas.loadTextureAtlas(portraitFileBytesDds, portraitFileLengthDds, portraitLsxBytes)) {
+		MessageBoxA(0, "failed to load portrait Atlas", 0, 0);
 	}
 	
 	if (inventoryCellImg.loadFromData((const uchar *)fileBytesInventoryCell, fileLengthInventoryCellDds, "DDS")) {
 		inventoryCellPtr = &inventoryCellImg;
 	}
 	
-	delete []fileBytesDds;
-	delete []fileBytesLsx;
+	delete []iconFileBytesDds;
+	delete []portraitFileBytesDds;
+	delete []iconFileBytesLsx;
+	delete []portraitFileBytesLsx;
 	delete []fileBytesInventoryCell;
 }
 

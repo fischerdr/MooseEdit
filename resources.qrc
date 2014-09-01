@@ -35,7 +35,6 @@
         <file>parsed_traits.txt</file>
         <file>left-arrow.png</file>
         <file>right-arrow.png</file>
-        <file>charsheet.png</file>
         <file>experience.txt</file>
         <file>appearance-border.png</file>
         <file>appearance-armor-toggle.png</file>
@@ -48,5 +47,9 @@
         <file>vertex.shd</file>
         <file>colorPickerIcon.png</file>
         <file>fragment.shd</file>
+        <file>appearance-button-female-activated.png</file>
+        <file>appearance-button-male-deactivated.png</file>
+        <file>portraitBorder.png</file>
+        <file>charsheet.png</file>
     </qresource>
 </RCC>

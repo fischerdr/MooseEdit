@@ -45,6 +45,7 @@ bool GlShaderProgram::use()
 
 void GlShaderProgram::unset() {
 	glUseProgram(0);
+	
 	for (std::map<std::string, GLint>::iterator it = attributeIds.begin(); it != attributeIds.end(); ++it) {
 		glDisableVertexAttribArray(it->second);
 	}
@@ -57,6 +58,9 @@ GlShaderProgram::GlShaderProgram(std::vector<GlShader> &shaders) {
 void GlShaderProgram::setNVectorAttribute(std::string &attributeName, GLsizei stride, const GLvoid* data, int dimension) {
 	if (attributeIds.find(attributeName) == attributeIds.end()) {
 		GLint attribId = glGetAttribLocation( program, attributeName.c_str() );
+		if (attribId < 0) {
+			return;
+		}
 		attributeIds[attributeName] = attribId;
 	}
 	GLint attribId = attributeIds[attributeName];
@@ -89,6 +93,9 @@ void GlShaderProgram::set2dVectorAttribute(std::string attributeName, GLsizei st
 void GlShaderProgram::setUniformMatrix4x4(std::string uniformName, GLfloat buffer[16]) {
 	if (uniformLocations.find(uniformName) == uniformLocations.end()) {
 		GLint location = glGetUniformLocation(program, uniformName.c_str());
+		if (location < 0) {
+			return;
+		}
 		uniformLocations[uniformName] = location;
 	}
 	GLint location = uniformLocations[uniformName];
@@ -100,6 +107,9 @@ void GlShaderProgram::setUniformMatrix4x4(std::string uniformName, GLfloat buffe
 void GlShaderProgram::setUniformMatrix3x3(std::string uniformName, GLfloat buffer[9]) {
 	if (uniformLocations.find(uniformName) == uniformLocations.end()) {
 		GLint location = glGetUniformLocation(program, uniformName.c_str());
+		if (location < 0) {
+			return;
+		}
 		uniformLocations[uniformName] = location;
 	}
 	GLint location = uniformLocations[uniformName];
@@ -111,6 +121,9 @@ void GlShaderProgram::setUniformMatrix3x3(std::string uniformName, GLfloat buffe
 void GlShaderProgram::setUniformInt(std::string uniformName, GLint uniform) {
 	if (uniformLocations.find(uniformName) == uniformLocations.end()) {
 		GLint location = glGetUniformLocation(program, uniformName.c_str());
+		if (location < 0) {
+			return;
+		}
 		uniformLocations[uniformName] = location;
 	}
 	GLint location = uniformLocations[uniformName];
@@ -120,6 +133,9 @@ void GlShaderProgram::setUniformInt(std::string uniformName, GLint uniform) {
 void GlShaderProgram::setUniformFloat(std::string uniformName, GLfloat uniform) {
 	if (uniformLocations.find(uniformName) == uniformLocations.end()) {
 		GLint location = glGetUniformLocation(program, uniformName.c_str());
+		if (location < 0) {
+			return;
+		}
 		uniformLocations[uniformName] = location;
 	}
 	GLint location = uniformLocations[uniformName];
@@ -129,6 +145,9 @@ void GlShaderProgram::setUniformFloat(std::string uniformName, GLfloat uniform) 
 void GlShaderProgram::setUniformVec4(std::string uniformName, GLfloat components[4]) {
 	if (uniformLocations.find(uniformName) == uniformLocations.end()) {
 		GLint location = glGetUniformLocation(program, uniformName.c_str());
+		if (location < 0) {
+			return;
+		}
 		uniformLocations[uniformName] = location;
 	}
 	GLint location = uniformLocations[uniformName];

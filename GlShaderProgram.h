@@ -30,6 +30,7 @@ public:
 	void set4dVectorAttribute(std::string attributeName, GLsizei stride, const GLvoid* data);
 	void set3dVectorAttribute(std::string attributeName, GLsizei stride, const GLvoid* data);
 	void set2dVectorAttribute(std::string attributeName, GLsizei stride, const GLvoid* data);
+	void CheckStatus( GLuint obj );
 	std::string getLastError() const;
 	GLuint getProgram() const;
 };

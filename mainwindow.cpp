@@ -406,6 +406,7 @@ void MainWindow::handleLoadButton() {
 					}
 					charTab->setEquipmentHandler(equipHandler);
 					charTab->setGamePakData(gamePakData);
+					charTab->updateToCurrentPortrait();
 					
 					QTreeWidget *tree = this->findChild<QTreeWidget *>("treeWidget");
 					std::vector<LsbObject *> one;

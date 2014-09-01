@@ -23,7 +23,7 @@ public:
 	//void setGrannyScene(ZGrannyScene *value);
 	void addGrannyScene(ZGrannyScene *scene, std::vector<GLuint> &textures);
 	void addGrannyScene(ZGrannyScene *scene, std::vector<GLuint> &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, MeshAttachmentPoint *attachment);
-	void removeGrannyScene(ZGrannyScene *scene);
+	bool removeGrannyScene(ZGrannyScene *scene);
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);
 	void mousePressEvent(QMouseEvent *event);
@@ -36,6 +36,7 @@ public:
 	void cleanup();
 	void pauseRendering();
 	void resumeRendering();
+	int getSceneCount();
 	
 signals:
 	
@@ -89,7 +90,7 @@ private:
 	std::vector<GlShaderProgram *> shaderPrograms;
 	std::vector<MeshAttachmentPoint *> attachments;
 	bool timerConnected = false;
-	//ZGrannyScene *grannyScene = 0;
+	
 	double posX;
 	double posY;
 	double posZ;

@@ -120,7 +120,7 @@
 </string>
     </property>
     <property name="text">
-     <string>6</string>
+     <string>5</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -149,7 +149,7 @@
 </string>
     </property>
     <property name="text">
-     <string>9</string>
+     <string>5</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -178,7 +178,7 @@
 </string>
     </property>
     <property name="text">
-     <string>9</string>
+     <string>5</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -207,7 +207,7 @@
 </string>
     </property>
     <property name="text">
-     <string>6</string>
+     <string>5</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -237,7 +237,7 @@
 </string>
     </property>
     <property name="text">
-     <string>10</string>
+     <string>5</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1331,7 +1331,7 @@ color: rgb(255, 255, 255);</string>
 color: rgb(116, 109, 101);</string>
     </property>
     <property name="text">
-     <string>5</string>
+     <string>1</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1348,6 +1348,30 @@ color: rgb(116, 109, 101);</string>
     </property>
     <property name="text">
      <string>Appearance</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="portraitLabel">
+    <property name="geometry">
+     <rect>
+      <x>7</x>
+      <y>6</y>
+      <width>68</width>
+      <height>68</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">#portraitLabel {
+	border-image: url(:/portraitBorder.png);
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
+    </property>
+    <property name="margin">
+     <number>5</number>
     </property>
    </widget>
   </widget>
