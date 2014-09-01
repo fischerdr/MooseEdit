@@ -240,7 +240,6 @@ void GlContextWidget::cleanup() {
 		if (shaderPrograms[i] != 0) {
 			GlShaderProgram *program = shaderPrograms[i];
 			if (glIsProgram(program->getProgram()) == GL_TRUE) {
-				std::cout<<"Delete p = "<<program->getProgram()<<'\n';
 				glDeleteProgram(program->getProgram());
 			}
 			if ((err = glGetError()) != GL_NO_ERROR) {
