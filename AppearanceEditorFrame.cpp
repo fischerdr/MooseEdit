@@ -25,6 +25,7 @@ bool AppearanceEditorFrame::didInitGlew = false;
 bool AppearanceEditorFrame::loadedPaks = false;
 PakReader AppearanceEditorFrame::texturesPak;
 PakReader AppearanceEditorFrame::mainPak;
+LsbObject *AppearanceEditorFrame::playersTemplateObjects = 0;
 
 AppearanceEditorFrame::AppearanceEditorFrame(std::wstring gameDataPath, GameCharacter *character, QWidget *parent) :
 	QFrame(parent), gameDataPath(gameDataPath), character(character),
@@ -34,6 +35,25 @@ AppearanceEditorFrame::AppearanceEditorFrame(std::wstring gameDataPath, GameChar
 		loadedPaks = true;
 		mainPak.loadFile(gameDataPath + L"Main.pak");
 		texturesPak.loadFile(gameDataPath + L"Textures.pak");
+		
+		std::string playersLsbPath = "Public/Main/RootTemplates/player.lsb";
+		std::wstring tmp = L"";
+		unsigned long fileSize;
+		char *fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", playersLsbPath, tmp, false, &fileSize);
+		if (fileBytes != 0) {
+			std::stringstream ss;
+			ss.rdbuf()->pubsetbuf(fileBytes, fileSize);
+			LsbReader reader;
+			std::vector<LsbObject *> objects = reader.loadFile(ss);
+			if (objects.size() > 0) {
+				playersTemplateObjects = LsbObject::lookupByUniquePath(objects, "Templates");
+			}
+			std::vector<TAG_LSB *> tagList = reader.getTagList();
+			reader.clearTagList(tagList);
+			delete[] fileBytes;
+		} else {
+			MessageBoxA(0, "failed to extract player.lsb", 0, 0);
+		}
 	}
 	ui->setupUi(this);
 }
@@ -118,32 +138,6 @@ void AppearanceEditorFrame::loadEquipmentData() {
 			delete[] fileBytes;
 		}
 	}
-	{
-		std::string extractPath = "Public/Main/Content/Assets/Characters/[PAK]_Player_Male/Player_Male.lsb";
-		unsigned long fileSize;
-		char *fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", extractPath, gameDataPath, false, &fileSize);
-		if (fileBytes != 0) {
-			std::stringstream ss;
-			ss.rdbuf()->pubsetbuf(fileBytes, fileSize);
-			LsbReader reader;
-			std::vector<LsbObject *> resourceAssets = reader.loadFile(ss);
-			playerMaleResourceBankObject = LsbObject::lookupByUniquePath(resourceAssets, "ResourceBank");
-			delete[] fileBytes;
-		}
-	}
-	{
-		std::string extractPath = "Public/Main/Content/Assets/Characters/[PAK]_Player_Female/Player_Female.lsb";
-		unsigned long fileSize;
-		char *fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", extractPath, gameDataPath, false, &fileSize);
-		if (fileBytes != 0) {
-			std::stringstream ss;
-			ss.rdbuf()->pubsetbuf(fileBytes, fileSize);
-			LsbReader reader;
-			std::vector<LsbObject *> resourceAssets = reader.loadFile(ss);
-			playerFemaleResourceBankObject = LsbObject::lookupByUniquePath(resourceAssets, "ResourceBank");
-			delete[] fileBytes;
-		}
-	}
 	
 	generateEquipmentModels();
 }
@@ -196,6 +190,72 @@ void AppearanceEditorFrame::updateAllFields() {
 	updateToCurrentUnderwear();
 	
 	updatePortraitData();
+}
+
+void AppearanceEditorFrame::populateFieldValuesForTemplate(std::string templateId, std::string fieldType, std::string namePrefix, 
+														   std::vector<fieldValue_t> &modelFields, std::vector<fieldValue_t> &diffuseFields, 
+														   std::vector<fieldValue_t> &normalFields, std::vector<fieldValue_t> &maskFields, bool isMale) {
+	if (playersTemplateObjects != 0) {
+		LsbObject *rootObject = playersTemplateObjects->lookupByUniquePath("root");
+		if (rootObject != 0) {
+			std::vector<LsbObject *> gameObjects = rootObject->lookupAllEntitiesWithName(rootObject, "GameObjects");
+			for (int i=0; i<gameObjects.size(); ++i) {
+				LsbObject *gameObject = gameObjects[i];
+				if (gameObject != 0) {
+					LsbObject *mapKeyObject = gameObject->lookupByUniquePath("MapKey");
+					if (mapKeyObject != 0) {
+						std::string mapKey = mapKeyObject->getData();
+						if (mapKey == templateId) {
+							std::vector<LsbObject *> fieldTypeObjects = gameObject->lookupAllEntitiesWithName(gameObject, fieldType.c_str());
+							modelFields.resize(fieldTypeObjects.size());
+							diffuseFields.resize(fieldTypeObjects.size());
+							normalFields.resize(fieldTypeObjects.size());
+							maskFields.resize(fieldTypeObjects.size());
+							for (int j=0; j<fieldTypeObjects.size(); ++j) {
+								LsbObject *fieldTypeObject = fieldTypeObjects[j];
+								if (fieldTypeObject != 0) {
+									LsbObject *objectObject = fieldTypeObject->lookupByUniquePath("Object");
+									if (objectObject != 0) {
+										std::string visualTemplate = objectObject->getData();
+										
+										std::stringstream ss;
+										ss<<namePrefix<<" "<<(j + 1);
+										std::string fieldName = ss.str();
+										std::string modelFile = "";
+										std::string diffuseMap = "";
+										std::string normalMap = "";
+										std::string maskMap = "";
+										
+										LsbObject *resourceBank = 0;
+										if (isMale) {
+											resourceBank = playerMaleResourceBankObject;
+										} else {
+											resourceBank = playerFemaleResourceBankObject;
+										}
+										if (resourceBank != 0) {
+											modelFile = this->getGR2(resourceBank, visualTemplate);
+											this->getTextureMaps(resourceBank, resourceBank, visualTemplate, diffuseMap, normalMap, maskMap);
+										}
+										modelFields[j].name = fieldName;
+										modelFields[j].setValue(modelFile, isMale);
+										
+										diffuseFields[j].name = fieldName;
+										diffuseFields[j].setValue(diffuseMap, isMale);
+										
+										normalFields[j].name = fieldName;
+										normalFields[j].setValue(normalMap, isMale);
+										
+										maskFields[j].name = fieldName;
+										maskFields[j].setValue(maskMap, isMale);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 void AppearanceEditorFrame::generateFields() {
@@ -279,104 +339,115 @@ void AppearanceEditorFrame::generateFields() {
 				skinColors.push_back({colorNameObject->getData(), ss.str(), ss.str()});
 			}
 		}
-		for (int i=0; i<NUM_HEADS; ++i) {
-			std::ostringstream ss;
-			ss<<"Head "<<(i + 1);
-			heads.push_back({ss.str(), "", ""});
-			headTextures.push_back({ss.str(), "", ""});
-		}
-		heads[0].maleValue = "PL_M_Head_A";
-		headTextures[0].maleValue = "PL_M_Head_A";
-		heads[1].maleValue = "PL_M_Head_B";
-		headTextures[1].maleValue = "PL_M_Head_B";
-		heads[2].maleValue = "PL_M_Head_C";
-		headTextures[2].maleValue = "PL_M_Head_C";
-		heads[3].maleValue = "PL_M_Head_D";
-		headTextures[3].maleValue = "PL_M_Head_D";
-		heads[4].maleValue = "PL_M_Head_E";
-		headTextures[4].maleValue = "PL_M_Head_E";
-		heads[5].maleValue = "PL_M_Head_F";
-		headTextures[5].maleValue = "PL_M_Head_F";
-		heads[6].maleValue = "PL_M_Head_A";
-		headTextures[6].maleValue = "PL_M_Head_G";
-		heads[7].maleValue = "PL_M_Head_A";
-		headTextures[7].maleValue = "PL_M_Head_H";
-		heads[8].maleValue = "PL_M_Head_I";
-		headTextures[8].maleValue = "PL_M_Head_I";
-		heads[9].maleValue = "PL_M_Head_A";
-		headTextures[9].maleValue = "PL_M_Head_L";
-		heads[10].maleValue = "PL_M_Head_A";
-		headTextures[10].maleValue = "PL_M_Head_M";
-		heads[11].maleValue = "PL_M_Head_N";
-		headTextures[11].maleValue = "PL_M_Head_N";
-		heads[12].maleValue = "PL_M_Head_O";
-		headTextures[12].maleValue = "PL_M_Head_O";
-		heads[13].maleValue = "PL_M_Head_I";
-		headTextures[13].maleValue = "PL_M_Head_J";
-		heads[14].maleValue = "PL_M_Head_I";
-		headTextures[14].maleValue = "PL_M_Head_K";
 		
-		for (int i=0; i<NUM_HEADS; ++i) {
-			heads[i].femaleValue = "PL_F_Head_A";
-			headTextures[i].femaleValue = "PL_F_Head_A";
-		}
+		//player male
+		populateFieldValuesForTemplate("878372b3-9280-4819-b8b0-4ca76dea8ad2", "Heads", "Head", heads, headDiffuse, headNormal, headMask, true);
+		populateFieldValuesForTemplate("878372b3-9280-4819-b8b0-4ca76dea8ad2", "Arms", "Hair", hairs, hairDiffuse, hairNormal, hairMask, true);
+		populateFieldValuesForTemplate("878372b3-9280-4819-b8b0-4ca76dea8ad2", "Bodies", "Underwear", underwears, underwearDiffuse, underwearNormal, underwearMask, true);
 		
-		for (int i=0; i<NUM_HAIRS; ++i) {
-			std::ostringstream ss;
-			ss<<"Hair "<<(i + 1);
-			hairs.push_back({ss.str(), "", ""});
-		}
-		hairs[0].maleValue = "PL_M_Hair_A";
-		hairs[1].maleValue = "PL_M_Hair_H";
-		hairs[2].maleValue = "PL_M_Hair_J";
-		hairs[3].maleValue = "PL_M_Hair_O";
-		hairs[4].maleValue = "PL_M_Hair_F";
-		hairs[5].maleValue = "PL_M_Hair_G";
-		hairs[6].maleValue = "PL_M_Hair_C";
-		hairs[7].maleValue = "PL_M_Hair_B";
-		hairs[8].maleValue = "PL_M_Hair_L";
-		hairs[9].maleValue = "PL_M_Hair_M";
-		hairs[10].maleValue = "PL_M_Hair_N";
-		hairs[11].maleValue = "PL_M_Hair_D";
-		hairs[12].maleValue = "PL_M_Hair_K";
-		hairs[13].maleValue = "PL_M_Hair_I";
-		hairs[14].maleValue = "PL_M_Hair_E";
+		//player female
+		populateFieldValuesForTemplate("878372b3-9280-4819-b8b0-4ca76dea8ad1", "Heads", "Head", heads, headDiffuse, headNormal, headMask, false);
+		populateFieldValuesForTemplate("878372b3-9280-4819-b8b0-4ca76dea8ad1", "Arms", "Hair", hairs, hairDiffuse, hairNormal, hairMask, false);
+		populateFieldValuesForTemplate("878372b3-9280-4819-b8b0-4ca76dea8ad1", "Bodies", "Underwear", underwears, underwearDiffuse, underwearNormal, underwearMask, false);
 		
-		hairs[0].femaleValue = "PL_F_Hair_A";
-		hairs[1].femaleValue = "PL_F_Hair_B";
-		hairs[2].femaleValue = "PL_F_Hair_C";
-		hairs[3].femaleValue = "PL_F_Hair_D";
-		hairs[4].femaleValue = "PL_F_Hair_E";
-		hairs[5].femaleValue = "PL_F_Hair_F";
-		hairs[6].femaleValue = "PL_F_Hair_G";
-		hairs[7].femaleValue = "PL_F_Hair_H";
-		hairs[8].femaleValue = "PL_F_Hair_I";
-		hairs[9].femaleValue = "PL_F_Hair_J";
-		hairs[10].femaleValue = "PL_F_Hair_K";
-		hairs[11].femaleValue = "PL_F_Hair_L";
-		hairs[12].femaleValue = "PL_F_Hair_M";
-		hairs[13].femaleValue = "PL_F_Hair_N";
-		hairs[14].femaleValue = "PL_F_Hair_O";
+//		for (int i=0; i<NUM_HEADS; ++i) {
+//			std::ostringstream ss;
+//			ss<<"Head "<<(i + 1);
+//			heads.push_back({ss.str(), "", ""});
+//			headDiffuse.push_back({ss.str(), "", ""});
+//		}
+//		heads[0].maleValue = "PL_M_Head_A";
+//		headDiffuse[0].maleValue = "PL_M_Head_A";
+//		heads[1].maleValue = "PL_M_Head_B";
+//		headDiffuse[1].maleValue = "PL_M_Head_B";
+//		heads[2].maleValue = "PL_M_Head_C";
+//		headDiffuse[2].maleValue = "PL_M_Head_C";
+//		heads[3].maleValue = "PL_M_Head_D";
+//		headDiffuse[3].maleValue = "PL_M_Head_D";
+//		heads[4].maleValue = "PL_M_Head_E";
+//		headDiffuse[4].maleValue = "PL_M_Head_E";
+//		heads[5].maleValue = "PL_M_Head_F";
+//		headDiffuse[5].maleValue = "PL_M_Head_F";
+//		heads[6].maleValue = "PL_M_Head_A";
+//		headDiffuse[6].maleValue = "PL_M_Head_G";
+//		heads[7].maleValue = "PL_M_Head_A";
+//		headDiffuse[7].maleValue = "PL_M_Head_H";
+//		heads[8].maleValue = "PL_M_Head_I";
+//		headDiffuse[8].maleValue = "PL_M_Head_I";
+//		heads[9].maleValue = "PL_M_Head_A";
+//		headDiffuse[9].maleValue = "PL_M_Head_L";
+//		heads[10].maleValue = "PL_M_Head_A";
+//		headDiffuse[10].maleValue = "PL_M_Head_M";
+//		heads[11].maleValue = "PL_M_Head_N";
+//		headDiffuse[11].maleValue = "PL_M_Head_N";
+//		heads[12].maleValue = "PL_M_Head_O";
+//		headDiffuse[12].maleValue = "PL_M_Head_O";
+//		heads[13].maleValue = "PL_M_Head_I";
+//		headDiffuse[13].maleValue = "PL_M_Head_J";
+//		heads[14].maleValue = "PL_M_Head_I";
+//		headDiffuse[14].maleValue = "PL_M_Head_K";
 		
-		for (int i=0; i<NUM_UNDERWEARS; ++i) {
-			std::ostringstream ss;
-			ss<<"Underwear "<<(i + 1);
-			underwears.push_back({ss.str(), "", ""});
-			underwearTextures.push_back({ss.str(), "", ""});
-		}
-		underwears[0].maleValue = "PL_M_Body_A";
-		underwearTextures[0].maleValue = "PL_M_Body_A";
-		underwears[1].maleValue = "PL_M_Body_A";
-		underwearTextures[1].maleValue = "PL_M_Body_B";
-		underwears[2].maleValue = "PL_M_Body_A";
-		underwearTextures[2].maleValue = "PL_M_Body_C";
+//		for (int i=0; i<NUM_HEADS; ++i) {
+//			heads[i].femaleValue = "PL_F_Head_A";
+//			headDiffuse[i].femaleValue = "PL_F_Head_A";
+//		}
 		
-		underwears[0].femaleValue = "PL_F_Body_A";
-		underwearTextures[0].femaleValue = "PL_F_Body_A";
-		underwears[1].femaleValue = "PL_F_Body_A";
-		underwearTextures[1].femaleValue = "PL_F_Body_B";
-		underwears[2].femaleValue = "PL_F_Body_A";
-		underwearTextures[2].femaleValue = "PL_F_Body_C";
+//		for (int i=0; i<NUM_HAIRS; ++i) {
+//			std::ostringstream ss;
+//			ss<<"Hair "<<(i + 1);
+//			hairs.push_back({ss.str(), "", ""});
+//		}
+//		hairs[0].maleValue = "PL_M_Hair_A";
+//		hairs[1].maleValue = "PL_M_Hair_H";
+//		hairs[2].maleValue = "PL_M_Hair_J";
+//		hairs[3].maleValue = "PL_M_Hair_O";
+//		hairs[4].maleValue = "PL_M_Hair_F";
+//		hairs[5].maleValue = "PL_M_Hair_G";
+//		hairs[6].maleValue = "PL_M_Hair_C";
+//		hairs[7].maleValue = "PL_M_Hair_B";
+//		hairs[8].maleValue = "PL_M_Hair_L";
+//		hairs[9].maleValue = "PL_M_Hair_M";
+//		hairs[10].maleValue = "PL_M_Hair_N";
+//		hairs[11].maleValue = "PL_M_Hair_D";
+//		hairs[12].maleValue = "PL_M_Hair_K";
+//		hairs[13].maleValue = "PL_M_Hair_I";
+//		hairs[14].maleValue = "PL_M_Hair_E";
+		
+//		hairs[0].femaleValue = "PL_F_Hair_A";
+//		hairs[1].femaleValue = "PL_F_Hair_B";
+//		hairs[2].femaleValue = "PL_F_Hair_C";
+//		hairs[3].femaleValue = "PL_F_Hair_D";
+//		hairs[4].femaleValue = "PL_F_Hair_E";
+//		hairs[5].femaleValue = "PL_F_Hair_F";
+//		hairs[6].femaleValue = "PL_F_Hair_G";
+//		hairs[7].femaleValue = "PL_F_Hair_H";
+//		hairs[8].femaleValue = "PL_F_Hair_I";
+//		hairs[9].femaleValue = "PL_F_Hair_J";
+//		hairs[10].femaleValue = "PL_F_Hair_K";
+//		hairs[11].femaleValue = "PL_F_Hair_L";
+//		hairs[12].femaleValue = "PL_F_Hair_M";
+//		hairs[13].femaleValue = "PL_F_Hair_N";
+//		hairs[14].femaleValue = "PL_F_Hair_O";
+		
+//		for (int i=0; i<NUM_UNDERWEARS; ++i) {
+//			std::ostringstream ss;
+//			ss<<"Underwear "<<(i + 1);
+//			underwears.push_back({ss.str(), "", ""});
+//			underwearTextures.push_back({ss.str(), "", ""});
+//		}
+//		underwears[0].maleValue = "PL_M_Body_A";
+//		underwearTextures[0].maleValue = "PL_M_Body_A";
+//		underwears[1].maleValue = "PL_M_Body_A";
+//		underwearTextures[1].maleValue = "PL_M_Body_B";
+//		underwears[2].maleValue = "PL_M_Body_A";
+//		underwearTextures[2].maleValue = "PL_M_Body_C";
+		
+//		underwears[0].femaleValue = "PL_F_Body_A";
+//		underwearTextures[0].femaleValue = "PL_F_Body_A";
+//		underwears[1].femaleValue = "PL_F_Body_A";
+//		underwearTextures[1].femaleValue = "PL_F_Body_B";
+//		underwears[2].femaleValue = "PL_F_Body_A";
+//		underwearTextures[2].femaleValue = "PL_F_Body_C";
 		
 		{
 			LsbObject *hairColorsObject = LsbObject::lookupByUniquePath(objects, "CharacterCreationProperties/root/HairColors");
@@ -748,11 +819,11 @@ void AppearanceEditorFrame::cleanup() {
 	voices.clear();
 	skinColors.clear();
 	heads.clear();
-	headTextures.clear();
+	headDiffuse.clear();
 	hairs.clear();
 	hairColors.clear();
 	underwears.clear();
-	underwearTextures.clear();
+	underwearDiffuse.clear();
 }
 
 void AppearanceEditorFrame::setup() {
@@ -836,6 +907,33 @@ void AppearanceEditorFrame::setup() {
 		std::ostringstream ss;
 		ss<<"0: "<<gluErrorString(err);
 		MessageBoxA(0, ss.str().c_str(), 0, 0);
+	}
+	
+	{
+		std::string extractPath = "Public/Main/Content/Assets/Characters/[PAK]_Player_Male/Player_Male.lsb";
+		unsigned long fileSize;
+		char *fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", extractPath, gameDataPath, false, &fileSize);
+		if (fileBytes != 0) {
+			std::stringstream ss;
+			ss.rdbuf()->pubsetbuf(fileBytes, fileSize);
+			LsbReader reader;
+			std::vector<LsbObject *> resourceAssets = reader.loadFile(ss);
+			playerMaleResourceBankObject = LsbObject::lookupByUniquePath(resourceAssets, "ResourceBank");
+			delete[] fileBytes;
+		}
+	}
+	{
+		std::string extractPath = "Public/Main/Content/Assets/Characters/[PAK]_Player_Female/Player_Female.lsb";
+		unsigned long fileSize;
+		char *fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", extractPath, gameDataPath, false, &fileSize);
+		if (fileBytes != 0) {
+			std::stringstream ss;
+			ss.rdbuf()->pubsetbuf(fileBytes, fileSize);
+			LsbReader reader;
+			std::vector<LsbObject *> resourceAssets = reader.loadFile(ss);
+			playerFemaleResourceBankObject = LsbObject::lookupByUniquePath(resourceAssets, "ResourceBank");
+			delete[] fileBytes;
+		}
 	}
 	
 	generateFields();
@@ -1096,10 +1194,13 @@ void AppearanceEditorFrame::on_hairNext_clicked()
 	updateToCurrentHair();
 }
 
-void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::vector<fieldValue_t> &models, std::vector<fieldValue_t> &textures, int index, VertexRGB *foreColor, VertexRGB *backColor) {
+void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::vector<fieldValue_t> &models, std::vector<fieldValue_t> &diffuse, 
+												 std::vector<fieldValue_t> &normal, std::vector<fieldValue_t> &mask, int index, VertexRGB *foreColor, VertexRGB *backColor) {
 	GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
 	std::string modelFile = models[index].currentValue(isMale);
-	std::string textureFile = textures[index].currentValue(isMale);
+	std::string diffuseFile = diffuse[index].currentValue(isMale);
+	std::string normalFile = normal[index].currentValue(isMale);
+	std::string maskFile = mask[index].currentValue(isMale);
 	std::vector<GLuint> modelTextures;
 	
 
@@ -1115,7 +1216,8 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 		MessageBoxA(0, ss.str().c_str(), 0, 0);
 	}
 	
-	texturePath = "Public/Main/Assets/Textures/Characters/Player/" + textureFile + "_DM.dds";
+	//texturePath = "Public/Main/Assets/Textures/Characters/Player/" + textureFile + "_DM.dds";
+	texturePath = diffuseFile;
 	fileBytes = texturesPak.extractFileIntoMemory(gameDataPath + L"Textures.pak", texturePath, tmp, false, &textureFileSize);
 	if (fileBytes != 0) {
 		std::stringstream ss;
@@ -1137,7 +1239,8 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 		MessageBoxA(0, ss.str().c_str(), 0, 0);
 	}
 	
-	texturePath = "Public/Main/Assets/Textures/Characters/Player/" + textureFile + "_NM.dds";
+	//texturePath = "Public/Main/Assets/Textures/Characters/Player/" + textureFile + "_NM.dds";
+	texturePath = normalFile;
 	fileBytes = texturesPak.extractFileIntoMemory(gameDataPath + L"Textures.pak", texturePath, tmp, false, &textureFileSize);
 	if (fileBytes != 0) {
 		std::stringstream ss;
@@ -1159,10 +1262,12 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 		delete[] fileBytes;
 	}
 	
-	texturePath = "Public/Main/Assets/Textures/Characters/Player/" + textureFile + "_SM.dds";
+	//texturePath = "Public/Main/Assets/Textures/Characters/Player/" + textureFile + "_SM.dds";
+	texturePath = maskFile;
 	fileBytes = texturesPak.extractFileIntoMemory(gameDataPath + L"Textures.pak", texturePath, tmp, false, &textureFileSize);
 	if (fileBytes == 0) {
-		texturePath = "Public/Main/Assets/Textures/Characters/Player/" + textureFile + "_MSK.dds";
+		//texturePath = "Public/Main/Assets/Textures/Characters/Player/" + textureFile + "_MSK.dds";
+		texturePath = maskFile;
 		fileBytes = texturesPak.extractFileIntoMemory(gameDataPath + L"Textures.pak", texturePath, tmp, false, &textureFileSize);
 	}
 	if (fileBytes != 0) {
@@ -1230,7 +1335,8 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 //	modelTextures.push_back(texobj9);
 //	modelTextures.push_back(texobj10);
 	unsigned long fSize;
-	std::string extractPath = "Public/Main/Assets/Characters/Players/" + modelFile + ".GR2";
+	//std::string extractPath = "Public/Main/Assets/Characters/Players/" + modelFile + ".GR2";
+	std::string extractPath = modelFile;
 	fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", extractPath, gameDataPath, false, &fSize);
 	if (fileBytes == 0) {
 		MessageBoxA(0, "Failed to load model from game data", 0, 0);
@@ -1246,15 +1352,15 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 }
 
 void AppearanceEditorFrame::updateToCurrentHair() {
-	updateToCurrentModel(currentHair, hairs, hairs, hairIdx, 0, hairColor);
+	updateToCurrentModel(currentHair, hairs, hairDiffuse, hairNormal, hairMask, hairIdx, 0, hairColor);
 }
 
 void AppearanceEditorFrame::updateToCurrentHead() {
-	updateToCurrentModel(currentHead, heads, headTextures, headIdx, skinColor, hairColor);
+	updateToCurrentModel(currentHead, heads, headDiffuse, headNormal, headMask, headIdx, skinColor, hairColor);
 }
 
 void AppearanceEditorFrame::updateToCurrentUnderwear() {
-	updateToCurrentModel(currentUnderwear, underwears, underwearTextures, underwearIdx, skinColor, underwearColor);
+	updateToCurrentModel(currentUnderwear, underwears, underwearDiffuse, underwearNormal, underwearMask, underwearIdx, skinColor, underwearColor);
 }
 
 void AppearanceEditorFrame::on_hairColorPrev_clicked()

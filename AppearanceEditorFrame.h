@@ -23,6 +23,13 @@ typedef struct {
 			return femaleValue;
 		}
 	}
+	void setValue(std::string &value, bool isMale) {
+		if (isMale) {
+			maleValue = value;
+		} else {
+			femaleValue = value;
+		}
+	}
 } fieldValue_t;
 
 typedef struct {
@@ -114,11 +121,19 @@ private:
 	std::vector<fieldValue_t> voices;
 	std::vector<fieldValue_t> skinColors;
 	std::vector<fieldValue_t> heads;
-	std::vector<fieldValue_t> headTextures;
+	std::vector<fieldValue_t> headDiffuse;
+	std::vector<fieldValue_t> headNormal;
+	std::vector<fieldValue_t> headMask;
 	std::vector<fieldValue_t> hairs;
+	std::vector<fieldValue_t> hairDiffuse;
+	std::vector<fieldValue_t> hairNormal;
+	std::vector<fieldValue_t> hairMask;
 	std::vector<fieldValue_t> hairColors;
 	std::vector<fieldValue_t> underwears;
-	std::vector<fieldValue_t> underwearTextures;
+	std::vector<fieldValue_t> underwearDiffuse;
+	std::vector<fieldValue_t> underwearNormal;
+	std::vector<fieldValue_t> underwearMask;
+	//std::vector<fieldValue_t> underwearTextures;
 	
 	int portraitIdx = 0;
 	int aiPersonalityIdx = 0;
@@ -138,6 +153,7 @@ private:
 	static bool loadedPaks;
 	static PakReader mainPak;
 	static PakReader texturesPak;
+	static LsbObject *playersTemplateObjects;
 	EquipmentHandler *equipHandler;
 	GamePakData *gamePakData;
 	bool showEquipped = true;
@@ -169,7 +185,8 @@ private:
 	std::string getGR2(LsbObject *resourceBankObject, std::string &visualTemplate);
 	std::string getTextureFromTextureTemplate(LsbObject *resourceBankObject, std::string &textureTemplate);
 	bool getTextureMaps(LsbObject *resourceBankObject, LsbObject *materialsResourceBankObject, std::string &visualTemplate, std::string &diffuseMap, std::string &normalMap, std::string &maskMap);
-	void updateToCurrentModel(ZGrannyScene *&current, std::vector<fieldValue_t> &models, std::vector<fieldValue_t> &textures, int index, VertexRGB *foreColor, VertexRGB *backColor);
+	void updateToCurrentModel(ZGrannyScene *&current, std::vector<fieldValue_t> &models, std::vector<fieldValue_t> &diffuse, 
+							  std::vector<fieldValue_t> &normal, std::vector<fieldValue_t> &mask, int index, VertexRGB *foreColor, VertexRGB *backColor);
 	void updatePortraitData();
 	void updateToCurrentPortrait();
 	void updatePortraitImage();
@@ -182,6 +199,9 @@ private:
 	ZGrannyScene *createModelForItem(GameItem *item, std::vector<GLuint > &textures);
 	void setup();
 	void generateFields();
+	void populateFieldValuesForTemplate(std::string templateId, std::string fieldType, std::string namePrefix, 
+										std::vector<fieldValue_t> &modelFields, std::vector<fieldValue_t> &diffuseFields, 
+										std::vector<fieldValue_t> &normalFields, std::vector<fieldValue_t> &maskFields, bool isMale);
 	QLabel *field(const char *fieldName);
 	void changeFieldValue(const char *labelName, int& idx, std::vector<fieldValue_t> &vec, int increment = 0);
 	void updateFieldText(QLabel *label, std::vector<fieldValue_t> &updateVector, int index);
