@@ -179,10 +179,22 @@ void AppearanceEditorFrame::updateAllFields() {
 	changeFieldValue("aiPersonalityLabel", aiPersonalityIdx, aiPersonalities);
 	changeFieldValue("voiceLabel", voiceIdx, voices);
 	changeFieldValue("skinColorLabel", skinColorIdx, skinColors);
-	changeFieldValue("headLabel", headIdx, heads);
-	changeFieldValue("hairLabel", hairIdx, hairs);
+	if (isHench) {
+		changeFieldValue("headLabel", headIdx, henchHeads);
+	} else {
+		changeFieldValue("headLabel", headIdx, heads);
+	}
+	if (isHench) {
+		changeFieldValue("hairLabel", hairIdx, henchHairs);
+	} else {
+		changeFieldValue("hairLabel", hairIdx, hairs);
+	}
 	changeFieldValue("hairColorLabel", hairColorIdx, hairColors);
-	changeFieldValue("underwearLabel", underwearIdx, underwears);
+	if (isHench) {
+		changeFieldValue("underwearLabel", underwearIdx, henchUnderwears);
+	} else {
+		changeFieldValue("underwearLabel", underwearIdx, underwears);
+	}
 	
 	updateToCurrentPortrait();
 	updateToCurrentHair();
@@ -207,10 +219,15 @@ void AppearanceEditorFrame::populateFieldValuesForTemplate(std::string templateI
 						std::string mapKey = mapKeyObject->getData();
 						if (mapKey == templateId) {
 							std::vector<LsbObject *> fieldTypeObjects = gameObject->lookupAllEntitiesWithName(gameObject, fieldType.c_str());
-							modelFields.resize(fieldTypeObjects.size());
-							diffuseFields.resize(fieldTypeObjects.size());
-							normalFields.resize(fieldTypeObjects.size());
-							maskFields.resize(fieldTypeObjects.size());
+							int oldSize = modelFields.size();
+							if (modelFields.size() < fieldTypeObjects.size())
+								modelFields.resize(fieldTypeObjects.size());
+							if (diffuseFields.size() < fieldTypeObjects.size())
+								diffuseFields.resize(fieldTypeObjects.size());
+							if (normalFields.size() < fieldTypeObjects.size())
+								normalFields.resize(fieldTypeObjects.size());
+							if (maskFields.size() < fieldTypeObjects.size())
+								maskFields.resize(fieldTypeObjects.size());
 							for (int j=0; j<fieldTypeObjects.size(); ++j) {
 								LsbObject *fieldTypeObject = fieldTypeObjects[j];
 								if (fieldTypeObject != 0) {
@@ -218,9 +235,6 @@ void AppearanceEditorFrame::populateFieldValuesForTemplate(std::string templateI
 									if (objectObject != 0) {
 										std::string visualTemplate = objectObject->getData();
 										
-										std::stringstream ss;
-										ss<<namePrefix<<" "<<(j + 1);
-										std::string fieldName = ss.str();
 										std::string modelFile = "";
 										std::string diffuseMap = "";
 										std::string normalMap = "";
@@ -236,6 +250,11 @@ void AppearanceEditorFrame::populateFieldValuesForTemplate(std::string templateI
 											modelFile = this->getGR2(resourceBank, visualTemplate);
 											this->getTextureMaps(resourceBank, resourceBank, visualTemplate, diffuseMap, normalMap, maskMap);
 										}
+										
+										std::stringstream ss;
+										ss<<namePrefix<<" "<<(j + 1);
+										std::string fieldName = ss.str();
+										
 										modelFields[j].name = fieldName;
 										modelFields[j].setValue(modelFile, isMale);
 										
@@ -351,14 +370,14 @@ void AppearanceEditorFrame::generateFields() {
 		populateFieldValuesForTemplate("878372b3-9280-4819-b8b0-4ca76dea8ad1", "Bodies", "Underwear", underwears, underwearDiffuse, underwearNormal, underwearMask, false);
 		
 		//male henchman
-		populateFieldValuesForTemplate("23f3af72-437c-4aff-91ca-914ef6e6ebb7", "Heads", "Head", henchHeads, henchHeadDiffuse, henchHeadNormal, henchHeadMask, true);
-		populateFieldValuesForTemplate("23f3af72-437c-4aff-91ca-914ef6e6ebb7", "Arms", "Hair", henchHairs, henchHairDiffuse, henchHairNormal, henchHairMask, true);
-		populateFieldValuesForTemplate("23f3af72-437c-4aff-91ca-914ef6e6ebb7", "Bodies", "Underwear", henchUnderwears, henchUnderwearDiffuse, henchUnderwearNormal, henchUnderwearMask, true);
+		populateFieldValuesForTemplate("23f3af72-437c-4aff-91ca-914ef6e6ebb7", "Heads", "Henchman Head", henchHeads, henchHeadDiffuse, henchHeadNormal, henchHeadMask, true);
+		populateFieldValuesForTemplate("23f3af72-437c-4aff-91ca-914ef6e6ebb7", "Arms", "Henchman Hair", henchHairs, henchHairDiffuse, henchHairNormal, henchHairMask, true);
+		populateFieldValuesForTemplate("23f3af72-437c-4aff-91ca-914ef6e6ebb7", "Bodies", "Henchman Underwear", henchUnderwears, henchUnderwearDiffuse, henchUnderwearNormal, henchUnderwearMask, true);
 		
 		//female henchman
-		populateFieldValuesForTemplate("3ec36a84-93a1-409f-83d6-4b7b17745df6", "Heads", "Head", henchHeads, henchHeadDiffuse, henchHeadNormal, henchHeadMask, false);
-		populateFieldValuesForTemplate("3ec36a84-93a1-409f-83d6-4b7b17745df6", "Arms", "Hair", henchHairs, henchHairDiffuse, henchHairNormal, henchHairMask, false);
-		populateFieldValuesForTemplate("3ec36a84-93a1-409f-83d6-4b7b17745df6", "Bodies", "Underwear", henchUnderwears, henchUnderwearDiffuse, henchUnderwearNormal, henchUnderwearMask, false);
+		populateFieldValuesForTemplate("3ec36a84-93a1-409f-83d6-4b7b17745df6", "Heads", "Henchman Head", henchHeads, henchHeadDiffuse, henchHeadNormal, henchHeadMask, false);
+		populateFieldValuesForTemplate("3ec36a84-93a1-409f-83d6-4b7b17745df6", "Arms", "Henchman Hair", henchHairs, henchHairDiffuse, henchHairNormal, henchHairMask, false);
+		populateFieldValuesForTemplate("3ec36a84-93a1-409f-83d6-4b7b17745df6", "Bodies", "Henchman Underwear", henchUnderwears, henchUnderwearDiffuse, henchUnderwearNormal, henchUnderwearMask, false);
 		
 //		for (int i=0; i<NUM_HEADS; ++i) {
 //			std::ostringstream ss;
@@ -688,7 +707,13 @@ ZGrannyScene *AppearanceEditorFrame::createModelForItem(GameItem *item, std::vec
 
 void AppearanceEditorFrame::updateFieldText(QLabel *label, std::vector<fieldValue_t> &updateVector, int index) {
 	fieldValue_t &fieldValue = updateVector[index];
-	label->setText(fieldValue.name.c_str());
+	std::string newText = fieldValue.name;
+	label->setText(newText.c_str());
+}
+
+void AppearanceEditorFrame::appendFieldText(QLabel *label, std::string text) {
+	std::string newText = label->text().toStdString() + text;
+	label->setText(newText.c_str());
 }
 
 void AppearanceEditorFrame::initIndexesToCustomData() {
@@ -1201,25 +1226,41 @@ void AppearanceEditorFrame::on_skinColorNext_clicked()
 
 void AppearanceEditorFrame::on_headPrev_clicked()
 {
-    changeFieldValue("headLabel", headIdx, heads, -1);
+	if (isHench) {
+		changeFieldValue("headLabel", headIdx, henchHeads, -1);
+	} else {
+		changeFieldValue("headLabel", headIdx, heads, -1);
+	}
 	updateToCurrentHead();
 }
 
 void AppearanceEditorFrame::on_headNext_clicked()
 {
-    changeFieldValue("headLabel", headIdx, heads, 1);
+	if (isHench) {
+		changeFieldValue("headLabel", headIdx, henchHeads, 1);
+	} else {
+		changeFieldValue("headLabel", headIdx, heads, 1);
+	}
 	updateToCurrentHead();
 }
 
 void AppearanceEditorFrame::on_hairPrev_clicked()
 {
-	changeFieldValue("hairLabel", hairIdx, hairs, -1);
+	if (isHench) {
+		changeFieldValue("hairLabel", hairIdx, henchHairs, -1);
+	} else {
+		changeFieldValue("hairLabel", hairIdx, hairs, -1);
+	}
 	updateToCurrentHair();
 }
 
 void AppearanceEditorFrame::on_hairNext_clicked()
 {
-    changeFieldValue("hairLabel", hairIdx, hairs, 1);
+	if (isHench) {
+		changeFieldValue("hairLabel", hairIdx, henchHairs, 1);
+	} else {
+		changeFieldValue("hairLabel", hairIdx, hairs, 1);
+	}
 	updateToCurrentHair();
 }
 
@@ -1425,13 +1466,21 @@ void AppearanceEditorFrame::on_hairColorNext_clicked()
 
 void AppearanceEditorFrame::on_underwearPrev_clicked()
 {
-    changeFieldValue("underwearLabel", underwearIdx, underwears, -1);
+	if (isHench) {
+		changeFieldValue("underwearLabel", underwearIdx, henchUnderwears, -1);
+	} else {
+		changeFieldValue("underwearLabel", underwearIdx, underwears, -1);
+	}
 	updateToCurrentUnderwear();
 }
 
 void AppearanceEditorFrame::on_underwearNext_clicked()
 {
-    changeFieldValue("underwearLabel", underwearIdx, underwears, 1);
+	if (isHench) {
+		changeFieldValue("underwearLabel", underwearIdx, henchUnderwears, 1);
+	} else {
+		changeFieldValue("underwearLabel", underwearIdx, underwears, 1);
+	}
 	updateToCurrentUnderwear();
 }
 
