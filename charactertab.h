@@ -14,6 +14,8 @@
 
 #define ROOT_TEMPLATE_FEMALE	"878372b3-9280-4819-b8b0-4ca76dea8ad1"
 #define ROOT_TEMPLATE_MALE		"878372b3-9280-4819-b8b0-4ca76dea8ad2"
+#define ROOT_TEMPLATE_HENCHMALE		"23f3af72-437c-4aff-91ca-914ef6e6ebb7"
+#define ROOT_TEMPLATE_HENCHFEMALE	"3ec36a84-93a1-409f-83d6-4b7b17745df6"
 
 namespace Ui {
 class characterTab;

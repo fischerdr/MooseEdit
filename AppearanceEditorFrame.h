@@ -219,6 +219,7 @@ private:
 	QLabel *field(const char *fieldName);
 	void changeFieldValue(const char *labelName, int& idx, std::vector<fieldValue_t> &vec, int increment = 0);
 	void updateFieldText(QLabel *label, std::vector<fieldValue_t> &updateVector, int index);
+	void appendFieldText(QLabel *label, std::string text);
 	void updateObjectValue(const char *labelName, int& idx, std::vector<fieldValue_t> &vec);
 };
 

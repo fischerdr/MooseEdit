@@ -375,6 +375,14 @@ void characterTab::onAppearanceChange(LsbObject *oldPlayerCustomDataObject, LsbO
 								}
 								currentTemplateObject->setData(currentTemplate.c_str(), currentTemplate.length() + 1);
 							}
+							if (currentTemplate == ROOT_TEMPLATE_HENCHMALE || currentTemplate == ROOT_TEMPLATE_HENCHFEMALE) {
+								if (newIsMale == true) {
+									currentTemplate = ROOT_TEMPLATE_HENCHMALE;
+								} else {
+									currentTemplate = ROOT_TEMPLATE_HENCHFEMALE;
+								}
+								currentTemplateObject->setData(currentTemplate.c_str(), currentTemplate.length() + 1);
+							}
 						}
 					}
 				}

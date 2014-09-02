@@ -799,8 +799,8 @@ void AppearanceEditorFrame::initIndexesToCustomData() {
 	LsbObject *randomObject = playerCustomDataObject->lookupByUniquePath("Random");
 	if (randomObject != 0) {
 		unsigned long random = *((unsigned long*)randomObject->getData());
-		hairIdx = (random & 0xF00) >> 4;
-		underwearIdx = (random & 0xF0) >> 8;
+		hairIdx = (random & 0xF00) >> 8;
+		underwearIdx = (random & 0xF0) >> 4;
 		headIdx = (random & 0x0F);
 	}
 	LsbObject *hairColorObject = playerCustomDataObject->lookupByUniquePath("HairColor");
@@ -874,10 +874,30 @@ void AppearanceEditorFrame::cleanup() {
 	skinColors.clear();
 	heads.clear();
 	headDiffuse.clear();
+	headNormal.clear();
+	headMask.clear();
 	hairs.clear();
+	hairDiffuse.clear();
+	hairNormal.clear();
+	hairMask.clear();
 	hairColors.clear();
 	underwears.clear();
 	underwearDiffuse.clear();
+	underwearNormal.clear();
+	underwearMask.clear();
+	
+	henchHeads.clear();
+	henchHeadDiffuse.clear();
+	henchHeadNormal.clear();
+	henchHeadMask.clear();
+	henchHairs.clear();
+	henchHairDiffuse.clear();
+	henchHairNormal.clear();
+	henchHairMask.clear();
+	henchUnderwears.clear();
+	henchUnderwearDiffuse.clear();
+	henchUnderwearNormal.clear();
+	henchUnderwearMask.clear();
 }
 
 void AppearanceEditorFrame::setup() {
