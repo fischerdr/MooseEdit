@@ -350,6 +350,16 @@ void AppearanceEditorFrame::generateFields() {
 		populateFieldValuesForTemplate("878372b3-9280-4819-b8b0-4ca76dea8ad1", "Arms", "Hair", hairs, hairDiffuse, hairNormal, hairMask, false);
 		populateFieldValuesForTemplate("878372b3-9280-4819-b8b0-4ca76dea8ad1", "Bodies", "Underwear", underwears, underwearDiffuse, underwearNormal, underwearMask, false);
 		
+		//male henchman
+		populateFieldValuesForTemplate("23f3af72-437c-4aff-91ca-914ef6e6ebb7", "Heads", "Head", henchHeads, henchHeadDiffuse, henchHeadNormal, henchHeadMask, true);
+		populateFieldValuesForTemplate("23f3af72-437c-4aff-91ca-914ef6e6ebb7", "Arms", "Hair", henchHairs, henchHairDiffuse, henchHairNormal, henchHairMask, true);
+		populateFieldValuesForTemplate("23f3af72-437c-4aff-91ca-914ef6e6ebb7", "Bodies", "Underwear", henchUnderwears, henchUnderwearDiffuse, henchUnderwearNormal, henchUnderwearMask, true);
+		
+		//female henchman
+		populateFieldValuesForTemplate("3ec36a84-93a1-409f-83d6-4b7b17745df6", "Heads", "Head", henchHeads, henchHeadDiffuse, henchHeadNormal, henchHeadMask, false);
+		populateFieldValuesForTemplate("3ec36a84-93a1-409f-83d6-4b7b17745df6", "Arms", "Hair", henchHairs, henchHairDiffuse, henchHairNormal, henchHairMask, false);
+		populateFieldValuesForTemplate("3ec36a84-93a1-409f-83d6-4b7b17745df6", "Bodies", "Underwear", henchUnderwears, henchUnderwearDiffuse, henchUnderwearNormal, henchUnderwearMask, false);
+		
 //		for (int i=0; i<NUM_HEADS; ++i) {
 //			std::ostringstream ss;
 //			ss<<"Head "<<(i + 1);
@@ -682,6 +692,25 @@ void AppearanceEditorFrame::updateFieldText(QLabel *label, std::vector<fieldValu
 }
 
 void AppearanceEditorFrame::initIndexesToCustomData() {
+	std::string currentTemplate = "";
+	LsbObject *characterObject = character->getObject();
+	if (characterObject != 0) {
+		LsbObject *currentTemplateObject = characterObject->lookupByUniquePath("CurrentTemplate");
+		if (currentTemplateObject != 0) {
+			currentTemplate = currentTemplateObject->getData();
+		}
+	}
+	
+	if (currentTemplate.size() == 0) {
+		isHench = false;
+	} else {
+		if (currentTemplate == "23f3af72-437c-4aff-91ca-914ef6e6ebb7" || currentTemplate == "3ec36a84-93a1-409f-83d6-4b7b17745df6") {
+			isHench = true;
+		} else {
+			isHench = false;
+		}
+	}
+	
 	LsbObject *isMaleObject = playerCustomDataObject->lookupByUniquePath("IsMale");
 	if (isMaleObject != 0) {
 		bool isMale = *((bool *)isMaleObject->getData());
@@ -1203,6 +1232,10 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 	std::string maskFile = mask[index].currentValue(isMale);
 	std::vector<GLuint> modelTextures;
 	
+	if (modelFile.size() == 0 || diffuseFile.size() == 0 || normalFile.size() == 0 || maskFile.size() == 0) {
+		return;
+	}
+	
 
 	unsigned long textureFileSize;
 	std::wstring tmp = L"";
@@ -1340,6 +1373,7 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 	fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", extractPath, gameDataPath, false, &fSize);
 	if (fileBytes == 0) {
 		MessageBoxA(0, "Failed to load model from game data", 0, 0);
+		return;
 	}
 	current = 
 			zGrannyCreateSceneFromMemory(fileBytes, fSize,
@@ -1352,15 +1386,27 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 }
 
 void AppearanceEditorFrame::updateToCurrentHair() {
-	updateToCurrentModel(currentHair, hairs, hairDiffuse, hairNormal, hairMask, hairIdx, 0, hairColor);
+	if (isHench) {
+		updateToCurrentModel(currentHair, henchHairs, henchHairDiffuse, henchHairNormal, henchHairMask, hairIdx, 0, hairColor);
+	} else {
+		updateToCurrentModel(currentHair, hairs, hairDiffuse, hairNormal, hairMask, hairIdx, 0, hairColor);
+	}
 }
 
 void AppearanceEditorFrame::updateToCurrentHead() {
-	updateToCurrentModel(currentHead, heads, headDiffuse, headNormal, headMask, headIdx, skinColor, hairColor);
+	if (isHench) {
+		updateToCurrentModel(currentHead, henchHeads, henchHeadDiffuse, henchHeadNormal, henchHeadMask, headIdx, skinColor, hairColor);
+	} else {
+		updateToCurrentModel(currentHead, heads, headDiffuse, headNormal, headMask, headIdx, skinColor, hairColor);
+	}
 }
 
 void AppearanceEditorFrame::updateToCurrentUnderwear() {
-	updateToCurrentModel(currentUnderwear, underwears, underwearDiffuse, underwearNormal, underwearMask, underwearIdx, skinColor, underwearColor);
+	if (isHench) {
+		updateToCurrentModel(currentUnderwear, henchUnderwears, henchUnderwearDiffuse, henchUnderwearNormal, henchUnderwearMask, underwearIdx, skinColor, underwearColor);
+	} else {
+		updateToCurrentModel(currentUnderwear, underwears, underwearDiffuse, underwearNormal, underwearMask, underwearIdx, skinColor, underwearColor);
+	}
 }
 
 void AppearanceEditorFrame::on_hairColorPrev_clicked()

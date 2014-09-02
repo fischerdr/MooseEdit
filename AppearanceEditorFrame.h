@@ -133,6 +133,19 @@ private:
 	std::vector<fieldValue_t> underwearDiffuse;
 	std::vector<fieldValue_t> underwearNormal;
 	std::vector<fieldValue_t> underwearMask;
+	
+	std::vector<fieldValue_t> henchHeads;
+	std::vector<fieldValue_t> henchHeadDiffuse;
+	std::vector<fieldValue_t> henchHeadNormal;
+	std::vector<fieldValue_t> henchHeadMask;
+	std::vector<fieldValue_t> henchHairs;
+	std::vector<fieldValue_t> henchHairDiffuse;
+	std::vector<fieldValue_t> henchHairNormal;
+	std::vector<fieldValue_t> henchHairMask;
+	std::vector<fieldValue_t> henchUnderwears;
+	std::vector<fieldValue_t> henchUnderwearDiffuse;
+	std::vector<fieldValue_t> henchUnderwearNormal;
+	std::vector<fieldValue_t> henchUnderwearMask;
 	//std::vector<fieldValue_t> underwearTextures;
 	
 	int portraitIdx = 0;
@@ -149,6 +162,7 @@ private:
 	GlShaderProgram *shaderProgram = 0;
 	Ui::AppearanceEditorFrame *ui;
 	bool isMale;
+	bool isHench;
 	std::wstring gameDataPath;
 	static bool loadedPaks;
 	static PakReader mainPak;
