@@ -197,9 +197,15 @@ void AppearanceEditorFrame::updateAllFields() {
 	}
 	
 	updateToCurrentPortrait();
-	updateToCurrentHair();
-	updateToCurrentHead();
-	updateToCurrentUnderwear();
+	if (!updateToCurrentHair()) {
+		appendFieldText("hairLabel", TEXT_INVALID);
+	}
+	if (!updateToCurrentHead()) {
+		appendFieldText("headLabel", TEXT_INVALID);
+	}
+	if (!updateToCurrentUnderwear()) {
+		appendFieldText("underwearLabel", TEXT_INVALID);
+	}
 	
 	updatePortraitData();
 }
@@ -711,7 +717,8 @@ void AppearanceEditorFrame::updateFieldText(QLabel *label, std::vector<fieldValu
 	label->setText(newText.c_str());
 }
 
-void AppearanceEditorFrame::appendFieldText(QLabel *label, std::string text) {
+void AppearanceEditorFrame::appendFieldText(std::string labelName, std::string text) {
+	QLabel *label = this->findChild<QLabel *>(labelName.c_str());
 	std::string newText = label->text().toStdString() + text;
 	label->setText(newText.c_str());
 }
@@ -1251,7 +1258,9 @@ void AppearanceEditorFrame::on_headPrev_clicked()
 	} else {
 		changeFieldValue("headLabel", headIdx, heads, -1);
 	}
-	updateToCurrentHead();
+	if (!updateToCurrentHead()) {
+		appendFieldText("headLabel", TEXT_INVALID);
+	}
 }
 
 void AppearanceEditorFrame::on_headNext_clicked()
@@ -1261,7 +1270,9 @@ void AppearanceEditorFrame::on_headNext_clicked()
 	} else {
 		changeFieldValue("headLabel", headIdx, heads, 1);
 	}
-	updateToCurrentHead();
+	if (!updateToCurrentHead()) {
+		appendFieldText("headLabel", TEXT_INVALID);
+	}
 }
 
 void AppearanceEditorFrame::on_hairPrev_clicked()
@@ -1271,7 +1282,9 @@ void AppearanceEditorFrame::on_hairPrev_clicked()
 	} else {
 		changeFieldValue("hairLabel", hairIdx, hairs, -1);
 	}
-	updateToCurrentHair();
+	if (!updateToCurrentHair()) {
+		appendFieldText("hairLabel", TEXT_INVALID);
+	}
 }
 
 void AppearanceEditorFrame::on_hairNext_clicked()
@@ -1281,10 +1294,12 @@ void AppearanceEditorFrame::on_hairNext_clicked()
 	} else {
 		changeFieldValue("hairLabel", hairIdx, hairs, 1);
 	}
-	updateToCurrentHair();
+	if (!updateToCurrentHair()) {
+		appendFieldText("hairLabel", TEXT_INVALID);
+	}
 }
 
-void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::vector<fieldValue_t> &models, std::vector<fieldValue_t> &diffuse, 
+bool AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::vector<fieldValue_t> &models, std::vector<fieldValue_t> &diffuse, 
 												 std::vector<fieldValue_t> &normal, std::vector<fieldValue_t> &mask, int index, VertexRGB *foreColor, VertexRGB *backColor) {
 	GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
 	std::string modelFile = models[index].currentValue(isMale);
@@ -1294,7 +1309,7 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 	std::vector<GLuint> modelTextures;
 	
 	if (modelFile.size() == 0 || diffuseFile.size() == 0 || normalFile.size() == 0 || maskFile.size() == 0) {
-		return;
+		return false;
 	}
 	
 
@@ -1434,7 +1449,7 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 	fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", extractPath, gameDataPath, false, &fSize);
 	if (fileBytes == 0) {
 		MessageBoxA(0, "Failed to load model from game data", 0, 0);
-		return;
+		return false;
 	}
 	current = 
 			zGrannyCreateSceneFromMemory(fileBytes, fSize,
@@ -1444,29 +1459,30 @@ void AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 	}
 	glContext->addGrannyScene(current, modelTextures, foreColor, backColor, shaderProgram, 0);
 	modelTextures.clear();
+	return true;
 }
 
-void AppearanceEditorFrame::updateToCurrentHair() {
+bool AppearanceEditorFrame::updateToCurrentHair() {
 	if (isHench) {
-		updateToCurrentModel(currentHair, henchHairs, henchHairDiffuse, henchHairNormal, henchHairMask, hairIdx, 0, hairColor);
+		return updateToCurrentModel(currentHair, henchHairs, henchHairDiffuse, henchHairNormal, henchHairMask, hairIdx, 0, hairColor);
 	} else {
-		updateToCurrentModel(currentHair, hairs, hairDiffuse, hairNormal, hairMask, hairIdx, 0, hairColor);
+		return updateToCurrentModel(currentHair, hairs, hairDiffuse, hairNormal, hairMask, hairIdx, 0, hairColor);
 	}
 }
 
-void AppearanceEditorFrame::updateToCurrentHead() {
+bool AppearanceEditorFrame::updateToCurrentHead() {
 	if (isHench) {
-		updateToCurrentModel(currentHead, henchHeads, henchHeadDiffuse, henchHeadNormal, henchHeadMask, headIdx, skinColor, hairColor);
+		return updateToCurrentModel(currentHead, henchHeads, henchHeadDiffuse, henchHeadNormal, henchHeadMask, headIdx, skinColor, hairColor);
 	} else {
-		updateToCurrentModel(currentHead, heads, headDiffuse, headNormal, headMask, headIdx, skinColor, hairColor);
+		return updateToCurrentModel(currentHead, heads, headDiffuse, headNormal, headMask, headIdx, skinColor, hairColor);
 	}
 }
 
-void AppearanceEditorFrame::updateToCurrentUnderwear() {
+bool AppearanceEditorFrame::updateToCurrentUnderwear() {
 	if (isHench) {
-		updateToCurrentModel(currentUnderwear, henchUnderwears, henchUnderwearDiffuse, henchUnderwearNormal, henchUnderwearMask, underwearIdx, skinColor, underwearColor);
+		return updateToCurrentModel(currentUnderwear, henchUnderwears, henchUnderwearDiffuse, henchUnderwearNormal, henchUnderwearMask, underwearIdx, skinColor, underwearColor);
 	} else {
-		updateToCurrentModel(currentUnderwear, underwears, underwearDiffuse, underwearNormal, underwearMask, underwearIdx, skinColor, underwearColor);
+		return updateToCurrentModel(currentUnderwear, underwears, underwearDiffuse, underwearNormal, underwearMask, underwearIdx, skinColor, underwearColor);
 	}
 }
 
@@ -1491,7 +1507,9 @@ void AppearanceEditorFrame::on_underwearPrev_clicked()
 	} else {
 		changeFieldValue("underwearLabel", underwearIdx, underwears, -1);
 	}
-	updateToCurrentUnderwear();
+	if (!updateToCurrentUnderwear()) {
+		appendFieldText("underwearLabel", TEXT_INVALID);
+	}
 }
 
 void AppearanceEditorFrame::on_underwearNext_clicked()
@@ -1501,7 +1519,9 @@ void AppearanceEditorFrame::on_underwearNext_clicked()
 	} else {
 		changeFieldValue("underwearLabel", underwearIdx, underwears, 1);
 	}
-	updateToCurrentUnderwear();
+	if (!updateToCurrentUnderwear()) {
+		appendFieldText("underwearLabel", TEXT_INVALID);
+	}
 }
 
 void AppearanceEditorFrame::on_cancelButton_clicked()

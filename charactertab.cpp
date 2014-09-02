@@ -826,6 +826,28 @@ void characterTab::on_levelEdit_textEdited(const QString &text)
 void characterTab::on_appearanceButton_released()
 {
 	if (appearanceEditorFrame != 0) {
-		appearanceEditorFrame->show();
+		LsbObject *characterObject = character->getObject();
+		bool doShow = true;
+		std::string errorMessage;
+		LsbObject *currentTemplateObject = characterObject->lookupByUniquePath("CurrentTemplate");
+		if (currentTemplateObject != 0) {
+			std::string currentTemplate = currentTemplateObject->getData();
+			const static std::string cannotEdit = " appearance cannot be edited.";
+			if (currentTemplate == ROOT_TEMPLATE_MADORA) {
+				errorMessage = "Madora's" + cannotEdit;
+				doShow = false;
+			}
+			else if (currentTemplate == ROOT_TEMPLATE_JAHAN) {
+				errorMessage = "Jahan's" + cannotEdit;
+				doShow = false;
+			}
+		}
+		if (doShow) {
+			appearanceEditorFrame->show();
+		} else {
+			QMessageBox msg;
+			msg.setText(errorMessage.c_str());
+			msg.exec();
+		}
 	}
 }

@@ -8,6 +8,8 @@
 #include "EquipmentHandler.h"
 #include "GameCharacter.h"
 
+#define TEXT_INVALID	" (Invalid)"
+
 namespace Ui {
 class AppearanceEditorFrame;
 }
@@ -199,14 +201,14 @@ private:
 	std::string getGR2(LsbObject *resourceBankObject, std::string &visualTemplate);
 	std::string getTextureFromTextureTemplate(LsbObject *resourceBankObject, std::string &textureTemplate);
 	bool getTextureMaps(LsbObject *resourceBankObject, LsbObject *materialsResourceBankObject, std::string &visualTemplate, std::string &diffuseMap, std::string &normalMap, std::string &maskMap);
-	void updateToCurrentModel(ZGrannyScene *&current, std::vector<fieldValue_t> &models, std::vector<fieldValue_t> &diffuse, 
+	bool updateToCurrentModel(ZGrannyScene *&current, std::vector<fieldValue_t> &models, std::vector<fieldValue_t> &diffuse, 
 							  std::vector<fieldValue_t> &normal, std::vector<fieldValue_t> &mask, int index, VertexRGB *foreColor, VertexRGB *backColor);
 	void updatePortraitData();
 	void updateToCurrentPortrait();
 	void updatePortraitImage();
-	void updateToCurrentHead();
-	void updateToCurrentHair();
-	void updateToCurrentUnderwear();
+	bool updateToCurrentHead();
+	bool updateToCurrentHair();
+	bool updateToCurrentUnderwear();
 	void updateToCurrentSkinColor();
 	void updateToCurrentHairColor();
 	void updateColorData(const char *colorPath, VertexRGB *colorInfo);
@@ -219,7 +221,7 @@ private:
 	QLabel *field(const char *fieldName);
 	void changeFieldValue(const char *labelName, int& idx, std::vector<fieldValue_t> &vec, int increment = 0);
 	void updateFieldText(QLabel *label, std::vector<fieldValue_t> &updateVector, int index);
-	void appendFieldText(QLabel *label, std::string text);
+	void appendFieldText(std::string labelName, std::string text);
 	void updateObjectValue(const char *labelName, int& idx, std::vector<fieldValue_t> &vec);
 };
 
