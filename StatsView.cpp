@@ -10,11 +10,13 @@ StatsView::StatsView(std::vector<StatsContainer *> &allItemStats, std::map<std::
 }
 
 void StatsView::showEvent(QShowEvent *event) {
+	QTreeWidget *statsTree = this->findChild<QTreeWidget *>("statsTree");
 	QList<QPushButton *> buttons = this->findChildren<QPushButton *>();
 	for (int i=0; i<buttons.size(); ++i) {
 		if (!buttons[i]->isEnabled())
 			buttons[i]->hide();
 	}
+	statsTree->setFocus();
 }
 
 DataContainerTreeItem *StatsView::addFolder(std::string folderName) {
@@ -112,7 +114,6 @@ void StatsView::selectNodeByName(const char *name)
 		statsTree->setCurrentItem(selectedNode);
 		selectedNode->setTextColor(0, QColor(255, 0, 0));
 		selectedItem = selectedNode;
-		statsTree->setFocus();
 	}
 }
 
