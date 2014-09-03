@@ -212,7 +212,8 @@ void AppearanceEditorFrame::updateAllFields() {
 
 void AppearanceEditorFrame::populateFieldValuesForTemplate(std::string templateId, std::string fieldType, std::string namePrefix, 
 														   std::vector<fieldValue_t> &modelFields, std::vector<fieldValue_t> &diffuseFields, 
-														   std::vector<fieldValue_t> &normalFields, std::vector<fieldValue_t> &maskFields, bool isMale) {
+														   std::vector<fieldValue_t> &normalFields, std::vector<fieldValue_t> &specularFields, 
+														   std::vector<fieldValue_t> &maskFields, bool isMale) {
 	if (playersTemplateObjects != 0) {
 		LsbObject *rootObject = playersTemplateObjects->lookupByUniquePath("root");
 		if (rootObject != 0) {
@@ -232,6 +233,8 @@ void AppearanceEditorFrame::populateFieldValuesForTemplate(std::string templateI
 								diffuseFields.resize(fieldTypeObjects.size());
 							if (normalFields.size() < fieldTypeObjects.size())
 								normalFields.resize(fieldTypeObjects.size());
+							if (specularFields.size() < fieldTypeObjects.size())
+								specularFields.resize(fieldTypeObjects.size());
 							if (maskFields.size() < fieldTypeObjects.size())
 								maskFields.resize(fieldTypeObjects.size());
 							for (int j=0; j<fieldTypeObjects.size(); ++j) {
@@ -244,6 +247,7 @@ void AppearanceEditorFrame::populateFieldValuesForTemplate(std::string templateI
 										std::string modelFile = "";
 										std::string diffuseMap = "";
 										std::string normalMap = "";
+										std::string specularMap = "";
 										std::string maskMap = "";
 										
 										LsbObject *resourceBank = 0;
@@ -254,7 +258,7 @@ void AppearanceEditorFrame::populateFieldValuesForTemplate(std::string templateI
 										}
 										if (resourceBank != 0) {
 											modelFile = this->getGR2(resourceBank, visualTemplate);
-											this->getTextureMaps(resourceBank, resourceBank, visualTemplate, diffuseMap, normalMap, maskMap);
+											this->getTextureMaps(resourceBank, resourceBank, visualTemplate, diffuseMap, normalMap, specularMap, maskMap);
 										}
 										
 										std::stringstream ss;
@@ -269,6 +273,9 @@ void AppearanceEditorFrame::populateFieldValuesForTemplate(std::string templateI
 										
 										normalFields[j].name = fieldName;
 										normalFields[j].setValue(normalMap, isMale);
+										
+										specularFields[j].name = fieldName;
+										specularFields[j].setValue(specularMap, isMale);
 										
 										maskFields[j].name = fieldName;
 										maskFields[j].setValue(maskMap, isMale);
@@ -366,24 +373,24 @@ void AppearanceEditorFrame::generateFields() {
 		}
 		
 		//player male
-		populateFieldValuesForTemplate("878372b3-9280-4819-b8b0-4ca76dea8ad2", "Heads", "Head", heads, headDiffuse, headNormal, headMask, true);
-		populateFieldValuesForTemplate("878372b3-9280-4819-b8b0-4ca76dea8ad2", "Arms", "Hair", hairs, hairDiffuse, hairNormal, hairMask, true);
-		populateFieldValuesForTemplate("878372b3-9280-4819-b8b0-4ca76dea8ad2", "Bodies", "Underwear", underwears, underwearDiffuse, underwearNormal, underwearMask, true);
+		populateFieldValuesForTemplate("878372b3-9280-4819-b8b0-4ca76dea8ad2", "Heads", "Head", heads, headDiffuse, headNormal, headSpecular, headMask, true);
+		populateFieldValuesForTemplate("878372b3-9280-4819-b8b0-4ca76dea8ad2", "Arms", "Hair", hairs, hairDiffuse, hairNormal, hairSpecular, hairMask, true);
+		populateFieldValuesForTemplate("878372b3-9280-4819-b8b0-4ca76dea8ad2", "Bodies", "Underwear", underwears, underwearDiffuse, underwearNormal, underwearSpecular, underwearMask, true);
 		
 		//player female
-		populateFieldValuesForTemplate("878372b3-9280-4819-b8b0-4ca76dea8ad1", "Heads", "Head", heads, headDiffuse, headNormal, headMask, false);
-		populateFieldValuesForTemplate("878372b3-9280-4819-b8b0-4ca76dea8ad1", "Arms", "Hair", hairs, hairDiffuse, hairNormal, hairMask, false);
-		populateFieldValuesForTemplate("878372b3-9280-4819-b8b0-4ca76dea8ad1", "Bodies", "Underwear", underwears, underwearDiffuse, underwearNormal, underwearMask, false);
+		populateFieldValuesForTemplate("878372b3-9280-4819-b8b0-4ca76dea8ad1", "Heads", "Head", heads, headDiffuse, headNormal, headSpecular, headMask, false);
+		populateFieldValuesForTemplate("878372b3-9280-4819-b8b0-4ca76dea8ad1", "Arms", "Hair", hairs, hairDiffuse, hairNormal, hairSpecular, hairMask, false);
+		populateFieldValuesForTemplate("878372b3-9280-4819-b8b0-4ca76dea8ad1", "Bodies", "Underwear", underwears, underwearDiffuse, underwearNormal, underwearSpecular, underwearMask, false);
 		
 		//male henchman
-		populateFieldValuesForTemplate("23f3af72-437c-4aff-91ca-914ef6e6ebb7", "Heads", "Henchman Head", henchHeads, henchHeadDiffuse, henchHeadNormal, henchHeadMask, true);
-		populateFieldValuesForTemplate("23f3af72-437c-4aff-91ca-914ef6e6ebb7", "Arms", "Henchman Hair", henchHairs, henchHairDiffuse, henchHairNormal, henchHairMask, true);
-		populateFieldValuesForTemplate("23f3af72-437c-4aff-91ca-914ef6e6ebb7", "Bodies", "Henchman Underwear", henchUnderwears, henchUnderwearDiffuse, henchUnderwearNormal, henchUnderwearMask, true);
+		populateFieldValuesForTemplate("23f3af72-437c-4aff-91ca-914ef6e6ebb7", "Heads", "Henchman Head", henchHeads, henchHeadDiffuse, henchHeadNormal, henchHeadSpecular, henchHeadMask, true);
+		populateFieldValuesForTemplate("23f3af72-437c-4aff-91ca-914ef6e6ebb7", "Arms", "Henchman Hair", henchHairs, henchHairDiffuse, henchHairNormal, henchHairSpecular, henchHairMask, true);
+		populateFieldValuesForTemplate("23f3af72-437c-4aff-91ca-914ef6e6ebb7", "Bodies", "Henchman Underwear", henchUnderwears, henchUnderwearDiffuse, henchUnderwearNormal, henchUnderwearSpecular, henchUnderwearMask, true);
 		
 		//female henchman
-		populateFieldValuesForTemplate("3ec36a84-93a1-409f-83d6-4b7b17745df6", "Heads", "Henchman Head", henchHeads, henchHeadDiffuse, henchHeadNormal, henchHeadMask, false);
-		populateFieldValuesForTemplate("3ec36a84-93a1-409f-83d6-4b7b17745df6", "Arms", "Henchman Hair", henchHairs, henchHairDiffuse, henchHairNormal, henchHairMask, false);
-		populateFieldValuesForTemplate("3ec36a84-93a1-409f-83d6-4b7b17745df6", "Bodies", "Henchman Underwear", henchUnderwears, henchUnderwearDiffuse, henchUnderwearNormal, henchUnderwearMask, false);
+		populateFieldValuesForTemplate("3ec36a84-93a1-409f-83d6-4b7b17745df6", "Heads", "Henchman Head", henchHeads, henchHeadDiffuse, henchHeadNormal, henchHeadSpecular, henchHeadMask, false);
+		populateFieldValuesForTemplate("3ec36a84-93a1-409f-83d6-4b7b17745df6", "Arms", "Henchman Hair", henchHairs, henchHairDiffuse, henchHairNormal, henchHairSpecular, henchHairMask, false);
+		populateFieldValuesForTemplate("3ec36a84-93a1-409f-83d6-4b7b17745df6", "Bodies", "Henchman Underwear", henchUnderwears, henchUnderwearDiffuse, henchUnderwearNormal, henchUnderwearSpecular, henchUnderwearMask, false);
 		
 //		for (int i=0; i<NUM_HEADS; ++i) {
 //			std::ostringstream ss;
@@ -537,7 +544,8 @@ std::string AppearanceEditorFrame::getTextureFromTextureTemplate(LsbObject *reso
 	return "";
 }
 
-bool AppearanceEditorFrame::getTextureMaps(LsbObject *resourceBankObject, LsbObject *materialsResourceBankObject, std::string &visualTemplate, std::string &diffuseMap, std::string &normalMap, std::string &maskMap) {
+bool AppearanceEditorFrame::getTextureMaps(LsbObject *resourceBankObject, LsbObject *materialsResourceBankObject, std::string &visualTemplate, std::string &diffuseMap, std::string &normalMap, 
+										   std::string &specularMap, std::string &maskMap) {
 	if (visualTemplate.size() == 0) {
 		return false;
 	}
@@ -559,6 +567,7 @@ bool AppearanceEditorFrame::getTextureMaps(LsbObject *resourceBankObject, LsbObj
 					std::vector<LsbObject *> texture2DParametersObjects = LsbObject::lookupAllEntitiesWithName(resourceObject, "Texture2DParameters");
 					std::string diffuseTextureTemplate = "";
 					std::string normalTextureTemplate = "";
+					std::string specularTextureTemplate = "";
 					std::string maskTextureTemplate = "";
 					for (int i=0; i<texture2DParametersObjects.size(); ++i) {
 						LsbObject *texture2DParameterObject = texture2DParametersObjects[i];
@@ -578,6 +587,11 @@ bool AppearanceEditorFrame::getTextureMaps(LsbObject *resourceBankObject, LsbObj
 							} else if (uniformName == "Texture2DParameter_SM") {
 								LsbObject *idObject = texture2DParameterObject->lookupByUniquePath("ID");
 								if (idObject != 0) {
+									specularTextureTemplate = idObject->getData();
+								}
+							} else if (uniformName == "Texture2DParameter_MSK") {
+								LsbObject *idObject = texture2DParameterObject->lookupByUniquePath("ID");
+								if (idObject != 0) {
 									maskTextureTemplate = idObject->getData();
 								}
 							}
@@ -585,8 +599,9 @@ bool AppearanceEditorFrame::getTextureMaps(LsbObject *resourceBankObject, LsbObj
 					}
 					diffuseMap = getTextureFromTextureTemplate(materialsResourceBankObject, diffuseTextureTemplate);
 					normalMap = getTextureFromTextureTemplate(materialsResourceBankObject, normalTextureTemplate);
+					specularMap = getTextureFromTextureTemplate(materialsResourceBankObject, specularTextureTemplate);
 					maskMap = getTextureFromTextureTemplate(materialsResourceBankObject, maskTextureTemplate);
-					if (diffuseMap.size() > 0 && normalMap.size() > 0 && maskMap.size() > 0) {
+					if (diffuseMap.size() > 0 && normalMap.size() > 0 && specularMap.size() > 0) {
 						return true;
 					}
 				}
@@ -644,13 +659,14 @@ ZGrannyScene *AppearanceEditorFrame::createModelForItem(GameItem *item, std::vec
 					std::string modelFile = this->getGR2(resourceBank, visualTemplate);
 					std::string diffuseMap;
 					std::string normalMap;
+					std::string specularMap;
 					std::string maskMap;
 					if (resourceBank == armorsPlayerResourceBankObject && this->isMale) {
-						this->getTextureMaps(resourceBank, playerMaleResourceBankObject, visualTemplate, diffuseMap, normalMap, maskMap);
+						this->getTextureMaps(resourceBank, playerMaleResourceBankObject, visualTemplate, diffuseMap, normalMap, specularMap, maskMap);
 					} else if (resourceBank == armorsPlayerResourceBankObject && !this->isMale) {
-						this->getTextureMaps(resourceBank, playerMaleResourceBankObject, visualTemplate, diffuseMap, normalMap, maskMap);
+						this->getTextureMaps(resourceBank, playerMaleResourceBankObject, visualTemplate, diffuseMap, normalMap, specularMap, maskMap);
 					} else {
-						this->getTextureMaps(resourceBank, resourceBank, visualTemplate, diffuseMap, normalMap, maskMap);
+						this->getTextureMaps(resourceBank, resourceBank, visualTemplate, diffuseMap, normalMap, specularMap, maskMap);
 					}
 					unsigned long fileSize;
 					std::wstring temp = L"";
@@ -658,6 +674,7 @@ ZGrannyScene *AppearanceEditorFrame::createModelForItem(GameItem *item, std::vec
 					if (fileBytes != 0) {
 						GLuint diffuseTextureId = -1;
 						GLuint normalTextureId = -1;
+						GLuint specularTextureId = -1;
 						GLuint maskTextureId = -1;
 						std::wstring tmp;
 						unsigned long textureFileSize;
@@ -686,6 +703,19 @@ ZGrannyScene *AppearanceEditorFrame::createModelForItem(GameItem *item, std::vec
 							textureImage.upload_texture2D();
 							textures.push_back(normalTextureId);
 							delete[] normalBytes;
+						}
+						char *specularBytes = texturesPak.extractFileIntoMemory(gameDataPath + L"Textures.pak", specularMap, tmp, false, &textureFileSize);
+						if (specularBytes != 0) {
+							nv_dds::CDDSImage textureImage;
+							std::stringstream ss;
+							ss.rdbuf()->pubsetbuf(specularBytes, textureFileSize);
+							textureImage.load(ss, false);
+							glGenTextures(1, &specularTextureId);
+							glEnable(GL_TEXTURE_2D);
+							glBindTexture(GL_TEXTURE_2D, specularTextureId);
+							textureImage.upload_texture2D();
+							textures.push_back(specularTextureId);
+							delete[] specularBytes;
 						}
 						char *maskBytes = texturesPak.extractFileIntoMemory(gameDataPath + L"Textures.pak", maskMap, tmp, false, &textureFileSize);
 						if (maskBytes != 0) {
@@ -882,29 +912,29 @@ void AppearanceEditorFrame::cleanup() {
 	heads.clear();
 	headDiffuse.clear();
 	headNormal.clear();
-	headMask.clear();
+	headSpecular.clear();
 	hairs.clear();
 	hairDiffuse.clear();
 	hairNormal.clear();
-	hairMask.clear();
+	hairSpecular.clear();
 	hairColors.clear();
 	underwears.clear();
 	underwearDiffuse.clear();
 	underwearNormal.clear();
-	underwearMask.clear();
+	underwearSpecular.clear();
 	
 	henchHeads.clear();
 	henchHeadDiffuse.clear();
 	henchHeadNormal.clear();
-	henchHeadMask.clear();
+	henchHeadSpecular.clear();
 	henchHairs.clear();
 	henchHairDiffuse.clear();
 	henchHairNormal.clear();
-	henchHairMask.clear();
+	henchHairSpecular.clear();
 	henchUnderwears.clear();
 	henchUnderwearDiffuse.clear();
 	henchUnderwearNormal.clear();
-	henchUnderwearMask.clear();
+	henchUnderwearSpecular.clear();
 }
 
 void AppearanceEditorFrame::setup() {
@@ -1300,15 +1330,17 @@ void AppearanceEditorFrame::on_hairNext_clicked()
 }
 
 bool AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::vector<fieldValue_t> &models, std::vector<fieldValue_t> &diffuse, 
-												 std::vector<fieldValue_t> &normal, std::vector<fieldValue_t> &mask, int index, VertexRGB *foreColor, VertexRGB *backColor) {
+												 std::vector<fieldValue_t> &normal, std::vector<fieldValue_t> &specular, std::vector<fieldValue_t> &mask, 
+												 int index, VertexRGB *foreColor, VertexRGB *backColor) {
 	GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
 	std::string modelFile = models[index].currentValue(isMale);
 	std::string diffuseFile = diffuse[index].currentValue(isMale);
 	std::string normalFile = normal[index].currentValue(isMale);
+	std::string specularFile = specular[index].currentValue(isMale);
 	std::string maskFile = mask[index].currentValue(isMale);
 	std::vector<GLuint> modelTextures;
 	
-	if (modelFile.size() == 0 || diffuseFile.size() == 0 || normalFile.size() == 0 || maskFile.size() == 0) {
+	if (modelFile.size() == 0 || diffuseFile.size() == 0 || normalFile.size() == 0 || specularFile.size() == 0) {
 		return false;
 	}
 	
@@ -1372,13 +1404,8 @@ bool AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 	}
 	
 	//texturePath = "Public/Main/Assets/Textures/Characters/Player/" + textureFile + "_SM.dds";
-	texturePath = maskFile;
+	texturePath = specularFile;
 	fileBytes = texturesPak.extractFileIntoMemory(gameDataPath + L"Textures.pak", texturePath, tmp, false, &textureFileSize);
-	if (fileBytes == 0) {
-		//texturePath = "Public/Main/Assets/Textures/Characters/Player/" + textureFile + "_MSK.dds";
-		texturePath = maskFile;
-		fileBytes = texturesPak.extractFileIntoMemory(gameDataPath + L"Textures.pak", texturePath, tmp, false, &textureFileSize);
-	}
 	if (fileBytes != 0) {
 		std::stringstream ss;
 		ss.rdbuf()->pubsetbuf(fileBytes, textureFileSize);
@@ -1391,6 +1418,24 @@ bool AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 		image3.upload_texture2D();
 		modelTextures.push_back(texobj3);
 		delete[] fileBytes;
+	}
+	
+	if (maskFile.size() > 0) {
+		texturePath = maskFile;
+		fileBytes = texturesPak.extractFileIntoMemory(gameDataPath + L"Textures.pak", texturePath, tmp, false, &textureFileSize);
+		if (fileBytes != 0) {
+			std::stringstream ss;
+			ss.rdbuf()->pubsetbuf(fileBytes, textureFileSize);
+			nv_dds::CDDSImage image3;
+			GLuint texobj3;
+			image3.load(ss, false);
+			glGenTextures(1, &texobj3);
+			glEnable(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, texobj3);
+			image3.upload_texture2D();
+			modelTextures.push_back(texobj3);
+			delete[] fileBytes;
+		}
 	}
 	
 	err;
@@ -1464,25 +1509,25 @@ bool AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 
 bool AppearanceEditorFrame::updateToCurrentHair() {
 	if (isHench) {
-		return updateToCurrentModel(currentHair, henchHairs, henchHairDiffuse, henchHairNormal, henchHairMask, hairIdx, 0, hairColor);
+		return updateToCurrentModel(currentHair, henchHairs, henchHairDiffuse, henchHairNormal, henchHairSpecular, henchHairMask, hairIdx, 0, hairColor);
 	} else {
-		return updateToCurrentModel(currentHair, hairs, hairDiffuse, hairNormal, hairMask, hairIdx, 0, hairColor);
+		return updateToCurrentModel(currentHair, hairs, hairDiffuse, hairNormal, hairSpecular, hairMask, hairIdx, 0, hairColor);
 	}
 }
 
 bool AppearanceEditorFrame::updateToCurrentHead() {
 	if (isHench) {
-		return updateToCurrentModel(currentHead, henchHeads, henchHeadDiffuse, henchHeadNormal, henchHeadMask, headIdx, skinColor, hairColor);
+		return updateToCurrentModel(currentHead, henchHeads, henchHeadDiffuse, henchHeadNormal, henchHeadSpecular, henchHeadMask, headIdx, skinColor, hairColor);
 	} else {
-		return updateToCurrentModel(currentHead, heads, headDiffuse, headNormal, headMask, headIdx, skinColor, hairColor);
+		return updateToCurrentModel(currentHead, heads, headDiffuse, headNormal, headSpecular, headMask, headIdx, skinColor, hairColor);
 	}
 }
 
 bool AppearanceEditorFrame::updateToCurrentUnderwear() {
 	if (isHench) {
-		return updateToCurrentModel(currentUnderwear, henchUnderwears, henchUnderwearDiffuse, henchUnderwearNormal, henchUnderwearMask, underwearIdx, skinColor, underwearColor);
+		return updateToCurrentModel(currentUnderwear, henchUnderwears, henchUnderwearDiffuse, henchUnderwearNormal, henchUnderwearSpecular, henchUnderwearMask, underwearIdx, skinColor, underwearColor);
 	} else {
-		return updateToCurrentModel(currentUnderwear, underwears, underwearDiffuse, underwearNormal, underwearMask, underwearIdx, skinColor, underwearColor);
+		return updateToCurrentModel(currentUnderwear, underwears, underwearDiffuse, underwearNormal, underwearSpecular, underwearMask, underwearIdx, skinColor, underwearColor);
 	}
 }
 

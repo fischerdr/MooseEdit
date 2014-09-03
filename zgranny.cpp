@@ -540,6 +540,7 @@ void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices,
 		shaderProgram->setUniformInt("Texture2DParameter_DM", 0);
 		shaderProgram->setUniformInt("Texture2DParameter_NM", 1);
 		shaderProgram->setUniformInt("Texture2DParameter_SM", 2);
+		shaderProgram->setUniformInt("Texture2DParameter_MSK", 3);
 		if (vertexRgb != 0) {
 			GLfloat vec[4];
 			vec[0] = vertexRgb->r/255.0;
