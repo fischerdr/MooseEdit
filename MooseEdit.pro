@@ -13,6 +13,7 @@ TEMPLATE = app
 
 INCLUDEPATH += C:\boost\boost_1_55_0
 INCLUDEPATH += C:\glew-1.11.0\include\
+INCLUDEPATH += C:\glm
 
 LIBS += "-LC:\boost\boost_1_55_0\stage\lib"
 LIBS += "-LC:\boost\stage\lib" -lboost_filesystem-mgw48-mt-1_55
@@ -126,5 +127,3 @@ FORMS    += mainwindow.ui \
 
 RESOURCES += \
     resources.qrc
-
-OTHER_FILES +=

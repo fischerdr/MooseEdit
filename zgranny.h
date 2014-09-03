@@ -6,7 +6,13 @@
 #include <GL/glew.h>
 #include "granny/granny.h"
 #include "GlShaderProgram.h"
+#include <glm/glm.hpp>
 
+typedef struct {
+	glm::mat4 *model;
+	glm::mat4 *view;
+	glm::mat4 *projection;
+} renderInfo_t;
 
 void loadTexture(const GLubyte *pixelBuffer, int bufferSize, int width, int height, GLuint format);
 
@@ -95,17 +101,17 @@ void zGrannyCreateTexture( ZGrannyTexture *texture, granny_texture *grannyTextur
 void zGrannyCreateModel(ZGrannyModel *model, ZGrannyScene *inScene, granny_model *grannyModel , std::vector<GLuint > &textures);
 void zGrannyCreateMesh(ZGrannyMesh *mesh, granny_mesh *grannyMesh, std::vector<GLuint > &textures, granny_model_instance *inModel, ZGrannyScene *inScene );
 
-void zGrannyRenderModel(ZGrannyScene *inScene, ZGrannyModel *model, std::vector<GLuint > &textures, VertexRGB *vertexRgb , VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram);
+void zGrannyRenderModel(ZGrannyScene *inScene, ZGrannyModel *model, std::vector<GLuint > &textures, VertexRGB *vertexRgb , VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, renderInfo_t *renderInfo);
 void zGrannyRenderMesh2( ZGrannyMesh *mesh, granny_pnt332_vertex *vertices, std::vector<GLuint > &textures, VertexRGB *rgbData, GlShaderProgram *shaderProgram);
 void zGrannyRenderMesh3( ZGrannyMesh *mesh, granny_pngbt33332_vertex *vertices, std::vector<GLuint > &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram);
-void zGrannyRenderMesh(ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices , std::vector<GLuint > &textures, VertexRGB *vertexRgb , VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram);
+void zGrannyRenderMesh(ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices , std::vector<GLuint > &textures, VertexRGB *vertexRgb , VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, renderInfo_t *renderInfo);
 void zGrannyRenderSkeleton( granny_skeleton *skeleton, granny_world_pose *worldPose );
 
 ZGrannyScene *zGrannyCreateSceneFromMemory( const char *fileBytes, unsigned long fileSize, std::vector<GLuint > &textures );
 ZGrannyScene *zGrannyCreateScene(const char *filename , std::vector<GLuint > &textures);
 void zGrannyShutdownScene( ZGrannyScene *scene );
 
-void zGrannyRenderScene(ZGrannyScene *scene , std::vector<GLuint > &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, GLfloat worldPos[3] );
+void zGrannyRenderScene(ZGrannyScene *scene , std::vector<GLuint > &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, GLfloat worldPos[3], renderInfo_t *renderInfo );
 
 bool zGrannyGetObbCenter(std::string boneName, ZGrannyMesh *mesh, GLfloat obbCenter[3]);
 

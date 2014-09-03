@@ -1,14 +1,14 @@
 #version 110
 
-attribute vec3 vertex;
-attribute vec3 normal;
-attribute vec2 uv_coord;
-attribute vec3 tangent;
-attribute vec3 binormal;
+attribute vec3 inPosition0;
+attribute vec3 inNormal0;
+attribute vec2 inTexCoord0;
+attribute vec3 inTangent0;
+attribute vec3 inBinormal0;
 
-uniform mat4 _m;
-uniform mat4 _mv;
-uniform mat4 _proj;
+uniform mat4 WorldMatrix;
+uniform mat4 global_ModelView;
+uniform mat4 global_Projection;
 
 varying vec3 vTangent;
 varying vec3 vBinormal;
@@ -19,33 +19,33 @@ varying vec3 Position_cameraspace;
 varying vec3 EyeDirection_cameraspace;
 varying vec3 LightDirection_cameraspace;
 
-varying vec3 LightDirection_tangentspace;
-varying vec3 EyeDirection_tangentspace;
+varying vec3 LightDirection_inTangent0space;
+varying vec3 EyeDirection_inTangent0space;
 
 void main(void) {
-	//mat3 normalMatrix = mat3(transpose(inverse(_mv)));
-	gl_Position = _proj * _mv * vec4(vertex, 1.0);
-	uv = uv_coord;
-	//n = normalize(normalMatrix * normal);
+	//mat3 normalMatrix = mat3(transpose(inverse(global_ModelView)));
+	gl_Position = global_Projection * global_ModelView * vec4(inPosition0, 1.0);
+	uv = inTexCoord0;
+	//n = normalize(normalMatrix * inNormal0);
 	
-	Position_cameraspace = (_mv * vec4(vertex,1)).xyz;
+	Position_cameraspace = (global_ModelView * vec4(inPosition0,1)).xyz;
 	
-	// Vector that goes from the vertex to the camera, in camera space.
+	// Vector that goes from the inPosition0 to the camera, in camera space.
 	// In camera space, the camera is at the origin (0,0,0).
-	vec3 vertexPosition_cameraspace = ( _mv * vec4(vertex,1)).xyz;
-	EyeDirection_cameraspace = vec3(0.0,0.0,0.0) - vertexPosition_cameraspace;
+	vec3 inPosition0Position_cameraspace = ( global_ModelView * vec4(inPosition0,1)).xyz;
+	EyeDirection_cameraspace = vec3(0.0,0.0,0.0) - inPosition0Position_cameraspace;
 	
 	// model to camera = ModelView
-	//vec3 vertexTangent_cameraspace = mat3(_mv) * tangent;
-	//vec3 vertexBitangent_cameraspace = mat3(_mv) * binormal;
-	//vec3 vertexNormal_cameraspace = mat3(_mv) * normal;
+	//vec3 inPosition0inTangent0_cameraspace = mat3(global_ModelView) * inTangent0;
+	//vec3 inPosition0BiinTangent0_cameraspace = mat3(global_ModelView) * inBinormal0;
+	//vec3 inPosition0Normal_cameraspace = mat3(global_ModelView) * inNormal0;
 	
 	//mat3 TBN = transpose(mat3(
-	//	vertexTangent_cameraspace,
-	//	vertexBitangent_cameraspace,
-	//	vertexNormal_cameraspace	
+	//	inPosition0inTangent0_cameraspace,
+	//	inPosition0BiinTangent0_cameraspace,
+	//	inPosition0Normal_cameraspace	
 	//)); // You can use dot products instead of building this matrix and transposing it. See References for details.
 
-	//LightDirection_tangentspace = TBN * LightDirection_cameraspace;
-	//EyeDirection_tangentspace =  TBN * EyeDirection_cameraspace;
+	//LightDirection_inTangent0space = TBN * LightDirection_cameraspace;
+	//EyeDirection_inTangent0space =  TBN * EyeDirection_cameraspace;
 }

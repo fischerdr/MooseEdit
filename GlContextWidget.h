@@ -10,6 +10,8 @@
 #include <QKeyEvent>
 #include <cmath>
 
+#include <glm/glm.hpp>
+
 class GlContextWidget : public QGLWidget
 {
 	Q_OBJECT
@@ -90,6 +92,10 @@ private:
 	std::vector<GlShaderProgram *> shaderPrograms;
 	std::vector<MeshAttachmentPoint *> attachments;
 	bool timerConnected = false;
+	
+	glm::mat4 model;
+	glm::mat4 view;
+	glm::mat4 projection;
 	
 	double posX;
 	double posY;

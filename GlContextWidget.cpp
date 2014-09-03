@@ -1,6 +1,7 @@
 #include "GlContextWidget.h"
 #include <math.h>
 #include <gl/glu.h>
+#include <glm/gtc/matrix_transform.hpp>
 
 GlContextWidget::GlContextWidget(QWidget *parent) :
 	QGLWidget(parent)
@@ -76,7 +77,8 @@ void GlContextWidget::resizeGL(int w, int h) {
     if (h == 0) h = 1;
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45, w/(double)h, 0.01, 100.0);
+    //gluPerspective(45.0, w/(double)h, 0.01, 100.0);
+	projection = glm::perspective(45.0, w/(double)h, 0.01, 100.0);
     
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -142,6 +144,23 @@ void GlContextWidget::paintGL() {
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glEnable(GL_MULTISAMPLE);
 	
+	if ((err = glGetError()) != GL_NO_ERROR) {
+		std::ostringstream ss;
+		ss<<"err5: "<<gluErrorString(err);
+		std::cout<<ss.str()<<'\n';
+	}
+	polarToCartesian();
+	glLoadIdentity();
+	double finalX = posX + addX;
+	double finalY = posY + addY;
+	double finalZ = posZ + addZ;
+//	gluLookAt(finalX, finalY, finalZ,
+//			  lookatX, lookatY, lookatZ, 
+//			  0, 1, 0);
+	view = glm::lookAt(glm::vec3(finalX, finalY, finalZ),
+					   glm::vec3(lookatX, lookatY, lookatZ),
+					   glm::vec3(0.0, 1.0, 0.0));
+	
 	if (grannyScenes.size() > 0) {
 		for (int i=0; i<grannyScenes.size(); ++i) {
 			GLfloat worldPos[3];
@@ -186,24 +205,17 @@ void GlContextWidget::paintGL() {
 			//			   vText = ss.str();
 			//		   }
 			//		   std::cout<<"Rendering "<<grannyScenes[i]->models[0].meshes[0].grannyMesh->Name<<' '<<vText<<'\n';
-			zGrannyRenderScene(grannyScenes[i], textureIds[i], vertexRGBs[i], vertexRGB2s[i], shaderPrograms[i], worldPos);
+			model = glm::translate(glm::mat4(1.0), glm::vec3(worldPos[0], worldPos[1], worldPos[2]));
+			renderInfo_t renderInfo;
+			renderInfo.model = &model;
+			renderInfo.view = &view;
+			renderInfo.projection = &projection;
+			zGrannyRenderScene(grannyScenes[i], textureIds[i], vertexRGBs[i], vertexRGB2s[i], shaderPrograms[i], worldPos, &renderInfo);
 			//zGrannyRenderSkeleton(grannyScenes[i]->models[0].skeleton, grannyScenes[i]->models[0].worldPose);
 		}
 	}
 	
-	if ((err = glGetError()) != GL_NO_ERROR) {
-		std::ostringstream ss;
-		ss<<"err5: "<<gluErrorString(err);
-		std::cout<<ss.str()<<'\n';
-	}
-	polarToCartesian();
-	glLoadIdentity();
-	double finalX = posX + addX;
-	double finalY = posY + addY;
-	double finalZ = posZ + addZ;
-	gluLookAt(finalX, finalY, finalZ,
-			  lookatX, lookatY, lookatZ, 
-			  0, 1, 0);
+	
 
 	if ((err = glGetError()) != GL_NO_ERROR) {
 		std::ostringstream ss;

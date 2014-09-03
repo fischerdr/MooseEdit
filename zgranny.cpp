@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <windows.h>
 #include <cmath>
+#include <glm/gtc/type_ptr.hpp>
 
 granny_data_type_definition *GrannyPNT332VertexType = *(granny_data_type_definition **)GetProcAddress(LoadLibraryW(L"granny2.dll"), "GrannyPNT332VertexType");
 granny_data_type_definition *GrannyPWNGBT343332VertexType = *(granny_data_type_definition **)GetProcAddress(LoadLibraryW(L"granny2.dll"), "GrannyPWNGBT343332VertexType");
@@ -304,7 +305,7 @@ ZGrannyTexture *zGrannyFindTexture( ZGrannyScene *scene, granny_material *granny
 
 bool shown2 = false;
 int shownCount = 0;
-void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model, std::vector<GLuint > &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram ) {
+void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model, std::vector<GLuint > &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, renderInfo_t *renderInfo ) {
 	/* Before I do any rendering, I enable the arrays for the vertex
 	  format I'm using.  You could do this once for the entire app,
 	  since I never render anything else, but I figured it'd me more
@@ -378,7 +379,7 @@ void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model, std::vector
 						std::cout<<"pos = "<<vertices2[i].Position[0]<<' '<<vertices2[i].Position[1]<<' '<<vertices2[i].Position[2]<<'\n';
 					}
 				}
-				zGrannyRenderMesh( &mesh, vertices2, textures, vertexRgb, vertexRgb2, shaderProgram );
+				zGrannyRenderMesh( &mesh, vertices2, textures, vertexRgb, vertexRgb2, shaderProgram, renderInfo );
 				delete[] vertices2;
 			}
 		}
@@ -497,7 +498,8 @@ void zGrannyRenderMesh2( ZGrannyMesh *mesh, granny_pnt332_vertex *vertices, std:
 	}
 }
 #include <sstream>
-void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices, std::vector<GLuint > &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram) {
+void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices, std::vector<GLuint > &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, 
+						renderInfo_t *renderInfo) {
 	glVertexPointer( 3, GL_FLOAT, sizeof(*vertices), vertices->Position );
 	glNormalPointer( GL_FLOAT, sizeof(*vertices), vertices->Normal );
 	glTexCoordPointer( 2, GL_FLOAT, sizeof(*vertices), vertices->UV );
@@ -509,21 +511,35 @@ void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices,
 		std::cout<<ss.str()<<'\n';
 	}
 	if (shaderProgram != 0) {
-		shaderProgram->set3dVectorAttribute("vertex", sizeof(*vertices), vertices->Position);
-		shaderProgram->set3dVectorAttribute("normal", sizeof(*vertices), vertices->Normal);
-		shaderProgram->set2dVectorAttribute("uv_coord", sizeof(*vertices), vertices->UV);
-		shaderProgram->set3dVectorAttribute("tangent", sizeof(*vertices), vertices->Tangent);
-		shaderProgram->set3dVectorAttribute("binormal", sizeof(*vertices), vertices->Binormal);
+		shaderProgram->set3dVectorAttribute("inPosition0", sizeof(*vertices), vertices->Position);
+		shaderProgram->set3dVectorAttribute("inNormal0", sizeof(*vertices), vertices->Normal);
+		shaderProgram->set2dVectorAttribute("inTexCoord0", sizeof(*vertices), vertices->UV);
+		shaderProgram->set3dVectorAttribute("inTangent0", sizeof(*vertices), vertices->Tangent);
+		shaderProgram->set3dVectorAttribute("inBinormal0", sizeof(*vertices), vertices->Binormal);
 		
-		GLfloat modelViewMatrix[16];
-		glGetFloatv(GL_MODELVIEW_MATRIX, modelViewMatrix);
-		shaderProgram->setUniformMatrix4x4("_mv", modelViewMatrix);
-		GLfloat projectionMatrix[16];
-		glGetFloatv(GL_PROJECTION_MATRIX, projectionMatrix);
-		shaderProgram->setUniformMatrix4x4("_proj", projectionMatrix);
-		shaderProgram->setUniformInt("color_texture", 0);
-		shaderProgram->setUniformInt("normal_texture", 1);
-		shaderProgram->setUniformInt("mask_texture", 2);
+		if (renderInfo != 0) {
+			if (renderInfo->model != 0) {
+				shaderProgram->setUniformMatrix4x4("WorldMatrix", glm::value_ptr(*renderInfo->model));
+			}
+			if (renderInfo->model != 0 && renderInfo->view != 0) {
+				GLfloat modelViewMatrix[16];
+				glGetFloatv(GL_MODELVIEW_MATRIX, modelViewMatrix);
+				glm::mat4 modelView = *renderInfo->view * *renderInfo->model;
+				shaderProgram->setUniformMatrix4x4("global_ModelView", glm::value_ptr(modelView));
+			}
+			GLfloat projectionMatrix[16];
+			glGetFloatv(GL_PROJECTION_MATRIX, projectionMatrix);
+			if (renderInfo->projection != 0) {
+				shaderProgram->setUniformMatrix4x4("global_Projection", glm::value_ptr(*renderInfo->projection));
+			}
+			if (renderInfo->view != 0 && renderInfo->projection != 0) {
+				glm::mat4 viewProjection = *renderInfo->projection * *renderInfo->view;
+				shaderProgram->setUniformMatrix4x4("global_ViewProjection", glm::value_ptr(viewProjection));
+			}
+		}
+		shaderProgram->setUniformInt("Texture2DParameter_DM", 0);
+		shaderProgram->setUniformInt("Texture2DParameter_NM", 1);
+		shaderProgram->setUniformInt("Texture2DParameter_SM", 2);
 		if (vertexRgb != 0) {
 			GLfloat vec[4];
 			vec[0] = vertexRgb->r/255.0;
@@ -829,7 +845,7 @@ void zGrannyShutdownScene( ZGrannyScene *scene ) {
 	GrannyFreeFile( scene->loadedFile );
 }
 
-void zGrannyRenderScene( ZGrannyScene *scene, std::vector<GLuint > &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, GLfloat worldPos[3]) {
+void zGrannyRenderScene(ZGrannyScene *scene, std::vector<GLuint > &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, GLfloat worldPos[3], renderInfo_t *renderInfo) {
 	GLenum err;
 	if ((err = glGetError()) != GL_NO_ERROR) {
 		std::ostringstream ss;
@@ -849,7 +865,7 @@ void zGrannyRenderScene( ZGrannyScene *scene, std::vector<GLuint > &textures, Ve
 		glTranslatef(worldPos[0], worldPos[1], worldPos[2]);
 	}
 	for( int i = 0; i < scene->modelCount; ++i ) {
-		zGrannyRenderModel( scene, &scene->models[i], textures, vertexRgb, vertexRgb2, shaderProgram);
+		zGrannyRenderModel( scene, &scene->models[i], textures, vertexRgb, vertexRgb2, shaderProgram, renderInfo);
 	}
 	if (worldPos != 0) {
 		glPopMatrix();
