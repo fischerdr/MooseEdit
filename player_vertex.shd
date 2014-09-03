@@ -1,0 +1,100 @@
+#version 150
+
+uniform mat4x4 global_View;
+uniform mat4x4 global_Projection;
+uniform mat4x4 global_ViewProjection;
+
+uniform vec4 global_ViewInfo; //x = farPlane, y = nearPlane, z = screen width, w = screen height
+uniform vec4 global_Data; //x=current time, y=deltatime, z = wind direction X, w = wind direction Z;
+
+uniform vec4   global_ViewPos; // xyz = view pos, w = wind speed
+uniform mat4x4 global_LightPropertyMatrix;
+uniform mat4x3 global_FogPropertyMatrix;
+
+in vec3 inPosition0;
+in vec2 inTexCoord0;
+in vec3 inNormal0;
+in vec3 inBinormal0;
+in vec3 inTangent0;
+
+out vec4 Position0;
+out vec2 TexCoord0;
+out vec3 TexCoord1;
+out vec3 TexCoord2;
+out vec3 TexCoord3;
+out vec3 WorldTangent;
+out vec3 WorldView;
+out float HeightFog;
+out float DistanceFog;
+
+uniform mat4x4 WorldMatrix;
+
+void main()
+{
+	//World space position
+	vec4 worldPosition = (WorldMatrix * vec4(inPosition0, 1.0f));
+
+	//Projected position
+	vec4 projectedPosition = (global_ViewProjection * worldPosition);
+
+	//Pass projected position to pixel shader
+	Position0 = projectedPosition;
+
+	TexCoord0 = inTexCoord0;
+	//Pass local position to pixel shader
+	TexCoord1 = inPosition0;
+
+	//Normalize Local Normal
+	vec3 localNormalNormalized = normalize(inNormal0);
+
+	//World space Normal
+	vec3 worldNormal = (mat3x3(WorldMatrix) * localNormalNormalized);
+
+	//Normalize World Normal
+	vec3 worldNormalNormalized = normalize(worldNormal);
+
+	TexCoord2 = worldNormalNormalized;
+
+	//Normalize Local Binormal
+	vec3 localBinormalNormalized = normalize(inBinormal0);
+
+	//World space Binormal
+	vec3 worldBinormal = (mat3x3(WorldMatrix) * localBinormalNormalized);
+
+	//Normalize World Binormal
+	vec3 worldBinormalNormalized = normalize(worldBinormal);
+
+	TexCoord3 = worldBinormalNormalized;
+
+	//Normalize Local Tangent
+	vec3 localTangentNormalized = normalize(inTangent0);
+
+	//World space Tangent
+	vec3 worldTangent = (mat3x3(WorldMatrix) * localTangentNormalized);
+
+	//Normalize World Tangent
+	vec3 worldTangentNormalized = normalize(worldTangent);
+
+	WorldTangent = worldTangentNormalized;
+
+	//World space view vector
+	vec3 worldView = (global_ViewPos.xyz - worldPosition.xyz);
+
+	WorldView = worldView;
+
+	//Calculate Height Fog
+	float depthValue = clamp(((global_FogPropertyMatrix[3].y - length(worldView)) / (global_FogPropertyMatrix[3].y - global_FogPropertyMatrix[3].x)), 0, 1);
+	float heightDensity = ((worldPosition.y - global_FogPropertyMatrix[2].z) / global_FogPropertyMatrix[3].z);
+	float heightFog = clamp(max(depthValue, heightDensity), 0, 1);
+
+	HeightFog = heightFog;
+
+	//Calculate Distance Fog
+	float distanceFog = clamp(((global_FogPropertyMatrix[2].y - length(worldView)) / (global_FogPropertyMatrix[2].y - global_FogPropertyMatrix[2].x)), 0, 1);
+
+	DistanceFog = distanceFog;
+
+	gl_Position = Position0;
+}
+
+

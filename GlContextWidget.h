@@ -97,6 +97,11 @@ private:
 	glm::mat4 view;
 	glm::mat4 projection;
 	
+	float farPlane;
+	float nearPlane;
+	float screenWidth;
+	float screenHeight;
+	
 	double posX;
 	double posY;
 	double posZ;

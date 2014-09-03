@@ -536,6 +536,66 @@ void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices,
 				glm::mat4 viewProjection = *renderInfo->projection * *renderInfo->view;
 				shaderProgram->setUniformMatrix4x4("global_ViewProjection", glm::value_ptr(viewProjection));
 			}
+			
+			if (renderInfo->viewInfo != 0) {
+				shaderProgram->setUniformVec4("global_ViewInfo", glm::value_ptr(*renderInfo->viewInfo));
+			}
+			if (renderInfo->data != 0) {
+				shaderProgram->setUniformVec4("global_Data", glm::value_ptr(*renderInfo->data));
+			}
+			
+			if (renderInfo->viewPos != 0) {
+				shaderProgram->setUniformVec4("global_ViewPos", glm::value_ptr(*renderInfo->viewPos));
+			}
+			if (renderInfo->lightPropertyMatrix != 0) {
+				shaderProgram->setUniformMatrix4x4("global_LightPropertyMatrix", glm::value_ptr(*renderInfo->lightPropertyMatrix));
+			}
+			if (renderInfo->fogPropertyMatrix != 0) {
+				shaderProgram->setUniformMatrix4x3("global_FogPropertyMatrix", glm::value_ptr(*renderInfo->fogPropertyMatrix));
+			}
+			
+			shaderProgram->setUniformFloat("_OpacityFade", renderInfo->opacityFade);
+			shaderProgram->setUniformFloat("FloatParameter_CharacterHeight", renderInfo->characterHeight);
+			shaderProgram->setUniformFloat("FloatParameter_CharacterHeightContrast", renderInfo->characterHeightContrast);
+			shaderProgram->setUniformFloat("FloatParameter_BackLightContrast", renderInfo->backLightContrast);
+			shaderProgram->setUniformFloat("FloatParameter_BackLightIntensity", renderInfo->backLightIntensity);
+			
+			if (renderInfo->color1 != 0) {
+				shaderProgram->setUniformVec4("Vector4Parameter_Color1", glm::value_ptr(*renderInfo->color1));
+			}
+			if (renderInfo->color2 != 0) {
+				shaderProgram->setUniformVec4("Vector4Parameter_Color2", glm::value_ptr(*renderInfo->color2));
+			}
+			if (renderInfo->color3 != 0) {
+				shaderProgram->setUniformVec4("Vector4Parameter_Color3", glm::value_ptr(*renderInfo->color3));
+			}
+			if (renderInfo->color4 != 0) {
+				shaderProgram->setUniformVec4("Vector4Parameter_Color4", glm::value_ptr(*renderInfo->color4));
+			}
+			if (renderInfo->color5 != 0) {
+				shaderProgram->setUniformVec4("Vector4Parameter_Color5", glm::value_ptr(*renderInfo->color5));
+			}
+			
+			shaderProgram->setUniformFloat("FloatParameter_FillLightContrast", renderInfo->fillLightContrast);
+			shaderProgram->setUniformFloat("FloatParameter_FillLightIntensity", renderInfo->fillLightIntensity);
+			shaderProgram->setUniformFloat("FloatParameter_RimLightContrast", renderInfo->rimLightContrast);
+			shaderProgram->setUniformFloat("FloatParameter_RimLightIntensity", renderInfo->rimLightIntensity);
+
+			if (renderInfo->color1Specular != 0) {
+				shaderProgram->setUniformVec4("Vector4Parameter_Color1_Specular", glm::value_ptr(*renderInfo->color1Specular));
+			}
+			if (renderInfo->color2Specular != 0) {
+				shaderProgram->setUniformVec4("Vector4Parameter_Color2_Specular", glm::value_ptr(*renderInfo->color2Specular));
+			}
+			if (renderInfo->color3Specular != 0) {
+				shaderProgram->setUniformVec4("Vector4Parameter_Color3_Specular", glm::value_ptr(*renderInfo->color3Specular));
+			}
+			if (renderInfo->color4Specular != 0) {
+				shaderProgram->setUniformVec4("Vector4Parameter_Color4_Specular", glm::value_ptr(*renderInfo->color4Specular));
+			}
+			if (renderInfo->color5Specular != 0) {
+				shaderProgram->setUniformVec4("Vector4Parameter_Color5_Specular", glm::value_ptr(*renderInfo->color5Specular));
+			}
 		}
 		shaderProgram->setUniformInt("Texture2DParameter_DM", 0);
 		shaderProgram->setUniformInt("Texture2DParameter_NM", 1);

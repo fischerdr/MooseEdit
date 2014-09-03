@@ -104,6 +104,21 @@ void GlShaderProgram::setUniformMatrix4x4(std::string uniformName, GLfloat buffe
 		buffer);
 }
 
+void GlShaderProgram::setUniformMatrix4x3(std::string uniformName, GLfloat buffer[12]) {
+	if (uniformLocations.find(uniformName) == uniformLocations.end()) {
+		GLint location = glGetUniformLocation(program, uniformName.c_str());
+		if (location < 0) {
+			return;
+		}
+		uniformLocations[uniformName] = location;
+	}
+	GLint location = uniformLocations[uniformName];
+	glUniformMatrix4x3fv(	location,
+		1, false,
+		buffer);
+}
+
+
 void GlShaderProgram::setUniformMatrix3x3(std::string uniformName, GLfloat buffer[9]) {
 	if (uniformLocations.find(uniformName) == uniformLocations.end()) {
 		GLint location = glGetUniformLocation(program, uniformName.c_str());

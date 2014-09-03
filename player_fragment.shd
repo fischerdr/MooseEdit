@@ -1,0 +1,383 @@
+#version 150
+
+uniform mat4x4 global_View;
+uniform mat4x4 global_Projection;
+uniform mat4x4 global_ViewProjection;
+
+uniform vec4 global_ViewInfo; //x = farPlane, y = nearPlane, z = screen width, w = screen height
+uniform vec4 global_Data; //x=current time, y=deltatime, z = wind direction X, w = wind direction Z;
+
+uniform vec4   global_ViewPos; // xyz = view pos, w = wind speed
+uniform mat4x4 global_LightPropertyMatrix;
+uniform mat4x3 global_FogPropertyMatrix;
+
+in vec4 Position0;
+in vec2 TexCoord0;
+in vec3 TexCoord1;
+in vec3 TexCoord2;
+in vec3 TexCoord3;
+in vec3 WorldTangent;
+in vec3 WorldView;
+in float HeightFog;
+in float DistanceFog;
+
+out vec4 outColor0;
+
+uniform sampler2D Texture2DParameter_SM;
+uniform float _OpacityFade;
+//uniform sampler2D _SSAOSampler;
+//uniform sampler2D _ShadowSampler;
+//uniform vec4 _ShadowsAndSSAOParams;
+uniform float FloatParameter_CharacterHeight;
+uniform float FloatParameter_CharacterHeightContrast;
+uniform sampler2D Texture2DParameter_NM;
+uniform float FloatParameter_BackLightContrast;
+uniform float FloatParameter_BackLightIntensity;
+uniform vec4 Vector4Parameter_Color1;
+uniform vec4 Vector4Parameter_Color2;
+uniform sampler2D Texture2DParameter_MSK;
+uniform vec4 Vector4Parameter_Color3;
+uniform vec4 Vector4Parameter_Color4;
+uniform vec4 Vector4Parameter_Color5;
+uniform sampler2D Texture2DParameter_DM;
+uniform float FloatParameter_FillLightContrast;
+uniform float FloatParameter_FillLightIntensity;
+uniform float FloatParameter_RimLightContrast;
+uniform float FloatParameter_RimLightIntensity;
+uniform vec4 Vector4Parameter_Color1_Specular;
+uniform vec4 Vector4Parameter_Color2_Specular;
+uniform vec4 Vector4Parameter_Color3_Specular;
+uniform vec4 Vector4Parameter_Color4_Specular;
+uniform vec4 Vector4Parameter_Color5_Specular;
+
+void CalculateMatOpacity(vec2 in_0,
+	out float out_0)
+{
+	vec4 Local0 = texture(Texture2DParameter_SM, in_0);
+	//[Local0] Get needed components
+	float Local1 = Local0.x;
+	float Local2 = Local0.y;
+	float Local3 = Local0.z;
+	float Local4 = Local0.w;
+	out_0 = Local3;
+}
+
+void CalculateMatEmissive(vec3 in_0,
+	vec2 in_1,
+	mat3x3 in_2,
+	out vec3 out_0)
+{
+	float Local0 = in_0.y;
+	float Local1 = (Local0 / FloatParameter_CharacterHeight);
+	float Local2 = clamp(Local1, 0.0f, 1.0f);
+	float Local3 = pow(Local2, FloatParameter_CharacterHeightContrast);
+	vec4 Local4 = texture(Texture2DParameter_NM, in_1);
+	//[Local4] Convert normalmaps to tangent space vectors
+	Local4.xyzw = Local4.wzyx;
+	Local4.xyz = ((Local4.xyz * 2.0f) - 1.0f);
+	Local4.z = -(Local4.z);
+	Local4.xyz = normalize(Local4.xyz);
+	//[Local4] Get needed components
+	vec3 Local5 = Local4.xyz;
+	vec3 Local6 = (Local5 * in_2);
+	vec3 Local7 = normalize(vec3(-1.0f, 0.75f, 0.0f));
+	float Local8 = dot(Local6, Local7);
+	float Local9 = clamp(Local8, 0.0f, 1.0f);
+	float Local10 = pow(Local9, FloatParameter_BackLightContrast);
+	float Local11 = (Local10 * FloatParameter_BackLightIntensity);
+	vec3 Local12 = global_LightPropertyMatrix[2].xyz;
+	vec3 Local13 = clamp(Local12, 0.25f, 1.75f);
+	vec3 Local14 = (Local11 * Local13);
+	vec4 Local15 = texture(Texture2DParameter_SM, in_1);
+	//[Local15] Get needed components
+	float Local16 = Local15.x;
+	float Local17 = Local15.y;
+	float Local18 = Local15.z;
+	float Local19 = Local15.w;
+	vec4 Local20 = (Vector4Parameter_Color1 * Local19);
+	vec4 Local21 = texture(Texture2DParameter_MSK, in_1);
+	//[Local21] Get needed components
+	float Local22 = Local21.x;
+	float Local23 = Local21.y;
+	float Local24 = Local21.z;
+	float Local25 = Local21.w;
+	vec4 Local26 = (Vector4Parameter_Color2 * Local22);
+	vec4 Local27 = (Local20 + Local26);
+	vec4 Local28 = (Vector4Parameter_Color3 * Local23);
+	vec4 Local29 = (Local27 + Local28);
+	vec4 Local30 = (Vector4Parameter_Color4 * Local24);
+	vec4 Local31 = (Local29 + Local30);
+	vec4 Local32 = (Vector4Parameter_Color5 * Local25);
+	vec4 Local33 = (Local31 + Local32);
+	float Local34 = (1.0f - Local19);
+	float Local35 = (1.0f - Local22);
+	float Local36 = (Local34 * Local35);
+	float Local37 = (1.0f - Local23);
+	float Local38 = (Local36 * Local37);
+	float Local39 = (1.0f - Local24);
+	float Local40 = (Local38 * Local39);
+	float Local41 = (1.0f - Local25);
+	float Local42 = (Local40 * Local41);
+	float Local43 = pow(Local42, 2.2f);
+	vec4 Local44 = (Local33 + vec4(Local43));
+	vec3 Local45 = Local44.xyz;
+	vec4 Local46 = texture(Texture2DParameter_DM, in_1);
+	//[Local46] Get needed components
+	vec3 Local47 = Local46.xyz;
+	vec3 Local48 = (Local45 * Local47);
+	float Local49 = in_0.y;
+	float Local50 = (Local49 * 0.5f);
+	float Local51 = (Local50 + 0.7f);
+	float Local52 = clamp(Local51, 0.0f, 1.0f);
+	vec3 Local53 = (Local48 * Local52);
+	vec3 Local54 = pow(Local53, vec3(0.5f, 0.5f, 0.5f));
+	vec3 Local55 = (Local14 * Local54);
+	vec3 Local56 = normalize(vec3(1.0f, 0.0f, -1.0f));
+	float Local57 = dot(Local6, Local56);
+	float Local58 = clamp(Local57, 0.0f, 1.0f);
+	float Local59 = pow(Local58, FloatParameter_FillLightContrast);
+	float Local60 = (Local59 * FloatParameter_FillLightIntensity);
+	vec3 Local61 = (Local60 * Local53);
+	vec3 Local62 = (Local55 + Local61);
+	vec3 Local63 = normalize(vec3(0.25f, 0.8f, 1.0f));
+	float Local64 = dot(Local6, Local63);
+	float Local65 = clamp(Local64, 0.0f, 1.0f);
+	float Local66 = pow(Local65, FloatParameter_RimLightContrast);
+	float Local67 = (Local66 * FloatParameter_RimLightIntensity);
+	vec3 Local68 = (Local67 * Local53);
+	vec3 Local69 = (Local62 + Local68);
+	vec3 Local70 = (Local3 * Local69);
+	out_0 = Local70;
+}
+
+void CalculateMatNormal(vec2 in_0,
+	out vec3 out_0)
+{
+	vec4 Local0 = texture(Texture2DParameter_NM, in_0);
+	//[Local0] Convert normalmaps to tangent space vectors
+	Local0.xyzw = Local0.wzyx;
+	Local0.xyz = ((Local0.xyz * 2.0f) - 1.0f);
+	Local0.z = -(Local0.z);
+	Local0.xyz = normalize(Local0.xyz);
+	//[Local0] Get needed components
+	vec3 Local1 = Local0.xyz;
+	out_0 = Local1;
+}
+
+void CalculateMatDiffuse(vec2 in_0,
+	vec3 in_1,
+	out vec3 out_0)
+{
+	vec4 Local0 = texture(Texture2DParameter_SM, in_0);
+	//[Local0] Get needed components
+	float Local1 = Local0.x;
+	float Local2 = Local0.y;
+	float Local3 = Local0.z;
+	float Local4 = Local0.w;
+	vec4 Local5 = (Vector4Parameter_Color1 * Local4);
+	vec4 Local6 = texture(Texture2DParameter_MSK, in_0);
+	//[Local6] Get needed components
+	float Local7 = Local6.x;
+	float Local8 = Local6.y;
+	float Local9 = Local6.z;
+	float Local10 = Local6.w;
+	vec4 Local11 = (Vector4Parameter_Color2 * Local7);
+	vec4 Local12 = (Local5 + Local11);
+	vec4 Local13 = (Vector4Parameter_Color3 * Local8);
+	vec4 Local14 = (Local12 + Local13);
+	vec4 Local15 = (Vector4Parameter_Color4 * Local9);
+	vec4 Local16 = (Local14 + Local15);
+	vec4 Local17 = (Vector4Parameter_Color5 * Local10);
+	vec4 Local18 = (Local16 + Local17);
+	float Local19 = (1.0f - Local4);
+	float Local20 = (1.0f - Local7);
+	float Local21 = (Local19 * Local20);
+	float Local22 = (1.0f - Local8);
+	float Local23 = (Local21 * Local22);
+	float Local24 = (1.0f - Local9);
+	float Local25 = (Local23 * Local24);
+	float Local26 = (1.0f - Local10);
+	float Local27 = (Local25 * Local26);
+	float Local28 = pow(Local27, 2.2f);
+	vec4 Local29 = (Local18 + vec4(Local28));
+	vec3 Local30 = Local29.xyz;
+	vec4 Local31 = texture(Texture2DParameter_DM, in_0);
+	//[Local31] Get needed components
+	vec3 Local32 = Local31.xyz;
+	vec3 Local33 = (Local30 * Local32);
+	float Local34 = in_1.y;
+	float Local35 = (Local34 * 0.5f);
+	float Local36 = (Local35 + 0.7f);
+	float Local37 = clamp(Local36, 0.0f, 1.0f);
+	vec3 Local38 = (Local33 * Local37);
+	out_0 = Local38;
+}
+
+void CalculateDirLightDiffuse(vec3 in_0,
+	vec3 in_1,
+	out vec3 out_0)
+{
+	out_0 = in_1;
+
+	vec3 lightVector = global_LightPropertyMatrix[0].xyz;
+	vec3 lightDiffuse = global_LightPropertyMatrix[2].xyz;
+
+	float intensity = clamp(dot(normalize(lightVector), in_0), 0.0, 1);
+
+	out_0 = (out_0 + (lightDiffuse * intensity));
+}
+
+void CalculateMatSpecularPower(vec2 in_0,
+	out float out_0)
+{
+	vec4 Local0 = texture(Texture2DParameter_SM, in_0);
+	//[Local0] Get needed components
+	float Local1 = Local0.x;
+	float Local2 = Local0.y;
+	float Local3 = Local0.z;
+	float Local4 = Local0.w;
+	float Local5 = (100.0f * Local2);
+	out_0 = Local5;
+}
+
+void CalculateMatSpecular(vec2 in_0,
+	out vec3 out_0)
+{
+	vec4 Local0 = texture(Texture2DParameter_SM, in_0);
+	//[Local0] Get needed components
+	float Local1 = Local0.x;
+	float Local2 = Local0.y;
+	float Local3 = Local0.z;
+	float Local4 = Local0.w;
+	vec4 Local5 = (Vector4Parameter_Color1_Specular * Local4);
+	vec4 Local6 = texture(Texture2DParameter_MSK, in_0);
+	//[Local6] Get needed components
+	float Local7 = Local6.x;
+	float Local8 = Local6.y;
+	float Local9 = Local6.z;
+	float Local10 = Local6.w;
+	vec4 Local11 = (Vector4Parameter_Color2_Specular * Local7);
+	vec4 Local12 = (Local5 + Local11);
+	vec4 Local13 = (Vector4Parameter_Color3_Specular * Local8);
+	vec4 Local14 = (Local12 + Local13);
+	vec4 Local15 = (Vector4Parameter_Color4_Specular * Local9);
+	vec4 Local16 = (Local14 + Local15);
+	vec4 Local17 = (Vector4Parameter_Color5_Specular * Local10);
+	vec4 Local18 = (Local16 + Local17);
+	float Local19 = (1.0f - Local4);
+	float Local20 = (1.0f - Local7);
+	float Local21 = (Local19 * Local20);
+	float Local22 = (1.0f - Local8);
+	float Local23 = (Local21 * Local22);
+	float Local24 = (1.0f - Local9);
+	float Local25 = (Local23 * Local24);
+	float Local26 = (1.0f - Local10);
+	float Local27 = (Local25 * Local26);
+	float Local28 = pow(Local27, 2.2f);
+	vec4 Local29 = (Local18 + vec4(Local28));
+	vec3 Local30 = Local29.xyz;
+	vec3 Local31 = (Local30 * Local1);
+	vec3 Local32 = ((step((0.5f - (0.1f * 0.5f)), Local2) * (1.0f - step((0.5f + (0.1f * 0.5f)), Local2))) * vec3(0.4647411f, 0.4647411f, 0.4647411f));
+	vec3 Local33 = (Local32 * vec3(1.0f, 0.948965f, 0.001963416f));
+	vec3 Local34 = (Local31 + Local33);
+	out_0 = Local34;
+}
+
+void CalculateDirLightSpecular(vec3 in_0,
+	vec3 in_1,
+	float in_2,
+	vec3 in_3,
+	out vec3 out_0)
+{
+	out_0 = in_3;
+
+	vec3 lightVector = global_LightPropertyMatrix[0].xyz;
+	vec3 lightSpecular = global_LightPropertyMatrix[3].xyz;
+
+	float specularIntensity = 0.0f;
+	vec3 halfVector = normalize((in_1 + normalize(lightVector)));
+	specularIntensity = dot(halfVector, in_0);
+	specularIntensity = pow(specularIntensity, in_2);
+	specularIntensity = (specularIntensity * clamp((dot(in_0, normalize(lightVector)) * 4.0f), 0, 1));
+
+	out_0 = (out_0 + (lightSpecular * specularIntensity));
+	//out_0 = (out_0 + (vec3(0.0f, 0.0f, 0.0f) * specularIntensity));
+	//out_0 = (out_0 + (vec3(0.0, 0.0, 0.0) * 1.0));
+}
+
+void main()
+{
+	vec3 FinalColor = vec3(0.0f, 0.0f, 0.0f);
+
+	float matOpacity;
+	CalculateMatOpacity(TexCoord0, matOpacity);
+	matOpacity = (matOpacity * _OpacityFade);
+
+	if((matOpacity - (0.5f * _OpacityFade)) < 0) discard;
+
+	//UV position
+	vec2 Local0 = (gl_FragCoord.xy / global_ViewInfo.zw);
+
+	//float ssao = texture(_SSAOSampler, Local0).x;
+	//float shadow = texture(_ShadowSampler, Local0).x;
+	vec3 matEmissive;
+	//Normalize World Normal
+	vec3 worldNormalNormalized = normalize(TexCoord2);
+
+	//Normalize World Binormal
+	vec3 worldBinormalNormalized = normalize(TexCoord3);
+
+	//Normalize World Tangent
+	vec3 worldTangentNormalized = normalize(WorldTangent);
+
+	mat3x3 NBT = mat3x3(vec3(worldTangentNormalized.x, worldNormalNormalized.x, worldBinormalNormalized.x), vec3(worldTangentNormalized.y, worldNormalNormalized.y, worldBinormalNormalized.y), vec3(worldTangentNormalized.z, worldNormalNormalized.z, worldBinormalNormalized.z));
+
+	CalculateMatEmissive(TexCoord1.xyz, TexCoord0, NBT, matEmissive);
+	FinalColor = (FinalColor + matEmissive);
+
+	vec3 matNormal;
+	CalculateMatNormal(TexCoord0, matNormal);
+	matNormal = normalize((matNormal * NBT));
+
+	vec3 matDiffuse;
+	CalculateMatDiffuse(TexCoord0, TexCoord1.xyz, matDiffuse);
+	//Calculate Light Diffuse
+	vec3 dirLightDiffuse = vec3(0.0f, 0.0f, 0.0f);
+	CalculateDirLightDiffuse(matNormal, dirLightDiffuse, dirLightDiffuse);
+	//dirLightDiffuse = (dirLightDiffuse * mix(1.0f, ssao, (_ShadowsAndSSAOParams.y * _ShadowsAndSSAOParams.x)));
+	//dirLightDiffuse = mix(dirLightDiffuse, (dirLightDiffuse * shadow), vec3(_ShadowsAndSSAOParams.w, _ShadowsAndSSAOParams.w, _ShadowsAndSSAOParams.w));
+	vec3 ambientSkyLightDiffuse = global_LightPropertyMatrix[1].xyz;
+	vec3 ambientGroundLightDiffuse = vec3(global_LightPropertyMatrix[0].w, global_LightPropertyMatrix[1].w, global_LightPropertyMatrix[2].w);
+	vec3 ambientLightDiffuse = mix(ambientGroundLightDiffuse, ambientSkyLightDiffuse, vec3(((TexCoord2.y * 0.5f) + 0.5f), ((TexCoord2.y * 0.5f) + 0.5f), ((TexCoord2.y * 0.5f) + 0.5f)));
+	//ambientLightDiffuse = (ambientLightDiffuse * mix(1.0f, ssao, (_ShadowsAndSSAOParams.z * _ShadowsAndSSAOParams.x)));
+	vec3 lightDiffuse = (dirLightDiffuse + ambientLightDiffuse);
+	//Calculate Final Diffuse
+	vec3 FinalDiffuse;
+	FinalDiffuse = (matDiffuse * lightDiffuse);
+	//Add Final Diffuse to FinalColor
+	FinalColor = (FinalColor + FinalDiffuse);
+
+	float matSpecularPower;
+	CalculateMatSpecularPower(TexCoord0, matSpecularPower);
+	vec3 matSpecular;
+	CalculateMatSpecular(TexCoord0, matSpecular);
+	//Calculate Final Specular
+	//Normalized world space view vector
+	vec3 worldViewNormalized = normalize(WorldView);
+
+	vec3 dirLightSpecular = vec3(0.0f, 0.0f, 0.0f);
+	CalculateDirLightSpecular(matNormal, worldViewNormalized, matSpecularPower, dirLightSpecular, dirLightSpecular);
+	//dirLightSpecular = (dirLightSpecular * mix(1.0f, ssao, (_ShadowsAndSSAOParams.y * _ShadowsAndSSAOParams.x)));
+	//dirLightSpecular = mix(dirLightSpecular, (dirLightSpecular * shadow), vec3(_ShadowsAndSSAOParams.w, _ShadowsAndSSAOParams.w, _ShadowsAndSSAOParams.w));
+	vec3 FinalSpecular;
+	FinalSpecular = (matSpecular * dirLightSpecular);
+	//FinalSpecular = clamp(FinalSpecular, 0.0, 1.0); //added
+	FinalColor = (FinalColor + FinalSpecular);
+
+	//FinalColor = mix(global_FogPropertyMatrix[1], FinalColor, vec3(HeightFog, HeightFog, HeightFog));
+	//FinalColor = mix(global_FogPropertyMatrix[0], FinalColor, vec3(DistanceFog, DistanceFog, DistanceFog));
+
+	outColor0 = vec4(FinalColor, matOpacity);
+	//outColor0 = vec4(FinalColor, matOpacity);
+	outColor0 = max(outColor0, 0.0f);
+}

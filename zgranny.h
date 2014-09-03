@@ -12,6 +12,33 @@ typedef struct {
 	glm::mat4 *model;
 	glm::mat4 *view;
 	glm::mat4 *projection;
+	
+	glm::vec4 *viewInfo; //x = farPlane, y = nearPlane, z = screen width, w = screen height
+	glm::vec4 *data; //x=current time, y=deltatime, z = wind direction X, w = wind direction Z;
+	
+	glm::vec4 *viewPos; // xyz = view pos, w = wind speed
+	glm::mat4 *lightPropertyMatrix;
+	glm::mat4x3 *fogPropertyMatrix;
+	
+	float opacityFade;
+	float characterHeight;
+	float characterHeightContrast;
+	float backLightContrast;
+	float backLightIntensity;
+	glm::vec4 *color1;
+	glm::vec4 *color2;
+	glm::vec4 *color3;
+	glm::vec4 *color4;
+	glm::vec4 *color5;
+	float fillLightContrast;
+	float fillLightIntensity;
+	float rimLightContrast;
+	float rimLightIntensity;
+	glm::vec4 *color1Specular;
+	glm::vec4 *color2Specular;
+	glm::vec4 *color3Specular;
+	glm::vec4 *color4Specular;
+	glm::vec4 *color5Specular;
 } renderInfo_t;
 
 void loadTexture(const GLubyte *pixelBuffer, int bufferSize, int width, int height, GLuint format);

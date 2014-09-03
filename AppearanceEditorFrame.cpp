@@ -977,7 +977,7 @@ void AppearanceEditorFrame::setup() {
 	QString mText;
 	std::vector<GlShader> allShaders;
 	
-	QFile vertexShader(":/vertex.shd");
+	QFile vertexShader(":/player_vertex.shd");
 	if(!vertexShader.open(QFile::ReadOnly | QFile::Text)){
 		MessageBoxA(0, "failed to open vertex.shd", 0, 0);
 	}
@@ -993,7 +993,7 @@ void AppearanceEditorFrame::setup() {
 		}
 	}
 	
-	QFile fragmentShader(":/fragment.shd");
+	QFile fragmentShader(":/player_fragment.shd");
 	if(!fragmentShader.open(QFile::ReadOnly | QFile::Text)){
 		MessageBoxA(0, "failed to open fragment.shd", 0, 0);
 	}

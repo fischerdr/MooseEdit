@@ -78,7 +78,11 @@ void GlContextWidget::resizeGL(int w, int h) {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     //gluPerspective(45.0, w/(double)h, 0.01, 100.0);
-	projection = glm::perspective(45.0, w/(double)h, 0.01, 100.0);
+	farPlane = 100.0f;
+	nearPlane = 0.01f;
+	screenWidth = w;
+	screenHeight = h;
+	projection = glm::perspective(45.0f, screenWidth/screenHeight, nearPlane, farPlane);
     
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -206,10 +210,87 @@ void GlContextWidget::paintGL() {
 			//		   }
 			//		   std::cout<<"Rendering "<<grannyScenes[i]->models[0].meshes[0].grannyMesh->Name<<' '<<vText<<'\n';
 			model = glm::translate(glm::mat4(1.0), glm::vec3(worldPos[0], worldPos[1], worldPos[2]));
+			model = glm::scale(model, glm::vec3(-1.0, 1.0, 1.0));
 			renderInfo_t renderInfo;
 			renderInfo.model = &model;
 			renderInfo.view = &view;
 			renderInfo.projection = &projection;
+			
+			glm::vec4 viewInfo = glm::vec4(farPlane, nearPlane, screenWidth, screenHeight);
+			renderInfo.viewInfo = &viewInfo;//x = farPlane, y = nearPlane, z = screen width, w = screen height
+			renderInfo.data = 0; //x=current time, y=deltatime, z = wind direction X, w = wind direction Z;
+			
+			glm::vec4 viewPos = glm::vec4(finalX, finalY, finalZ, 0.0);
+			renderInfo.viewPos = &viewPos; // xyz = view pos, w = wind speed
+			
+			
+			double ambientSkyLightIntensity = 0.6;
+			glm::vec3 ambientSkyLightDiffuse(1.0, 1.0, 1.0);
+			ambientSkyLightDiffuse *= ambientSkyLightIntensity;
+			
+			double ambientGroundLightIntensity = 0.0;
+			glm::vec3 ambientGroundLightDiffuse(1.0, 1.0, 1.0);
+			ambientGroundLightDiffuse *= ambientGroundLightIntensity;
+			
+			glm::vec3 lightVector(-0.2, 10.0, -2.5);
+			
+			double diffuseIntensity = 1.0;
+			glm::vec3 lightDiffuse(1.0, 1.0, 1.0);
+			lightDiffuse *= diffuseIntensity;
+			
+			double specularIntensity = 1.0;
+			glm::vec3 lightSpecular(1.0, 1.0, 1.0);
+			lightSpecular *= specularIntensity;
+			
+			glm::mat4 lightPropertyMatrix = glm::mat4(glm::mat4(
+						glm::vec4(lightVector, ambientSkyLightDiffuse.x),
+						glm::vec4(ambientSkyLightDiffuse, ambientSkyLightDiffuse.y),
+						glm::vec4(lightDiffuse, ambientSkyLightDiffuse.z),
+						glm::vec4(lightSpecular, 1.0)
+						));
+			
+			renderInfo.lightPropertyMatrix = &lightPropertyMatrix;
+			glm::mat4x3 fogPropertyMatrix = glm::mat4x3(1.0);
+			renderInfo.fogPropertyMatrix = &fogPropertyMatrix;
+			
+			renderInfo.opacityFade = 1.0f;
+			renderInfo.characterHeight = 1.0f;
+			renderInfo.characterHeightContrast = 1.0f;
+			renderInfo.backLightContrast = 10.0f;
+			renderInfo.backLightIntensity = 2.0f;
+			glm::vec4 color1 = glm::vec4(0.991393, 0.701169, 0.487765, 0.0);
+			VertexRGB *c1 = vertexRGBs[i];
+			if (c1 != 0) {
+				color1 = glm::vec4(c1->r/255.0, c1->g/255.0, c1->b/255.0, 0.0);
+			}
+			glm::vec4 color2 = glm::vec4(1.0, 0.35, 0.4, 0.0);
+			VertexRGB *c2 = vertexRGB2s[i];
+			if (c2 != 0) {
+				color2 = glm::vec4(c2->r/255.0, c2->g/255.0, c2->b/255.0, 0.0);
+			}
+			glm::vec4 color3 = glm::vec4(0.573159, 0.00837312, 0.000107187, 0);
+			glm::vec4 color4 = glm::vec4(0.573159, 0.00837312, 0.000107187, 0);
+			glm::vec4 color5 = glm::vec4(0.447871, 0.00552174, 0.00552174, 0);
+			renderInfo.color1 = &color1;
+			renderInfo.color2 = &color2;
+			renderInfo.color3 = &color3;
+			renderInfo.color4 = &color4;
+			renderInfo.color5 = &color5;
+			renderInfo.fillLightContrast = 2.0f;
+			renderInfo.fillLightIntensity = 0.15f;
+			renderInfo.rimLightContrast = 4.0f;
+			renderInfo.rimLightIntensity = 0.4f;
+			glm::vec4 color1Specular = glm::vec4(0.499505, 0.789314, 0.875138, 0);
+			glm::vec4 color2Specular = glm::vec4(1, 1, 1, 0.9);
+			glm::vec4 color3Specular = glm::vec4(1, 1, 1, 0);
+			glm::vec4 color4Specular = glm::vec4(1, 1, 1, 0);
+			glm::vec4 color5Specular = glm::vec4(1, 1, 1, 0);
+			renderInfo.color1Specular = &color1Specular;
+			renderInfo.color2Specular = &color2Specular;
+			renderInfo.color3Specular = &color3Specular;
+			renderInfo.color4Specular = &color4Specular;
+			renderInfo.color5Specular = &color5Specular;
+			
 			zGrannyRenderScene(grannyScenes[i], textureIds[i], vertexRGBs[i], vertexRGB2s[i], shaderPrograms[i], worldPos, &renderInfo);
 			//zGrannyRenderSkeleton(grannyScenes[i]->models[0].skeleton, grannyScenes[i]->models[0].worldPose);
 		}
