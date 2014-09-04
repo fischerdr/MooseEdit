@@ -104,7 +104,8 @@ void AppearanceEditorFrame::generateEquipmentModels() {
 					break;
 				}
 				equippedItems.push_back({scene, textures, attachment});
-				glContext->addGrannyScene(scene, textures, 0, 0, shaderProgram, attachment);
+				//glContext->addGrannyScene(scene, textures, 0, 0, shaderProgram, attachment);
+				glContext->addGrannyScene(scene, textures, 0, 0, equipmentShaderProgram, attachment);
 			}
 		}
 	}
@@ -883,6 +884,10 @@ void AppearanceEditorFrame::cleanup() {
 		delete shaderProgram;
 		shaderProgram = 0;
 	}
+	if (equipmentShaderProgram != 0) {
+		delete equipmentShaderProgram;
+		equipmentShaderProgram = 0;
+	}
 	for (int i=0; i<equippedItems.size(); ++i) {
 		equippedItemData_t &equippedItem = equippedItems[i];
 		delete equippedItem.scene;
@@ -979,7 +984,7 @@ void AppearanceEditorFrame::setup() {
 	
 	QFile vertexShader(":/player_vertex.shd");
 	if(!vertexShader.open(QFile::ReadOnly | QFile::Text)){
-		MessageBoxA(0, "failed to open vertex.shd", 0, 0);
+		MessageBoxA(0, "failed to open player_vertex", 0, 0);
 	}
 	{
 		QTextStream in(&vertexShader);
@@ -995,7 +1000,7 @@ void AppearanceEditorFrame::setup() {
 	
 	QFile fragmentShader(":/player_fragment.shd");
 	if(!fragmentShader.open(QFile::ReadOnly | QFile::Text)){
-		MessageBoxA(0, "failed to open fragment.shd", 0, 0);
+		MessageBoxA(0, "failed to open player_fragment", 0, 0);
 	}
 	{
 		QTextStream in(&fragmentShader);
@@ -1012,6 +1017,45 @@ void AppearanceEditorFrame::setup() {
 	shaderProgram = new GlShaderProgram(allShaders);
 	if (!shaderProgram->link()) {
 		MessageBoxA(0, shaderProgram->getLastError().c_str(), 0, 0);
+	}
+	
+	
+	std::vector<GlShader> allShaders2;
+	QFile vertexShader2(":/equip_vertex.shd");
+	if(!vertexShader2.open(QFile::ReadOnly | QFile::Text)){
+		MessageBoxA(0, "failed to open equip_vertex", 0, 0);
+	}
+	{
+		QTextStream in(&vertexShader2);
+		mText = in.readAll();
+		std::stringstream ss1(mText.toStdString());
+		vertexShader2.close();
+		allShaders2.push_back(GlShader(GL_VERTEX_SHADER, ss1));
+		GlShader& shader = allShaders2.back();
+		if (!shader.compile()) {
+			MessageBoxA(0, shader.getLastError().c_str(), 0, 0);
+		}
+	}
+	
+	QFile fragmentShader2(":/player_fragment.shd");
+	if(!fragmentShader2.open(QFile::ReadOnly | QFile::Text)){
+		MessageBoxA(0, "failed to open equip_fragment", 0, 0);
+	}
+	{
+		QTextStream in(&fragmentShader2);
+		mText = in.readAll();
+		std::stringstream ss1(mText.toStdString());
+		fragmentShader2.close();
+		allShaders2.push_back(GlShader(GL_FRAGMENT_SHADER, ss1));
+		GlShader& shader = allShaders2.back();
+		if (!shader.compile()) {
+			MessageBoxA(0, shader.getLastError().c_str(), 0, 0);
+		}
+	}
+	
+	equipmentShaderProgram = new GlShaderProgram(allShaders2);
+	if (!equipmentShaderProgram->link()) {
+		MessageBoxA(0, equipmentShaderProgram->getLastError().c_str(), 0, 0);
 	}
 
 	if ((err = glGetError()) != GL_NO_ERROR) {

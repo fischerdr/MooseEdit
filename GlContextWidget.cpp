@@ -32,6 +32,7 @@ void GlContextWidget::showEvent(QShowEvent *event)
 		double secondsPerFrame = 1.0/framesPerSecond;
 		unsigned long msPerFrame = 1000 * secondsPerFrame;
 		frameTimer.start(msPerFrame);
+		elapsedTime.start();
 	}
 	this->makeCurrent();
 }
@@ -166,6 +167,7 @@ void GlContextWidget::paintGL() {
 					   glm::vec3(0.0, 1.0, 0.0));
 	
 	if (grannyScenes.size() > 0) {
+		static std::vector<glm::mat4x3> boneMatrices;
 		for (int i=0; i<grannyScenes.size(); ++i) {
 			GLfloat worldPos[3];
 			worldPos[0] = 0.0f;
@@ -173,32 +175,64 @@ void GlContextWidget::paintGL() {
 			worldPos[2] = 0.0f;
 			if (attachments[i] != 0) {
 				MeshAttachmentPoint *attachment = attachments[i];
+				
 				if (attachment->boneName.size() != 0 && attachment->meshName.size() != 0) {
 					for (int j=0; j<grannyScenes.size(); ++j) {
 						ZGrannyScene *scene = grannyScenes[j];
 						for (int k=0; k<scene->modelCount; ++k) {
 							ZGrannyModel &model = scene->models[k];
+							
+							if (boneMatrices.size() == 0 && model.meshes[0].grannyMesh->Name == attachment->meshName) {
+								std::cout<<model.meshes[0].grannyMesh->Name<<'\n';
+								std::vector<glm::mat4> transformMatrices;
+								zGrannyMakeTransformMatrices(0, &model, transformMatrices);
+								for (int m=0; m<transformMatrices.size(); ++m) {
+									glm::mat4 &transformMatrix = transformMatrices[m];
+									std::cout<<"transform "<<m<<'\n';
+									for (int n=0; n<4; ++n) {
+										std::cout<<transformMatrix[n].x<<"\t\t\t"<<
+												   transformMatrix[n].y<<"\t\t\t"<<
+												   transformMatrix[n].z<<"\t\t\t"<<
+												   transformMatrix[n].w<<"\t\t\t"<<
+										'\n';
+									}
+									std::cout<<'\n';
+									glm::mat4x3 boneMatrix;
+									boneMatrix = glm::mat4x3(
+												glm::vec3(transformMatrix[0]),
+												glm::vec3(transformMatrix[1]),
+												glm::vec3(transformMatrix[2]),
+												glm::vec3(transformMatrix[3])
+												);
+									boneMatrices.push_back(boneMatrix);
+								}
+							}
+							
 							if (zGrannyGetObbCenter2(attachment->boneName, &model, &grannyScenes[i]->models[0], worldPos)) {
 								//std::cout<<grannyScenes[i]->models[0].meshes[0].grannyMesh->Name<<'\n';
 								//							   std::cout<<worldPos[0]<<' '<<
 								//										worldPos[1]<<' '<<
 								//													   worldPos[2]<<' '<<'\n';
 							}
+							break;
+
 							
-							for (int m=0; m<model.meshCount; ++m) {
-								ZGrannyMesh &mesh = model.meshes[m];
-								if (mesh.grannyMesh->Name == attachment->meshName) {
-									//								   if (zGrannyGetObbCenter(attachment->boneName, &mesh, worldPos)) {
-									//									   std::cout<<grannyScenes[i]->models[0].meshes[0].grannyMesh->Name<<'\n';
-									//									   std::cout<<worldPos[0]<<' '<<
-									//												worldPos[1]<<' '<<
-									//															   worldPos[2]<<' '<<'\n';
-									//								   }
-								}
-							}
+//							for (int m=0; m<model.meshCount; ++m) {
+//								ZGrannyMesh &mesh = model.meshes[m];
+//								if (mesh.grannyMesh->Name == attachment->meshName) {
+//									//								   if (zGrannyGetObbCenter(attachment->boneName, &mesh, worldPos)) {
+//									//									   std::cout<<grannyScenes[i]->models[0].meshes[0].grannyMesh->Name<<'\n';
+//									//									   std::cout<<worldPos[0]<<' '<<
+//									//												worldPos[1]<<' '<<
+//									//															   worldPos[2]<<' '<<'\n';
+//									//								   }
+//								}
+//							}
+							
 						}
 					}
 				}
+				
 			}
 			//		   std::string vText = "none";
 			//		   if (vertexRGBs[i] != 0) {
@@ -209,7 +243,8 @@ void GlContextWidget::paintGL() {
 			//			   vText = ss.str();
 			//		   }
 			//		   std::cout<<"Rendering "<<grannyScenes[i]->models[0].meshes[0].grannyMesh->Name<<' '<<vText<<'\n';
-			model = glm::translate(glm::mat4(1.0), glm::vec3(worldPos[0], worldPos[1], worldPos[2]));
+			//model = glm::translate(glm::mat4(1.0), glm::vec3(worldPos[0], worldPos[1], worldPos[2]));
+			model = glm::mat4(1.0);
 			model = glm::scale(model, glm::vec3(-1.0, 1.0, 1.0));
 			renderInfo_t renderInfo;
 			renderInfo.model = &model;
@@ -218,7 +253,10 @@ void GlContextWidget::paintGL() {
 			
 			glm::vec4 viewInfo = glm::vec4(farPlane, nearPlane, screenWidth, screenHeight);
 			renderInfo.viewInfo = &viewInfo;//x = farPlane, y = nearPlane, z = screen width, w = screen height
-			renderInfo.data = 0; //x=current time, y=deltatime, z = wind direction X, w = wind direction Z;
+			
+			float seconds = elapsedTime.elapsed() / 1000.0f;
+			glm::vec4 data = glm::vec4(seconds, 0.0f, 0.0f, 0.0f);
+			renderInfo.data = &data; //x=current time, y=deltatime, z = wind direction X, w = wind direction Z;
 			
 			glm::vec4 viewPos = glm::vec4(finalX, finalY, finalZ, 0.0);
 			renderInfo.viewPos = &viewPos; // xyz = view pos, w = wind speed
@@ -290,6 +328,22 @@ void GlContextWidget::paintGL() {
 			renderInfo.color3Specular = &color3Specular;
 			renderInfo.color4Specular = &color4Specular;
 			renderInfo.color5Specular = &color5Specular;
+			
+			renderInfo.specularGloss = 25.0f;
+			renderInfo.specularMultiplier = 1.0f;
+			
+			renderInfo.glowMultiplier = 3.0f;
+			
+			glm::vec4 itemColor = glm::vec4(1.0, 1.0, 1.0, 0.0);
+			renderInfo.itemColor = &itemColor;
+			
+			for (int i=0; i<BONE_MATRICES_COUNT; ++i) {
+				if (i < boneMatrices.size()) {
+					renderInfo.boneMatrices[i] = &boneMatrices[i];
+				} else {
+					renderInfo.boneMatrices[i] = 0;
+				}
+			}
 			
 			zGrannyRenderScene(grannyScenes[i], textureIds[i], vertexRGBs[i], vertexRGB2s[i], shaderPrograms[i], worldPos, &renderInfo);
 			//zGrannyRenderSkeleton(grannyScenes[i]->models[0].skeleton, grannyScenes[i]->models[0].worldPose);

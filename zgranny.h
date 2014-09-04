@@ -8,6 +8,7 @@
 #include "GlShaderProgram.h"
 #include <glm/glm.hpp>
 
+#define BONE_MATRICES_COUNT	64
 typedef struct {
 	glm::mat4 *model;
 	glm::mat4 *view;
@@ -39,6 +40,15 @@ typedef struct {
 	glm::vec4 *color3Specular;
 	glm::vec4 *color4Specular;
 	glm::vec4 *color5Specular;
+	
+	float specularGloss;
+	float specularMultiplier;
+	
+	float glowMultiplier;
+	
+	glm::vec4 *itemColor;
+	
+	glm::mat4x3 *boneMatrices[BONE_MATRICES_COUNT];
 } renderInfo_t;
 
 void loadTexture(const GLubyte *pixelBuffer, int bufferSize, int width, int height, GLuint format);
@@ -133,6 +143,8 @@ void zGrannyRenderMesh2( ZGrannyMesh *mesh, granny_pnt332_vertex *vertices, std:
 void zGrannyRenderMesh3( ZGrannyMesh *mesh, granny_pngbt33332_vertex *vertices, std::vector<GLuint > &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram);
 void zGrannyRenderMesh(ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices , std::vector<GLuint > &textures, VertexRGB *vertexRgb , VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, renderInfo_t *renderInfo);
 void zGrannyRenderSkeleton( granny_skeleton *skeleton, granny_world_pose *worldPose );
+
+bool zGrannyMakeTransformMatrices(int boneIndex, ZGrannyModel *attachTo, std::vector<glm::mat4> &transformMatrices);
 
 ZGrannyScene *zGrannyCreateSceneFromMemory( const char *fileBytes, unsigned long fileSize, std::vector<GLuint > &textures );
 ZGrannyScene *zGrannyCreateScene(const char *filename , std::vector<GLuint > &textures);

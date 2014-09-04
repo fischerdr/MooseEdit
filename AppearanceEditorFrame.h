@@ -168,6 +168,7 @@ private:
 	bool shouldRender = true;
 	static bool didInitGlew;
 	GlShaderProgram *shaderProgram = 0;
+	GlShaderProgram *equipmentShaderProgram = 0;
 	Ui::AppearanceEditorFrame *ui;
 	bool isMale;
 	bool isHench;

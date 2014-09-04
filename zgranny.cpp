@@ -33,6 +33,9 @@
 #include <windows.h>
 #include <cmath>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 granny_data_type_definition *GrannyPNT332VertexType = *(granny_data_type_definition **)GetProcAddress(LoadLibraryW(L"granny2.dll"), "GrannyPNT332VertexType");
 granny_data_type_definition *GrannyPWNGBT343332VertexType = *(granny_data_type_definition **)GetProcAddress(LoadLibraryW(L"granny2.dll"), "GrannyPWNGBT343332VertexType");
@@ -362,7 +365,7 @@ void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model, std::vector
 				if (shown2 == false) {\
 					shown2 = true;
 					for (int i=0; i<20; ++i) {
-						std::cout<<"pos = "<<vertices[i].Position[0]<<' '<<vertices[i].Position[1]<<' '<<vertices[i].Position[2]<<'\n';
+						//std::cout<<"pos = "<<vertices[i].Position[0]<<' '<<vertices[i].Position[1]<<' '<<vertices[i].Position[2]<<'\n';
 					}
 				}
 				zGrannyRenderMesh2( &mesh, vertices, textures, vertexRgb, shaderProgram );
@@ -376,7 +379,7 @@ void zGrannyRenderModel( ZGrannyScene *inScene, ZGrannyModel *model, std::vector
 					std::cout<<"no deformer"<<'\n';
 					std::cout<<mesh.grannyMesh->Name<<'\n';
 					for (int i=0; i<20; ++i) {
-						std::cout<<"pos = "<<vertices2[i].Position[0]<<' '<<vertices2[i].Position[1]<<' '<<vertices2[i].Position[2]<<'\n';
+						//std::cout<<"pos = "<<vertices2[i].Position[0]<<' '<<vertices2[i].Position[1]<<' '<<vertices2[i].Position[2]<<'\n';
 					}
 				}
 				zGrannyRenderMesh( &mesh, vertices2, textures, vertexRgb, vertexRgb2, shaderProgram, renderInfo );
@@ -516,6 +519,30 @@ void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices,
 		shaderProgram->set2dVectorAttribute("inTexCoord0", sizeof(*vertices), vertices->UV);
 		shaderProgram->set3dVectorAttribute("inTangent0", sizeof(*vertices), vertices->Tangent);
 		shaderProgram->set3dVectorAttribute("inBinormal0", sizeof(*vertices), vertices->Binormal);
+		//shaderProgram->set4dVectorAttributeUB("inBlendIndices0", sizeof(*vertices), vertices->BoneIndices);
+		//shaderProgram->set4dVectorAttributeUB("inBlendWeight0", sizeof(*vertices), vertices->BoneWeights);
+		
+		int vertexCount = GrannyGetMeshVertexCount(mesh->grannyMesh);
+		float *boneIndices = new float[4 * vertexCount];
+		float *boneWeights = new float[4 * vertexCount];
+		for (int i=0; i<vertexCount; ++i) {
+//			boneIndices[i*4 + 0] = (float)vertices->BoneIndices[0];
+//			boneIndices[i*4 + 1] = (float)vertices->BoneIndices[1];
+//			boneIndices[i*4 + 2] = (float)vertices->BoneIndices[2]; //need bone indices from male body, not from current model
+//			boneIndices[i*4 + 3] = (float)vertices->BoneIndices[3];
+			boneIndices[i*4 + 0] = 1.0f;
+			boneIndices[i*4 + 1] = 1.0f;
+			boneIndices[i*4 + 2] = 1.0f;
+			boneIndices[i*4 + 3] = 1.0f;
+			boneWeights[i*4 + 0] = vertices->BoneWeights[0]/255.0f;
+			boneWeights[i*4 + 1] = vertices->BoneWeights[1]/255.0f;
+			boneWeights[i*4 + 2] = vertices->BoneWeights[2]/255.0f;
+			boneWeights[i*4 + 3] = vertices->BoneWeights[3]/255.0f;
+		}
+		shaderProgram->set4dVectorAttribute("inBlendIndices0", 0, boneIndices);
+		shaderProgram->set4dVectorAttribute("inBlendWeight0", sizeof(float)*4, boneWeights);
+		delete[] boneIndices;
+		delete[] boneWeights;
 		
 		if (renderInfo != 0) {
 			if (renderInfo->model != 0) {
@@ -596,6 +623,29 @@ void zGrannyRenderMesh( ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices,
 			if (renderInfo->color5Specular != 0) {
 				shaderProgram->setUniformVec4("Vector4Parameter_Color5_Specular", glm::value_ptr(*renderInfo->color5Specular));
 			}
+			
+			shaderProgram->setUniformFloat("FloatParameter_Gloss", renderInfo->specularGloss);
+			shaderProgram->setUniformFloat("FloatParameter_SpecularMultiplier", renderInfo->specularMultiplier);
+			shaderProgram->setUniformFloat("FloatParameter_GlowMultiploer", renderInfo->glowMultiplier);
+			
+			if (renderInfo->itemColor != 0) {
+				shaderProgram->setUniformVec4("Vector4Parameter_Color", glm::value_ptr(*renderInfo->itemColor));
+			}
+			
+			const int boneMatrixSize = 4*3;
+			GLfloat *boneMatrices = new GLfloat[boneMatrixSize*BONE_MATRICES_COUNT];
+			for (int i=0; i<BONE_MATRICES_COUNT; ++i) {
+				glm::mat4x3 *boneMatrix = renderInfo->boneMatrices[i];
+				GLfloat *boneMatrixPosition = &boneMatrices[i * boneMatrixSize];
+				if (boneMatrix != 0) {
+					memcpy(boneMatrixPosition, glm::value_ptr(*boneMatrix), sizeof(GLfloat) * boneMatrixSize);
+				} else {
+					glm::mat4x3 ident(1.0);
+					memcpy(boneMatrixPosition, glm::value_ptr(ident), sizeof(GLfloat) * boneMatrixSize);
+				}
+			}
+			shaderProgram->setUniformMatrixArray4x3("BoneMatrices", boneMatrices, BONE_MATRICES_COUNT);
+			delete[] boneMatrices;
 		}
 		shaderProgram->setUniformInt("Texture2DParameter_DM", 0);
 		shaderProgram->setUniformInt("Texture2DParameter_NM", 1);
@@ -806,6 +856,60 @@ ZGrannyScene *zGrannyCreateSceneFromMemory( const char *fileBytes, unsigned long
 	scene->sharedLocalPose = GrannyNewLocalPose( scene->maxBoneCount );
 	
 	return scene;
+}
+
+std::vector<int> getBoneChildren(int boneIndex, ZGrannyModel *attachTo) {
+	std::vector<int> children;
+	for (int i=0; i<attachTo->skeleton->BoneCount; ++i) {
+		granny_bone &bone = attachTo->skeleton->Bones[i];
+		if (bone.ParentIndex == boneIndex) {
+			children.push_back(i);
+		}
+	}
+	return children;
+}
+
+bool zGrannyMakeTransformMatrices(int boneIndex, ZGrannyModel *attachTo, std::vector<glm::mat4> &transformMatrices) {
+	if (attachTo == 0 || attachTo->skeleton == 0 || boneIndex >= attachTo->skeleton->BoneCount)
+		return false;
+	
+	if (transformMatrices.size() == 0) {
+		transformMatrices.resize(attachTo->skeleton->BoneCount);
+	}
+	
+	glm::mat4 transformMatrix(1.0);
+	granny_bone &bone = attachTo->skeleton->Bones[boneIndex];
+	glm::vec3 scaleX = glm::make_vec3((float *)&bone.LocalTransform.ScaleShear[0]);
+	glm::vec3 scaleY = glm::make_vec3((float *)&bone.LocalTransform.ScaleShear[1]);
+	glm::vec3 scaleZ = glm::make_vec3((float *)&bone.LocalTransform.ScaleShear[2]);
+	glm::vec3 scale = glm::vec3(glm::length(scaleX), glm::length(scaleY), glm::length(scaleZ));
+	if (boneIndex == 0) {
+		std::cout<<scale.x<<' '<<scale.y<<' '<<scale.z<<' '<<scaleX.length()<<'\n';
+	}
+	glm::quat quaternion = glm::quat(bone.LocalTransform.Orientation[0], bone.LocalTransform.Orientation[1], bone.LocalTransform.Orientation[2], bone.LocalTransform.Orientation[3]);
+	glm::vec3 eulerAngles = glm::eulerAngles(quaternion);
+	glm::vec3 rotation = glm::vec3(eulerAngles.x, eulerAngles.y, eulerAngles.z);
+	glm::vec3 translation = glm::make_vec3(&bone.LocalTransform.Position[0]);
+	
+	transformMatrix = glm::scale(transformMatrix, scale);
+	transformMatrix = glm::rotate(transformMatrix, rotation.x, glm::vec3(1.0, 0.0, 0.0)); //pitch
+	transformMatrix = glm::rotate(transformMatrix, rotation.y, glm::vec3(0.0, 1.0, 0.0)); //yaw
+	transformMatrix = glm::rotate(transformMatrix, 180 + rotation.z, glm::vec3(0.0, 0.0, 1.0)); //roll
+	transformMatrix = glm::translate(transformMatrix, translation);
+	if (bone.ParentIndex >= 0) {
+		transformMatrix = transformMatrices[bone.ParentIndex] * transformMatrix;
+	}
+	transformMatrices[boneIndex] = transformMatrix;
+	std::vector<int> children = getBoneChildren(boneIndex, attachTo);
+	for (int i=0; i<children.size(); ++i) {
+		int childBone = children[i];
+		if (!zGrannyMakeTransformMatrices(childBone, attachTo, transformMatrices)) {
+			return false;
+		}
+	}
+	glm::mat4 inverseWorld = glm::make_mat4((float *)&bone.InverseWorld4x4);
+	//transformMatrices[boneIndex] = transformMatrix * inverseWorld;
+	return true;
 }
 
 bool zGrannyGetObbCenter2(std::string boneName, ZGrannyModel *attachTo, ZGrannyModel *toAttach, GLfloat obbCenter[3]) {

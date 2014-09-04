@@ -9,6 +9,7 @@
 #include <QMessageBox>
 #include <QKeyEvent>
 #include <cmath>
+#include <QElapsedTimer>
 
 #include <glm/glm.hpp>
 
@@ -85,6 +86,7 @@ private:
 	QPoint lastMousePos = QPoint(-1, -1);
 	const long framesPerSecond = 60;
 	QTimer frameTimer;
+	QElapsedTimer elapsedTime;
 	std::vector<ZGrannyScene *> grannyScenes;
 	std::vector<std::vector<GLuint> > textureIds;
 	std::vector<VertexRGB *> vertexRGBs;
