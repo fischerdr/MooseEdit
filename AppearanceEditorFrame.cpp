@@ -165,7 +165,6 @@ void AppearanceEditorFrame::loadEquipmentData() {
 }
 
 void AppearanceEditorFrame::updateAllFields() {
-	GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
 	loadEquipmentData();
 	QPushButton *maleButton = this->findChild<QPushButton *>("maleButton");
 	QPushButton *femaleButton = this->findChild<QPushButton *>("femaleButton");
@@ -232,11 +231,6 @@ void AppearanceEditorFrame::updateAllFields() {
 	}
 	
 	updatePortraitData();
-	if (showEquipped && hasVisualHelmet) {
-		glContext->cleanupScene(currentHair);
-		delete currentHair;
-		currentHair = 0;
-	}
 }
 
 void AppearanceEditorFrame::populateFieldValuesForTemplate(std::string templateId, std::string fieldType, std::string namePrefix, 
@@ -1655,11 +1649,19 @@ bool AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 }
 
 bool AppearanceEditorFrame::updateToCurrentHair() {
+	GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
+	bool result;
 	if (isHench) {
-		return updateToCurrentModel(currentHair, henchHairs, henchHairDiffuse, henchHairNormal, henchHairSpecular, henchHairMask, hairIdx, 0, hairColor, false);
+		result = updateToCurrentModel(currentHair, henchHairs, henchHairDiffuse, henchHairNormal, henchHairSpecular, henchHairMask, hairIdx, 0, hairColor, false);
 	} else {
-		return updateToCurrentModel(currentHair, hairs, hairDiffuse, hairNormal, hairSpecular, hairMask, hairIdx, 0, hairColor, false);
+		result = updateToCurrentModel(currentHair, hairs, hairDiffuse, hairNormal, hairSpecular, hairMask, hairIdx, 0, hairColor, false);
 	}
+	if (showEquipped && hasVisualHelmet) {
+		glContext->cleanupScene(currentHair);
+		delete currentHair;
+		currentHair = 0;
+	}
+	return result;
 }
 
 bool AppearanceEditorFrame::updateToCurrentHead() {
