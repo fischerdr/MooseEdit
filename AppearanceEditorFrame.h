@@ -169,7 +169,7 @@ private:
 	int hairColorIdx = 0;
 	int underwearIdx = 0;
 	
-	bool shouldRender = true;
+	bool hasVisualHelmet;
 	static bool didInitGlew;
 	GlShaderProgram *shaderProgram = 0;
 	GlShaderProgram *equipmentShaderProgram = 0;

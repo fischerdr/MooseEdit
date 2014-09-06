@@ -62,9 +62,10 @@ AppearanceEditorFrame::AppearanceEditorFrame(std::wstring gameDataPath, GameChar
 void AppearanceEditorFrame::generateEquipmentModels() {
 	for (int i=0; i<EQUIP_SLOTS; ++i) {
 		GameItem *item = equipHandler->getItemAtSlot(i);
+		ZGrannyScene *scene = 0;
 		if (item != 0) {
 			std::vector<GLuint> textures;
-			ZGrannyScene *scene = createModelForItem(item, textures);
+			scene = createModelForItem(item, textures);
 			GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
 			if (scene != 0) {
 				MeshAttachmentPoint *attachment = new MeshAttachmentPoint;
@@ -107,6 +108,13 @@ void AppearanceEditorFrame::generateEquipmentModels() {
 				equippedItems.push_back({scene, textures, attachment});
 				scene->shouldRender = showEquipped;
 				glContext->addGrannyScene(scene, textures, 0, 0, shaderProgram, attachment);
+			}
+		}
+		if (i == SLOT_HELMET) {
+			if (scene != 0) {
+				hasVisualHelmet = true;
+			} else {
+				hasVisualHelmet = false;
 			}
 		}
 	}
@@ -157,6 +165,7 @@ void AppearanceEditorFrame::loadEquipmentData() {
 }
 
 void AppearanceEditorFrame::updateAllFields() {
+	GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
 	loadEquipmentData();
 	QPushButton *maleButton = this->findChild<QPushButton *>("maleButton");
 	QPushButton *femaleButton = this->findChild<QPushButton *>("femaleButton");
@@ -223,6 +232,11 @@ void AppearanceEditorFrame::updateAllFields() {
 	}
 	
 	updatePortraitData();
+	if (showEquipped && hasVisualHelmet) {
+		glContext->cleanupScene(currentHair);
+		delete currentHair;
+		currentHair = 0;
+	}
 }
 
 void AppearanceEditorFrame::populateFieldValuesForTemplate(std::string templateId, std::string fieldType, std::string namePrefix, 
