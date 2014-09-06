@@ -605,16 +605,18 @@ void ItemLabel::enterEvent(QEvent *event)
 		} else {
 			pt = globalPt;
 			QDesktopWidget desktop;
+			int screenNo = desktop.screenNumber(globalPt);
+			QRect deskRect = desktop.availableGeometry(screenNo);
 			
 			long tooltipEndY = pt.y() + tooltip->height();
-			if (tooltipEndY > desktop.height()) {
-				long diff = tooltipEndY - desktop.height();
+			if (tooltipEndY > deskRect.bottom()) {
+				long diff = tooltipEndY - deskRect.bottom();
 				pt.setY(pt.y() - diff);
 			}
 			
 			long tooltipEndX = pt.x() + tooltip->width();
-			if (tooltipEndX > desktop.width()) {
-				long diff = tooltipEndX - desktop.width();
+			if (tooltipEndX > deskRect.right()) {
+				long diff = tooltipEndX - deskRect.right();
 				pt.setX(pt.x() - diff);
 			}
 		}

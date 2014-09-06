@@ -1069,6 +1069,29 @@ bool zGrannyGetObbCenter(std::string boneName, ZGrannyMesh *mesh, GLfloat obbCen
 }
 
 void zGrannyShutdownScene( ZGrannyScene *scene ) {
+	for (int i=0; i<scene->modelCount; ++i) {
+		ZGrannyModel &model = scene->models[i];
+		for (int j=0; j<model.meshCount; ++j) {
+			ZGrannyMesh &mesh = model.meshes[j];
+			if (mesh.grannyBinding != 0) {
+				GrannyFreeMeshBinding(mesh.grannyBinding);
+			}
+			if (mesh.grannyDeformer != 0) {
+				GrannyFreeMeshDeformer(mesh.grannyDeformer);
+			}
+		}
+		delete model.meshes;
+		if (model.worldPose != 0) {
+			GrannyFreeWorldPose(model.worldPose);
+		}
+		if (model.localPose != 0) {
+			GrannyFreeLocalPose(model.localPose);
+		}
+		if (model.grannyInstance != 0) {
+			GrannyFreeModelInstance(model.grannyInstance);
+		}
+	}
+	delete scene->models;
 	GrannyFreeFile( scene->loadedFile );
 }
 
