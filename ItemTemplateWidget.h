@@ -44,6 +44,7 @@ public:
 	
 	GameItem *getItem() const;
 	void setItem(GameItem *value);
+	void showEvent(QShowEvent *);
 	
 private slots:
 	void on_templateIdEdit_textEdited(const QString &text);

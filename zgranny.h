@@ -125,6 +125,9 @@ struct ZGrannyScene {
 	granny_local_pose *sharedLocalPose;
 		// An animation blending buffer that I use for all models, since
 		// it's contents don't need to be preserved
+	
+	bool shouldTranslate = false;
+	bool shouldRender;
 };
 
 struct MeshAttachmentPoint {
@@ -143,6 +146,8 @@ void zGrannyRenderMesh2( ZGrannyMesh *mesh, granny_pnt332_vertex *vertices, std:
 void zGrannyRenderMesh3( ZGrannyMesh *mesh, granny_pngbt33332_vertex *vertices, std::vector<GLuint > &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram);
 void zGrannyRenderMesh(ZGrannyMesh *mesh, granny_pwngbt343332_vertex *vertices , std::vector<GLuint > &textures, VertexRGB *vertexRgb , VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, renderInfo_t *renderInfo);
 void zGrannyRenderSkeleton( granny_skeleton *skeleton, granny_world_pose *worldPose );
+
+bool zGrannyGetAttachmentMatrix(std::string boneName, ZGrannyModel *attachTo, ZGrannyModel *toAttach, glm::mat4 &attachmentMatrix);
 
 bool zGrannyMakeTransformMatrices(int boneIndex, ZGrannyModel *attachTo, std::vector<glm::mat4> &transformMatrices);
 

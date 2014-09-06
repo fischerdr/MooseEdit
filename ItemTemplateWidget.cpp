@@ -85,6 +85,12 @@ void ItemTemplateWidget::setItem(GameItem *value)
 	item = value;
 }
 
+void ItemTemplateWidget::showEvent(QShowEvent *)
+{
+	QTreeWidget *templateTree = this->findChild<QTreeWidget *>("templateTree");
+	templateTree->setFocus();
+}
+
 
 void ItemTemplateWidget::addToTree(ItemTemplateData &templateData, QTreeWidget *templateTree) {
 	TemplateTreeWidgetItem *treeItem = 0;

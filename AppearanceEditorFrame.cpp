@@ -55,6 +55,7 @@ AppearanceEditorFrame::AppearanceEditorFrame(std::wstring gameDataPath, GameChar
 			MessageBoxA(0, "failed to extract player.lsb", 0, 0);
 		}
 	}
+	showEquipped = true;
 	ui->setupUi(this);
 }
 
@@ -79,10 +80,10 @@ void AppearanceEditorFrame::generateEquipmentModels() {
 					attachment->boneName = "Bip001 Pelvis";
 					break;
 				case SLOT_WEAPON:
-					attachment->boneName = "Bip001 R Hand";
+					attachment->boneName = "Bip001 R Finger4";
 					break;
 				case SLOT_SHIELD:
-					attachment->boneName = "Bip001 L Hand";
+					attachment->boneName = "Bip001 L Finger4";
 					break;
 				case SLOT_RING_LEFT:
 					attachment->boneName = "Bip001 L Finger0";
@@ -104,15 +105,27 @@ void AppearanceEditorFrame::generateEquipmentModels() {
 					break;
 				}
 				equippedItems.push_back({scene, textures, attachment});
-				//glContext->addGrannyScene(scene, textures, 0, 0, shaderProgram, attachment);
-				glContext->addGrannyScene(scene, textures, 0, 0, equipmentShaderProgram, attachment);
+				scene->shouldRender = showEquipped;
+				glContext->addGrannyScene(scene, textures, 0, 0, shaderProgram, attachment);
 			}
 		}
 	}
 }
 
+void AppearanceEditorFrame::cleanupEquipmentData() {
+	GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
+	for (int i=0; i<equippedItems.size(); ++i) {
+		equippedItemData_t &equippedItem = equippedItems[i];
+		glContext->cleanupScene(equippedItem.scene);
+		delete equippedItem.scene;
+		delete equippedItem.attachmentPoint;
+	}
+	equippedItems.clear();
+}
+
 void AppearanceEditorFrame::loadEquipmentData() {
-	showEquipped = true;
+	cleanupEquipmentData();
+	
 	{
 		std::string extractPath = "Public/Main/Content/Assets/Items/Equipment/[PAK]_Weapons/Weapons.lsb";
 		unsigned long fileSize;
@@ -144,6 +157,7 @@ void AppearanceEditorFrame::loadEquipmentData() {
 }
 
 void AppearanceEditorFrame::updateAllFields() {
+	loadEquipmentData();
 	QPushButton *maleButton = this->findChild<QPushButton *>("maleButton");
 	QPushButton *femaleButton = this->findChild<QPushButton *>("femaleButton");
 	if (isMale) {
@@ -545,6 +559,57 @@ std::string AppearanceEditorFrame::getTextureFromTextureTemplate(LsbObject *reso
 	return "";
 }
 
+bool AppearanceEditorFrame::_getTextureMaps(LsbObject *materialsResourceBankObject, std::string &materialId, std::string &diffuseMap, std::string &normalMap, 
+										   std::string &specularMap, std::string &maskMap) {
+	LsbObject *materialBankObject = materialsResourceBankObject->lookupByUniquePath("root/MaterialBank");
+	std::vector<LsbObject *> matchingResourceObjects = LsbObject::findItemsByAttribute(materialBankObject->getChildren(), 
+																					   "MapKey", materialId.c_str(), materialId.length() + 1);
+	if (matchingResourceObjects.size() == 1) {
+		LsbObject *resourceObject = matchingResourceObjects[0];
+		std::vector<LsbObject *> texture2DParametersObjects = LsbObject::lookupAllEntitiesWithName(resourceObject, "Texture2DParameters");
+		std::string diffuseTextureTemplate = "";
+		std::string normalTextureTemplate = "";
+		std::string specularTextureTemplate = "";
+		std::string maskTextureTemplate = "";
+		for (int i=0; i<texture2DParametersObjects.size(); ++i) {
+			LsbObject *texture2DParameterObject = texture2DParametersObjects[i];
+			LsbObject *uniformNameObject = texture2DParameterObject->lookupByUniquePath("UniformName");
+			if (uniformNameObject != 0) {
+				std::string uniformName = uniformNameObject->getData();
+				if (uniformName == "Texture2DParameter_DM") {
+					LsbObject *idObject = texture2DParameterObject->lookupByUniquePath("ID");
+					if (idObject != 0) {
+						diffuseTextureTemplate = idObject->getData();
+					}
+				} else if (uniformName == "Texture2DParameter_NM") {
+					LsbObject *idObject = texture2DParameterObject->lookupByUniquePath("ID");
+					if (idObject != 0) {
+						normalTextureTemplate = idObject->getData();
+					}
+				} else if (uniformName == "Texture2DParameter_SM") {
+					LsbObject *idObject = texture2DParameterObject->lookupByUniquePath("ID");
+					if (idObject != 0) {
+						specularTextureTemplate = idObject->getData();
+					}
+				} else if (uniformName == "Texture2DParameter_MSK") {
+					LsbObject *idObject = texture2DParameterObject->lookupByUniquePath("ID");
+					if (idObject != 0) {
+						maskTextureTemplate = idObject->getData();
+					}
+				}
+			}
+		}
+		diffuseMap = getTextureFromTextureTemplate(materialsResourceBankObject, diffuseTextureTemplate);
+		normalMap = getTextureFromTextureTemplate(materialsResourceBankObject, normalTextureTemplate);
+		specularMap = getTextureFromTextureTemplate(materialsResourceBankObject, specularTextureTemplate);
+		maskMap = getTextureFromTextureTemplate(materialsResourceBankObject, maskTextureTemplate);
+		if (diffuseMap.size() > 0 && normalMap.size() > 0 && specularMap.size() > 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool AppearanceEditorFrame::getTextureMaps(LsbObject *resourceBankObject, LsbObject *materialsResourceBankObject, std::string &visualTemplate, std::string &diffuseMap, std::string &normalMap, 
 										   std::string &specularMap, std::string &maskMap) {
 	if (visualTemplate.size() == 0) {
@@ -560,56 +625,52 @@ bool AppearanceEditorFrame::getTextureMaps(LsbObject *resourceBankObject, LsbObj
 			LsbObject *materialIdObject = objectsObject->lookupByUniquePath("MaterialID");
 			if (materialIdObject != 0) {
 				std::string materialId = materialIdObject->getData();
-				LsbObject *materialBankObject = materialsResourceBankObject->lookupByUniquePath("root/MaterialBank");
-				std::vector<LsbObject *> matchingResourceObjects = LsbObject::findItemsByAttribute(materialBankObject->getChildren(), 
-																								   "MapKey", materialId.c_str(), materialId.length() + 1);
-				if (matchingResourceObjects.size() == 1) {
-					LsbObject *resourceObject = matchingResourceObjects[0];
-					std::vector<LsbObject *> texture2DParametersObjects = LsbObject::lookupAllEntitiesWithName(resourceObject, "Texture2DParameters");
-					std::string diffuseTextureTemplate = "";
-					std::string normalTextureTemplate = "";
-					std::string specularTextureTemplate = "";
-					std::string maskTextureTemplate = "";
-					for (int i=0; i<texture2DParametersObjects.size(); ++i) {
-						LsbObject *texture2DParameterObject = texture2DParametersObjects[i];
-						LsbObject *uniformNameObject = texture2DParameterObject->lookupByUniquePath("UniformName");
-						if (uniformNameObject != 0) {
-							std::string uniformName = uniformNameObject->getData();
-							if (uniformName == "Texture2DParameter_DM") {
-								LsbObject *idObject = texture2DParameterObject->lookupByUniquePath("ID");
-								if (idObject != 0) {
-									diffuseTextureTemplate = idObject->getData();
-								}
-							} else if (uniformName == "Texture2DParameter_NM") {
-								LsbObject *idObject = texture2DParameterObject->lookupByUniquePath("ID");
-								if (idObject != 0) {
-									normalTextureTemplate = idObject->getData();
-								}
-							} else if (uniformName == "Texture2DParameter_SM") {
-								LsbObject *idObject = texture2DParameterObject->lookupByUniquePath("ID");
-								if (idObject != 0) {
-									specularTextureTemplate = idObject->getData();
-								}
-							} else if (uniformName == "Texture2DParameter_MSK") {
-								LsbObject *idObject = texture2DParameterObject->lookupByUniquePath("ID");
-								if (idObject != 0) {
-									maskTextureTemplate = idObject->getData();
-								}
-							}
-						}
+				return _getTextureMaps(materialsResourceBankObject, materialId, diffuseMap, normalMap, specularMap, maskMap);
+			}
+		}
+	}
+	return false;
+}
+
+void AppearanceEditorFrame::getVisualInfoForItem(LsbObject *equipmentObject, std::string &visualTemplate, std::string &customBodyMaterial, bool& armorLookup) {
+	if (equipmentObject != 0) {
+		std::vector<LsbObject *> visualResourcesObjects = LsbObject::lookupAllEntitiesWithName(equipmentObject, "VisualResources");
+		if (visualResourcesObjects.size() >= 2) {
+			LsbObject *visualResourcesObject = visualResourcesObjects[isMale ? 0 : 1];
+			if (visualResourcesObject != 0) {
+				LsbObject *objectObject = visualResourcesObject->lookupByUniquePath("Object");
+				if (objectObject != 0) {
+					visualTemplate = objectObject->getData();
+					if (visualTemplate.size() > 0) {
+						armorLookup = true;
 					}
-					diffuseMap = getTextureFromTextureTemplate(materialsResourceBankObject, diffuseTextureTemplate);
-					normalMap = getTextureFromTextureTemplate(materialsResourceBankObject, normalTextureTemplate);
-					specularMap = getTextureFromTextureTemplate(materialsResourceBankObject, specularTextureTemplate);
-					maskMap = getTextureFromTextureTemplate(materialsResourceBankObject, maskTextureTemplate);
-					if (diffuseMap.size() > 0 && normalMap.size() > 0 && specularMap.size() > 0) {
-						return true;
+				}
+			}
+		}
+		
+		std::vector<LsbObject *> customBodyMaterialsObjects = LsbObject::lookupAllEntitiesWithName(equipmentObject, "CustomBodyMaterials");
+		if (customBodyMaterialsObjects.size() >= 2) {
+			LsbObject *customBodyMaterialsObject = customBodyMaterialsObjects[isMale ? 0 : 1];
+			if (customBodyMaterialsObject != 0) {
+				LsbObject *objectObject = customBodyMaterialsObject->lookupByUniquePath("Object");
+				if (objectObject != 0) {
+					customBodyMaterial = objectObject->getData();
+					if (customBodyMaterial.size() > 0) {
+						LsbObject *materialResourceBank = 0;
+						if (isMale) {
+							materialResourceBank = playerMaleResourceBankObject;
+						} else {
+							materialResourceBank = playerFemaleResourceBankObject;
+						}
+						if (materialResourceBank != 0) {
+							_getTextureMaps(materialResourceBank, customBodyMaterial, 
+											textureDiffuseOverride, textureNormalOverride, textureSpecularOverride, textureMaskOverride);
+						}
 					}
 				}
 			}
 		}
 	}
-	return false;
 }
 
 ZGrannyScene *AppearanceEditorFrame::createModelForItem(GameItem *item, std::vector<GLuint > &textures) {
@@ -622,23 +683,38 @@ ZGrannyScene *AppearanceEditorFrame::createModelForItem(GameItem *item, std::vec
 			std::map<std::string, LsbObject *> &rootTemplateMap = gamePakData->getRootTemplateMap();
 			LsbObject *gameObject = 0;
 			std::string visualTemplate = "";
-			if (modTemplateMap.find(itemTemplate) != modTemplateMap.end()) {
+			std::string customBodyMaterial = "";
+			bool armorLookup = false;
+			
+			if (visualTemplate.size() == 0 && modTemplateMap.find(itemTemplate) != modTemplateMap.end()) {
 				gameObject = modTemplateMap[itemTemplate];
-				LsbObject *visualTemplateObject = gameObject->lookupByUniquePath("VisualTemplate");
-				if (visualTemplateObject != 0) {
-					visualTemplate = visualTemplateObject->getData();
-				}
 				
-				LsbObject *templateNameObject = gameObject->lookupByUniquePath("TemplateName");
-				if (templateNameObject != 0) {
-					itemTemplate = templateNameObject->getData();
+				LsbObject *equipmentObject = gameObject->lookupByUniquePath("Equipment");
+				getVisualInfoForItem(equipmentObject, visualTemplate, customBodyMaterial, armorLookup);
+				
+				if (visualTemplate.size() == 0) {
+					LsbObject *visualTemplateObject = gameObject->lookupByUniquePath("VisualTemplate");
+					if (visualTemplateObject != 0) {
+						visualTemplate = visualTemplateObject->getData();
+					}
+					
+					LsbObject *templateNameObject = gameObject->lookupByUniquePath("TemplateName");
+					if (templateNameObject != 0) {
+						itemTemplate = templateNameObject->getData();
+					}
 				}
 			}
 			if (visualTemplate.size() == 0 && rootTemplateMap.find(itemTemplate) != rootTemplateMap.end()) {
 				gameObject = rootTemplateMap[itemTemplate];
-				LsbObject *visualTemplateObject = gameObject->lookupByUniquePath("VisualTemplate");
-				if (visualTemplateObject != 0) {
-					visualTemplate = visualTemplateObject->getData();
+				
+				LsbObject *equipmentObject = gameObject->lookupByUniquePath("Equipment");
+				getVisualInfoForItem(equipmentObject, visualTemplate, customBodyMaterial, armorLookup);
+				
+				if (visualTemplate.size() == 0) {
+					LsbObject *visualTemplateObject = gameObject->lookupByUniquePath("VisualTemplate");
+					if (visualTemplateObject != 0) {
+						visualTemplate = visualTemplateObject->getData();
+					}
 				}
 			}
 			if (visualTemplate.size() > 0) {
@@ -651,6 +727,8 @@ ZGrannyScene *AppearanceEditorFrame::createModelForItem(GameItem *item, std::vec
 						std::string slot = itemStat->getData("Slot");
 						if (slot == "Weapon") {
 							resourceBank = weaponsResourceBankObject;
+						} else if (armorLookup){
+							resourceBank = (this->isMale ? playerMaleResourceBankObject : playerFemaleResourceBankObject);
 						} else {
 							resourceBank = armorsPlayerResourceBankObject;
 						}
@@ -733,6 +811,15 @@ ZGrannyScene *AppearanceEditorFrame::createModelForItem(GameItem *item, std::vec
 						}
 						ZGrannyScene *scene = zGrannyCreateSceneFromMemory(fileBytes, fileSize, textures);
 						delete[] fileBytes;
+						if (!armorLookup) {
+							scene->shouldTranslate = true;
+							zGrannyShutdownScene(scene);
+							delete scene;
+							scene = 0;
+						}
+						if (customBodyMaterial.size() > 0) {
+							
+						}
 						return scene;
 					}
 				}
@@ -867,6 +954,7 @@ void AppearanceEditorFrame::initIndexesToCustomData() {
 
 void AppearanceEditorFrame::cleanup() {
 	GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
+	cleanupEquipmentData();
 	glContext->cleanup();
 	if (skinColor != 0) {
 		delete skinColor;
@@ -888,12 +976,6 @@ void AppearanceEditorFrame::cleanup() {
 		delete equipmentShaderProgram;
 		equipmentShaderProgram = 0;
 	}
-	for (int i=0; i<equippedItems.size(); ++i) {
-		equippedItemData_t &equippedItem = equippedItems[i];
-		delete equippedItem.scene;
-		delete equippedItem.attachmentPoint;
-	}
-	equippedItems.clear();
 	if (currentHead != 0) {
 		delete currentHead;
 		currentHead = 0;
@@ -1093,8 +1175,8 @@ void AppearanceEditorFrame::setup() {
 	
 	generateFields();
 	initIndexesToCustomData();
-	updateAllFields();
 	//loadEquipmentData();
+	updateAllFields();
 }
 
 AppearanceEditorFrame::~AppearanceEditorFrame()
@@ -1375,13 +1457,21 @@ void AppearanceEditorFrame::on_hairNext_clicked()
 
 bool AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::vector<fieldValue_t> &models, std::vector<fieldValue_t> &diffuse, 
 												 std::vector<fieldValue_t> &normal, std::vector<fieldValue_t> &specular, std::vector<fieldValue_t> &mask, 
-												 int index, VertexRGB *foreColor, VertexRGB *backColor) {
+												 int index, VertexRGB *foreColor, VertexRGB *backColor, bool useOverride) {
 	GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
 	std::string modelFile = models[index].currentValue(isMale);
 	std::string diffuseFile = diffuse[index].currentValue(isMale);
 	std::string normalFile = normal[index].currentValue(isMale);
 	std::string specularFile = specular[index].currentValue(isMale);
 	std::string maskFile = mask[index].currentValue(isMale);
+	if (useOverride) {
+		if (textureDiffuseOverride.size() > 0) {
+			diffuseFile = textureDiffuseOverride;
+			normalFile = textureNormalOverride;
+			specularFile = textureSpecularOverride;
+			maskFile = textureMaskOverride;
+		}
+	}
 	std::vector<GLuint> modelTextures;
 	
 	if (modelFile.size() == 0 || diffuseFile.size() == 0 || normalFile.size() == 0 || specularFile.size() == 0) {
@@ -1525,9 +1615,8 @@ bool AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 //	image10.upload_texture2D();
 	
 	if (current != 0) {
-		glContext->removeGrannyScene(current);
-		zGrannyShutdownScene(current);
-		delete current; //call granny free function?
+		glContext->cleanupScene(current);
+		delete current;
 	}
 //	modelTextures.push_back(texobj3);
 //	modelTextures.push_back(texobj9);
@@ -1553,25 +1642,25 @@ bool AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 
 bool AppearanceEditorFrame::updateToCurrentHair() {
 	if (isHench) {
-		return updateToCurrentModel(currentHair, henchHairs, henchHairDiffuse, henchHairNormal, henchHairSpecular, henchHairMask, hairIdx, 0, hairColor);
+		return updateToCurrentModel(currentHair, henchHairs, henchHairDiffuse, henchHairNormal, henchHairSpecular, henchHairMask, hairIdx, 0, hairColor, false);
 	} else {
-		return updateToCurrentModel(currentHair, hairs, hairDiffuse, hairNormal, hairSpecular, hairMask, hairIdx, 0, hairColor);
+		return updateToCurrentModel(currentHair, hairs, hairDiffuse, hairNormal, hairSpecular, hairMask, hairIdx, 0, hairColor, false);
 	}
 }
 
 bool AppearanceEditorFrame::updateToCurrentHead() {
 	if (isHench) {
-		return updateToCurrentModel(currentHead, henchHeads, henchHeadDiffuse, henchHeadNormal, henchHeadSpecular, henchHeadMask, headIdx, skinColor, hairColor);
+		return updateToCurrentModel(currentHead, henchHeads, henchHeadDiffuse, henchHeadNormal, henchHeadSpecular, henchHeadMask, headIdx, skinColor, hairColor, false);
 	} else {
-		return updateToCurrentModel(currentHead, heads, headDiffuse, headNormal, headSpecular, headMask, headIdx, skinColor, hairColor);
+		return updateToCurrentModel(currentHead, heads, headDiffuse, headNormal, headSpecular, headMask, headIdx, skinColor, hairColor, false);
 	}
 }
 
 bool AppearanceEditorFrame::updateToCurrentUnderwear() {
 	if (isHench) {
-		return updateToCurrentModel(currentUnderwear, henchUnderwears, henchUnderwearDiffuse, henchUnderwearNormal, henchUnderwearSpecular, henchUnderwearMask, underwearIdx, skinColor, underwearColor);
+		return updateToCurrentModel(currentUnderwear, henchUnderwears, henchUnderwearDiffuse, henchUnderwearNormal, henchUnderwearSpecular, henchUnderwearMask, underwearIdx, skinColor, underwearColor, showEquipped);
 	} else {
-		return updateToCurrentModel(currentUnderwear, underwears, underwearDiffuse, underwearNormal, underwearSpecular, underwearMask, underwearIdx, skinColor, underwearColor);
+		return updateToCurrentModel(currentUnderwear, underwears, underwearDiffuse, underwearNormal, underwearSpecular, underwearMask, underwearIdx, skinColor, underwearColor, showEquipped);
 	}
 }
 
@@ -1676,17 +1765,15 @@ void AppearanceEditorFrame::setEquipHandler(EquipmentHandler *value)
 void AppearanceEditorFrame::on_armorToggleButton_clicked()
 {
 	showEquipped = !showEquipped;
-	GlContextWidget *glContext = this->findChild<GlContextWidget *>("glContext");
-	int sceneCount = glContext->getSceneCount();
-	bool success = true;
 	for (int i=0; i<equippedItems.size(); ++i) {
 		equippedItemData_t &eid = equippedItems[i];
 		if (showEquipped) {
-			glContext->addGrannyScene(eid.scene, eid.textures, 0, 0, shaderProgram, eid.attachmentPoint);
+			eid.scene->shouldRender = true;
 		} else {
-			success = success && glContext->removeGrannyScene(eid.scene);
+			eid.scene->shouldRender = false;
 		}
 	}
+	updateAllFields();
 }
 
 void AppearanceEditorFrame::on_femaleButton_clicked()

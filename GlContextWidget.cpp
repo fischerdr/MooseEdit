@@ -173,6 +173,7 @@ void GlContextWidget::paintGL() {
 			worldPos[0] = 0.0f;
 			worldPos[1] = 0.0f;
 			worldPos[2] = 0.0f;
+			glm::mat4 attachTransform = glm::mat4(1.0);
 			if (attachments[i] != 0) {
 				MeshAttachmentPoint *attachment = attachments[i];
 				
@@ -214,6 +215,8 @@ void GlContextWidget::paintGL() {
 								//										worldPos[1]<<' '<<
 								//													   worldPos[2]<<' '<<'\n';
 							}
+							zGrannyGetAttachmentMatrix(attachment->boneName, &model, &grannyScenes[i]->models[0], attachTransform);
+							//glm::rotate(attachTransform, 90, glm::vec3(0.0, 0.0, 0.0));
 							break;
 
 							
@@ -243,8 +246,12 @@ void GlContextWidget::paintGL() {
 			//			   vText = ss.str();
 			//		   }
 			//		   std::cout<<"Rendering "<<grannyScenes[i]->models[0].meshes[0].grannyMesh->Name<<' '<<vText<<'\n';
-			//model = glm::translate(glm::mat4(1.0), glm::vec3(worldPos[0], worldPos[1], worldPos[2]));
+			
 			model = glm::mat4(1.0);
+			if (grannyScenes[i]->shouldTranslate) {
+				model = glm::translate(model, glm::vec3(worldPos[0], worldPos[1], worldPos[2]));
+//				model = attachTransform;
+			}
 			model = glm::scale(model, glm::vec3(-1.0, 1.0, 1.0));
 			renderInfo_t renderInfo;
 			renderInfo.model = &model;
@@ -359,6 +366,50 @@ void GlContextWidget::paintGL() {
 	}
 }
 
+void GlContextWidget::cleanupScene(ZGrannyScene *scene, bool cleanupProgram) {
+	GLenum err;
+	if ((err = glGetError()) != GL_NO_ERROR) {
+		std::ostringstream ss;
+		ss<<"err0: "<<gluErrorString(err);
+		std::cout<<ss.str()<<'\n';
+	}
+	for (int i=0; i<grannyScenes.size(); ++i) {
+		if (grannyScenes[i] == scene) {
+			zGrannyShutdownScene(grannyScenes[i]);
+			std::vector<GLuint > &textures = textureIds[i];
+			if (textures.size() > 0) {
+				GLuint *textureArray = new GLuint[textures.size()];
+				for (int j=0; j<textures.size(); ++j) {
+					textureArray[j] = textures[j];
+				}
+				glDeleteTextures(textures.size(), textureArray);
+				delete[] textureArray;
+			}
+			GLenum err;
+			if ((err = glGetError()) != GL_NO_ERROR) {
+				std::ostringstream ss;
+				ss<<"err02: "<<gluErrorString(err);
+				std::cout<<ss.str()<<'\n';
+			}
+			if (cleanupProgram) {
+				if (shaderPrograms[i] != 0) {
+					GlShaderProgram *program = shaderPrograms[i];
+					if (glIsProgram(program->getProgram()) == GL_TRUE) {
+						glDeleteProgram(program->getProgram());
+					}
+					if ((err = glGetError()) != GL_NO_ERROR) {
+						std::ostringstream ss;
+						ss<<"err01: "<<gluErrorString(err)<<' '<<shaderPrograms[i]->getProgram();
+						std::cout<<ss.str()<<'\n';
+					}
+				}
+			}
+			removeGrannyScene(grannyScenes[i]);
+			break;
+		}
+	}
+}
+
 void GlContextWidget::cleanup() {
 	frameTimer.stop();
 	GLenum err;
@@ -368,37 +419,9 @@ void GlContextWidget::cleanup() {
 		std::cout<<ss.str()<<'\n';
 	}
 	for (int i=0; i<grannyScenes.size(); ++i) {
-		zGrannyShutdownScene(grannyScenes[i]);
-		std::vector<GLuint > &textures = textureIds[i];
-		if (textures.size() > 0) {
-			GLuint *textureArray = new GLuint[textures.size()];
-			for (int j=0; j<textures.size(); ++j) {
-				textureArray[j] = textures[j];
-			}
-			glDeleteTextures(textures.size(), textureArray);
-			delete[] textureArray;
-		}
-		GLenum err;
-		if ((err = glGetError()) != GL_NO_ERROR) {
-			std::ostringstream ss;
-			ss<<"err02: "<<gluErrorString(err);
-			std::cout<<ss.str()<<'\n';
-		}
-		if (shaderPrograms[i] != 0) {
-			GlShaderProgram *program = shaderPrograms[i];
-			if (glIsProgram(program->getProgram()) == GL_TRUE) {
-				glDeleteProgram(program->getProgram());
-			}
-			if ((err = glGetError()) != GL_NO_ERROR) {
-				std::ostringstream ss;
-				ss<<"err01: "<<gluErrorString(err)<<' '<<shaderPrograms[i]->getProgram();
-				std::cout<<ss.str()<<'\n';
-			}
-		}
-		removeGrannyScene(grannyScenes[i]);
+		cleanupScene(grannyScenes[i], true);
 		--i;
 	}
-	//frameTimer.start();
 }
 
 void GlContextWidget::pauseRendering()

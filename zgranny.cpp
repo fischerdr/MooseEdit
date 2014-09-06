@@ -769,6 +769,7 @@ void zGrannyRenderSkeleton( granny_skeleton *skeleton, granny_world_pose *worldP
 ZGrannyScene *zGrannyCreateScene( const char *filename, std::vector<GLuint > &textures ) {
 	ZGrannyScene *scene = new ZGrannyScene;
 	memset( scene, 0, sizeof(*scene) );
+	scene->shouldRender = true;
 	
 	scene->loadedFile = GrannyReadEntireFile( filename );
 	assert( scene->loadedFile );
@@ -815,6 +816,7 @@ ZGrannyScene *zGrannyCreateScene( const char *filename, std::vector<GLuint > &te
 ZGrannyScene *zGrannyCreateSceneFromMemory( const char *fileBytes, unsigned long fileSize, std::vector<GLuint > &textures ) {
 	ZGrannyScene *scene = new ZGrannyScene;
 	memset( scene, 0, sizeof(*scene) );
+	scene->shouldRender = true;
 	
 	scene->loadedFile = GrannyReadEntireFileFromMemory(fileSize, (void *)fileBytes);
 	assert( scene->loadedFile );
@@ -883,33 +885,87 @@ bool zGrannyMakeTransformMatrices(int boneIndex, ZGrannyModel *attachTo, std::ve
 	glm::vec3 scaleY = glm::make_vec3((float *)&bone.LocalTransform.ScaleShear[1]);
 	glm::vec3 scaleZ = glm::make_vec3((float *)&bone.LocalTransform.ScaleShear[2]);
 	glm::vec3 scale = glm::vec3(glm::length(scaleX), glm::length(scaleY), glm::length(scaleZ));
-	if (boneIndex == 0) {
-		std::cout<<scale.x<<' '<<scale.y<<' '<<scale.z<<' '<<scaleX.length()<<'\n';
-	}
 	glm::quat quaternion = glm::quat(bone.LocalTransform.Orientation[0], bone.LocalTransform.Orientation[1], bone.LocalTransform.Orientation[2], bone.LocalTransform.Orientation[3]);
 	glm::vec3 eulerAngles = glm::eulerAngles(quaternion);
 	glm::vec3 rotation = glm::vec3(eulerAngles.x, eulerAngles.y, eulerAngles.z);
 	glm::vec3 translation = glm::make_vec3(&bone.LocalTransform.Position[0]);
 	
+	if (boneIndex == 0) {
+		std::cout<<scale.x<<' '<<scale.y<<' '<<scale.z<<'\n';
+		std::cout<<rotation.x<<' '<<rotation.y<<' '<<rotation.z<<'\n';
+		std::cout<<translation.x<<' '<<translation.y<<' '<<translation.z<<'\n';
+	}
 	transformMatrix = glm::scale(transformMatrix, scale);
 	transformMatrix = glm::rotate(transformMatrix, rotation.x, glm::vec3(1.0, 0.0, 0.0)); //pitch
 	transformMatrix = glm::rotate(transformMatrix, rotation.y, glm::vec3(0.0, 1.0, 0.0)); //yaw
-	transformMatrix = glm::rotate(transformMatrix, 180 + rotation.z, glm::vec3(0.0, 0.0, 1.0)); //roll
+	transformMatrix = glm::rotate(transformMatrix, rotation.z, glm::vec3(0.0, 0.0, 1.0)); //roll
 	transformMatrix = glm::translate(transformMatrix, translation);
 	if (bone.ParentIndex >= 0) {
-		transformMatrix = transformMatrices[bone.ParentIndex] * transformMatrix;
+		transformMatrix = transformMatrix * transformMatrices[bone.ParentIndex];
 	}
 	transformMatrices[boneIndex] = transformMatrix;
 	std::vector<int> children = getBoneChildren(boneIndex, attachTo);
+	std::cout<<"Bone "<<boneIndex<<'\n';
+	for (int i=0; i<4; ++i) {
+		for (int j=0; j<4; ++j) {
+			std::cout<<transformMatrix[i][j]<<' ';
+		}
+		std::cout<<'\n';
+	}
+	std::cout<<'\n';
+	std::cout<<"expected: "<<'\n';
+	glm::mat4 inverseWorld = glm::make_mat4((float *)&bone.InverseWorld4x4);
+	glm::mat4 world = glm::inverse(inverseWorld);
+	for (int i=0; i<4; ++i) {
+		for (int j=0; j<4; ++j) {
+			std::cout<<world[i][j]<<' ';
+		}
+		std::cout<<'\n';
+	}
+	std::cout<<'\n';
 	for (int i=0; i<children.size(); ++i) {
 		int childBone = children[i];
 		if (!zGrannyMakeTransformMatrices(childBone, attachTo, transformMatrices)) {
 			return false;
 		}
 	}
-	glm::mat4 inverseWorld = glm::make_mat4((float *)&bone.InverseWorld4x4);
-	//transformMatrices[boneIndex] = transformMatrix * inverseWorld;
+	//glm::mat4 inverseWorld = glm::make_mat4((float *)&bone.InverseWorld4x4);
+	transformMatrices[boneIndex] = transformMatrix * inverseWorld;
 	return true;
+}
+
+bool zGrannyGetAttachmentMatrix(std::string boneName, ZGrannyModel *attachTo, ZGrannyModel *toAttach, glm::mat4 &attachmentMatrix) {
+	if (attachTo == 0 || attachTo->skeleton == 0)
+		return false;
+	
+	for (int i=0; i<attachTo->skeleton->BoneCount; ++i) {
+		granny_bone &bone = attachTo->skeleton->Bones[i];
+		if (bone.Name == boneName) {
+			GrannySampleModelAnimations(attachTo->grannyInstance,
+			                                0, attachTo->skeleton->BoneCount,
+			                                attachTo->localPose);
+			
+			granny_matrix_4x4 BaseMatrix;
+			    GrannyGetWorldMatrixFromLocalPose(attachTo->skeleton,
+			                                      i,
+			                                      attachTo->localPose,
+			                                      0,
+			                                      (granny_real32*)BaseMatrix,
+			                                      NULL, NULL);
+			
+			granny_matrix_4x4 AttachmentMatrix;
+		    GrannyGetAttachmentOffset(attachTo->skeleton,
+		                              i,
+		                              attachTo->localPose,
+		                              0,
+		                              (granny_real32*)AttachmentMatrix,
+		                              0, 0);
+		
+			attachmentMatrix = glm::inverse(glm::make_mat4((float *)&bone.InverseWorld4x4));
+			return true;
+		}
+	}
+	return false;
 }
 
 bool zGrannyGetObbCenter2(std::string boneName, ZGrannyModel *attachTo, ZGrannyModel *toAttach, GLfloat obbCenter[3]) {
@@ -975,9 +1031,15 @@ bool zGrannyGetObbCenter2(std::string boneName, ZGrannyModel *attachTo, ZGrannyM
 //			}
 			
 			//std::cout<<"obbCenter "<<boneName<<"\n";
-			obbCenter[0] = ((float *)AttachmentMatrix)[0];
-			obbCenter[1] = (float)fabs((float)((float *)AttachmentMatrix)[12]);
-			obbCenter[2] = ((float *)AttachmentMatrix)[3];
+			
+			glm::mat4 world = glm::inverse(glm::make_mat4((float *)&bone.InverseWorld4x4));
+			obbCenter[0] = world[3][0];
+			obbCenter[1] = world[3][1];
+			obbCenter[2] = world[3][2];
+			//obbCenter[0] = ((float *)AttachmentMatrix)[0];
+			//obbCenter[1] = (float)fabs((float)((float *)AttachmentMatrix)[12]);
+			//obbCenter[2] = ((float *)AttachmentMatrix)[3];
+			
 			//obbCenter[0] = ((float *)bone.InverseWorld4x4)[0];
 			//obbCenter[1] = (float)fabs((float)(((float *)bone.InverseWorld4x4)[12]));
 			//obbCenter[2] = ((float *)bone.InverseWorld4x4)[3];
@@ -1011,6 +1073,9 @@ void zGrannyShutdownScene( ZGrannyScene *scene ) {
 }
 
 void zGrannyRenderScene(ZGrannyScene *scene, std::vector<GLuint > &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, GLfloat worldPos[3], renderInfo_t *renderInfo) {
+	if (!scene->shouldRender) {
+		return;
+	}
 	GLenum err;
 	if ((err = glGetError()) != GL_NO_ERROR) {
 		std::ostringstream ss;

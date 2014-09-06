@@ -138,6 +138,10 @@ private:
 	std::vector<fieldValue_t> underwearNormal;
 	std::vector<fieldValue_t> underwearSpecular;
 	std::vector<fieldValue_t> underwearMask;
+	std::string textureDiffuseOverride;
+	std::string textureNormalOverride;
+	std::string textureSpecularOverride;
+	std::string textureMaskOverride;
 	
 	std::vector<fieldValue_t> henchHeads;
 	std::vector<fieldValue_t> henchHeadDiffuse;
@@ -201,17 +205,20 @@ private:
 	std::vector<equippedItemData_t> equippedItems;
 	
 	void cleanup();
+	void cleanupEquipmentData();
 	void loadEquipmentData();
 	void updateAllFields();
 	void initIndexesToCustomData();
 	void generateEquipmentModels();
 	std::string getGR2(LsbObject *resourceBankObject, std::string &visualTemplate);
 	std::string getTextureFromTextureTemplate(LsbObject *resourceBankObject, std::string &textureTemplate);
+	bool _getTextureMaps(LsbObject *materialsResourceBankObject, std::string &materialId, std::string &diffuseMap, std::string &normalMap, 
+											   std::string &specularMap, std::string &maskMap);
 	bool getTextureMaps(LsbObject *resourceBankObject, LsbObject *materialsResourceBankObject, std::string &visualTemplate, std::string &diffuseMap, std::string &normalMap, 
 						std::string &specularMap, std::string &maskMap);
 	bool updateToCurrentModel(ZGrannyScene *&current, std::vector<fieldValue_t> &models, std::vector<fieldValue_t> &diffuse, 
 							  std::vector<fieldValue_t> &normal, std::vector<fieldValue_t> &specular, std::vector<fieldValue_t> &mask, 
-							  int index, VertexRGB *foreColor, VertexRGB *backColor);
+							  int index, VertexRGB *foreColor, VertexRGB *backColor, bool useOverride);
 	void updatePortraitData();
 	void updateToCurrentPortrait();
 	void updatePortraitImage();
@@ -221,6 +228,7 @@ private:
 	void updateToCurrentSkinColor();
 	void updateToCurrentHairColor();
 	void updateColorData(const char *colorPath, VertexRGB *colorInfo);
+	void getVisualInfoForItem(LsbObject *equipmentObject, std::string &visualTemplate, std::string &customBodyMaterial, bool& armorLookup);
 	ZGrannyScene *createModelForItem(GameItem *item, std::vector<GLuint > &textures);
 	void setup();
 	void generateFields();

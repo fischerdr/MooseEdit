@@ -37,6 +37,7 @@ public:
 	void hideEvent(QHideEvent *event);
 	void closeEvent(QCloseEvent *);
 	void cleanup();
+	void cleanupScene(ZGrannyScene *scene, bool cleanupProgram = false);
 	void pauseRendering();
 	void resumeRendering();
 	int getSceneCount();

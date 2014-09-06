@@ -45,7 +45,7 @@ void main()
 	//);
 	//worldPosition.xyz = (worldPosition.xyz + (1.0 * (vec4(inPosition0, 1.0f))));
 	//worldPosition.xyz = (worldPosition.xyz + (0.0 * (boneMatrix1 * vec4(inPosition0, 1.0f))));
-	worldPosition.xyz = (worldPosition.xyz + (1.0 * (BoneMatrices[int(inBlendIndices0.x)] * vec4(inPosition0, 1.0f))));
+	worldPosition.xyz = (worldPosition.xyz + (1.0 * (BoneMatrices[int(5.0)] * vec4(inPosition0, 1.0f))));
 	//worldPosition.xyz = (worldPosition.xyz + (inBlendWeight0.x * (boneMatrix1 * vec4(inPosition0, 1.0f))));
 	//worldPosition.xyz = (worldPosition.xyz + (inBlendWeight0.y * (boneMatrix2 * vec4(inPosition0, 1.0f))));
 	//worldPosition.xyz = (worldPosition.xyz + (inBlendWeight0.z * (boneMatrix3 * vec4(inPosition0, 1.0f))));
