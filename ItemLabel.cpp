@@ -605,19 +605,26 @@ void ItemLabel::enterEvent(QEvent *event)
 		} else {
 			pt = globalPt;
 			QDesktopWidget desktop;
-			int screenNo = desktop.screenNumber(globalPt);
+			int screenNo = desktop.screenNumber(this->mapToGlobal(this->mapFromParent(this->pos())));
 			QRect deskRect = desktop.availableGeometry(screenNo);
 			
 			long tooltipEndY = pt.y() + tooltip->height();
 			if (tooltipEndY > deskRect.bottom()) {
 				long diff = tooltipEndY - deskRect.bottom();
-				pt.setY(pt.y() - diff);
+				long newY = pt.y() - diff;
+				QPoint newPt(pt.x(), newY);
+				newPt = this->mapFromGlobal(newPt);
+				if (newPt.y() < 0 || newPt.y() >= this->height());
+					pt.setY(pt.y() - diff);
 			}
 			
 			long tooltipEndX = pt.x() + tooltip->width();
 			if (tooltipEndX > deskRect.right()) {
-				long diff = tooltipEndX - deskRect.right();
-				pt.setX(pt.x() - diff);
+				pt.setX(this->mapToGlobal(this->mapFromParent(this->pos())).x() - tooltip->width());
+			}
+			
+			if (pt.x() < deskRect.left()) {
+				pt.setX(this->mapToGlobal(this->mapFromParent(this->pos())).x() + this->width());
 			}
 		}
 		
@@ -629,6 +636,7 @@ void ItemLabel::enterEvent(QEvent *event)
 
 void ItemLabel::leaveEvent(QEvent *event)
 {
+	QPoint localPt = this->mapFromGlobal(QCursor::pos());
 	tooltip->hide();
 }
 
