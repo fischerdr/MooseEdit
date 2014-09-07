@@ -98,7 +98,7 @@ public:
 	void setItemStats(StatsContainer *value) {
 		itemStats = value;
 	}
-	std::vector<StatsContainer *> &getBoosts() {
+	std::vector<StatsContainer *> &getMods() {
 		return boosts;
 	}
 	void addBoost(StatsContainer *value) {

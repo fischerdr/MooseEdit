@@ -25,7 +25,7 @@ public:
 	//ZGrannyScene *getGrannyScene() const;
 	//void setGrannyScene(ZGrannyScene *value);
 	void addGrannyScene(ZGrannyScene *scene, std::vector<GLuint> &textures);
-	void addGrannyScene(ZGrannyScene *scene, std::vector<GLuint> &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, MeshAttachmentPoint *attachment);
+	void addGrannyScene(ZGrannyScene *scene, std::vector<GLuint> &textures, VertexRGB *vertexRgb, VertexRGB *vertexRgb2, VertexRGB *vertexRgb3, VertexRGB *vertexRgb4, VertexRGB *vertexRgb5, GlShaderProgram *shaderProgram, MeshAttachmentPoint *attachment);
 	bool removeGrannyScene(ZGrannyScene *scene);
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);
@@ -92,6 +92,9 @@ private:
 	std::vector<std::vector<GLuint> > textureIds;
 	std::vector<VertexRGB *> vertexRGBs;
 	std::vector<VertexRGB *> vertexRGB2s;
+	std::vector<VertexRGB *> vertexRGB3s;
+	std::vector<VertexRGB *> vertexRGB4s;
+	std::vector<VertexRGB *> vertexRGB5s;
 	std::vector<GlShaderProgram *> shaderPrograms;
 	std::vector<MeshAttachmentPoint *> attachments;
 	bool timerConnected = false;

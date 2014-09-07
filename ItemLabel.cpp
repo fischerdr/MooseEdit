@@ -28,7 +28,7 @@ long ItemLabel::getItemStatValue(std::string statName) {
 
 long ItemLabel::getModStatValue(std::string statName) {
 	long value = 0;
-	std::vector<StatsContainer *> boosts = item->getBoosts();
+	std::vector<StatsContainer *> boosts = item->getMods();
 	for (int i=0; i<boosts.size(); ++i) {
 		StatsContainer *boostStats = boosts[i];
 		
@@ -292,7 +292,7 @@ void ItemLabel::setupTooltip()
 			ss.clear();
 			ss.str("");
 			
-			std::vector<StatsContainer *> boosts = item->getBoosts();
+			std::vector<StatsContainer *> boosts = item->getMods();
 			if (itemStats->getType() == "Weapon") {
 				long parsedDamage = 0;
 				long parsedDamageRange = 0;

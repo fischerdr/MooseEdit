@@ -26,6 +26,7 @@ bool AppearanceEditorFrame::loadedPaks = false;
 PakReader AppearanceEditorFrame::texturesPak;
 PakReader AppearanceEditorFrame::mainPak;
 LsbObject *AppearanceEditorFrame::playersTemplateObjects = 0;
+std::vector<StatsContainer *> AppearanceEditorFrame::itemColorStats;
 
 AppearanceEditorFrame::AppearanceEditorFrame(std::wstring gameDataPath, GameCharacter *character, QWidget *parent) :
 	QFrame(parent), gameDataPath(gameDataPath), character(character),
@@ -54,9 +55,78 @@ AppearanceEditorFrame::AppearanceEditorFrame(std::wstring gameDataPath, GameChar
 		} else {
 			MessageBoxA(0, "failed to extract player.lsb", 0, 0);
 		}
+		
+		std::string itemColorStatsPath = "Public/Main/Stats/Generated/Data/ItemColor.txt";
+		fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", itemColorStatsPath, tmp, false, &fileSize);
+		if (fileBytes != 0) {
+			std::stringstream ss;
+			ss.rdbuf()->pubsetbuf(fileBytes, fileSize);
+			GenStatsReader gsr;
+			itemColorStats = gsr.loadFile(ss);
+			delete[] fileBytes;
+		} else {
+			MessageBoxA(0, "failed to extract ItemColor.txt", 0, 0);
+		}
 	}
 	showEquipped = true;
 	ui->setupUi(this);
+}
+
+std::string AppearanceEditorFrame::getItemStatText(GameItem *item, std::string statName) {
+	StatsContainer *itemStats = item->getItemStats();
+	std::string data = itemStats->getData(statName);
+	return data;
+}
+
+std::string AppearanceEditorFrame::getModStatText(GameItem *item, std::string statName) {
+	std::string statData;
+	std::vector<StatsContainer *> boosts = item->getMods();
+	for (int i=0; i<boosts.size(); ++i) {
+		StatsContainer *boostStats = boosts[i];
+		
+		StatsContainer *itemBoost = 0;
+		itemBoost = GenStatsReader::getContainer(gamePakData->getItemStats(), boostStats->getBoostName());
+		if (itemBoost != 0) {
+			statData = itemBoost->getData(statName);
+		}
+	}
+	return statData;
+}
+
+std::string AppearanceEditorFrame::getPermBoostStatText(GameItem *item, std::string statName) {
+	std::string text;
+	for (int i=0; i<item->getPermBoosts().size(); ++i) {
+		LsbObject *permBoost = item->getPermBoosts()[i];
+		if (permBoost->getName() == statName && permBoost->getType() == 0x16) {
+			text = permBoost->getData();
+		}
+	}
+	return text;
+}
+
+std::string AppearanceEditorFrame::getFinalItemStatText(GameItem *item, std::string statName) {
+	std::string text;
+	text = getPermBoostStatText(item, statName);
+	if (text.size() == 0) {
+		text = getModStatText(item, statName);
+		if (text.size() == 0) {
+			text = getItemStatText(item, statName);
+		}
+	}
+	return text;
+}
+
+unsigned long AppearanceEditorFrame::hexToNumber(std::string hex) {
+	unsigned long result = 0;
+	static const std::string hexValues = "0123456789abcdef";
+	for (int i=0; i<hex.length(); ++i) {
+		int index = hexValues.find(hex[i]);
+		if (index != std::string::npos) {
+			result <<= 4;
+			result |= index;
+		}
+	}
+	return result;
 }
 
 void AppearanceEditorFrame::generateEquipmentModels() {
@@ -107,7 +177,110 @@ void AppearanceEditorFrame::generateEquipmentModels() {
 				}
 				equippedItems.push_back({scene, textures, attachment});
 				scene->shouldRender = showEquipped;
-				glContext->addGrannyScene(scene, textures, 0, 0, shaderProgram, attachment);
+				VertexRGB *clothColor = 0;
+				VertexRGB *clothColor2 = 0;
+				VertexRGB *clothColor3 = 0;
+				std::string finalColor = getFinalItemStatText(item, "ItemColor");
+				StatsContainer *itemColorStat = GenStatsReader::getContainer(itemColorStats, finalColor);
+				std::string color = itemColorStat->getArg(1);
+				std::string color2 = itemColorStat->getArg(2);
+				std::string color3 = itemColorStat->getArg(3);
+				if (color.size() > 0) {
+					int r = 0;
+					int g = 0;
+					int b = 0;
+					
+					int r2 = 0;
+					int g2 = 0;
+					int b2 = 0;
+					
+					int r3 = 0;
+					int g3 = 0;
+					int b3 = 0;
+					if (color.length() == 6) {
+						r = hexToNumber(color.substr(0, 2));
+						g = hexToNumber(color.substr(2, 2));
+						b = hexToNumber(color.substr(4, 2));
+						
+						r2 = hexToNumber(color2.substr(0, 2));
+						g2 = hexToNumber(color2.substr(2, 2));
+						b2 = hexToNumber(color2.substr(4, 2));
+						
+						r3 = hexToNumber(color3.substr(0, 2));
+						g3 = hexToNumber(color3.substr(2, 2));
+						b3 = hexToNumber(color3.substr(4, 2));
+					}
+					if (i == SLOT_HELMET) {
+						helmColor.color1.r = r;
+						helmColor.color1.g = g;
+						helmColor.color1.b = b;
+						clothColor = &helmColor.color1;
+						helmColor.color2.r = r2;
+						helmColor.color2.g = g2;
+						helmColor.color2.b = b2;
+						clothColor2 = &helmColor.color2;
+						helmColor.color3.r = r3;
+						helmColor.color3.g = g3;
+						helmColor.color3.b = b3;
+						clothColor3 = &helmColor.color3;
+					} else if (i == SLOT_BREAST) {
+						breastColor.color1.r = r;
+						breastColor.color1.g = g;
+						breastColor.color1.b = b;
+						clothColor = &breastColor.color1;
+						breastColor.color2.r = r2;
+						breastColor.color2.g = g2;
+						breastColor.color2.b = b2;
+						clothColor2 = &breastColor.color2;
+						breastColor.color3.r = r3;
+						breastColor.color3.g = g3;
+						breastColor.color3.b = b3;
+						clothColor3 = &breastColor.color3;
+						
+						maleOverrideColor = &breastColor.color1;
+						femaleOverrideColor = &breastColor.color1;
+					} else if (i == SLOT_GARMENT) {
+						garmentColor.color1.r = r;
+						garmentColor.color1.g = g;
+						garmentColor.color1.b = b;
+						clothColor = &garmentColor.color1;
+						garmentColor.color2.r = r2;
+						garmentColor.color2.g = g2;
+						garmentColor.color2.b = b2;
+						clothColor2 = &garmentColor.color2;
+						garmentColor.color3.r = r3;
+						garmentColor.color3.g = g3;
+						garmentColor.color3.b = b3;
+						clothColor3 = &garmentColor.color3;
+					} else if (i == SLOT_BOOTS) {
+						bootColor.color1.r = r;
+						bootColor.color1.g = g;
+						bootColor.color1.b = b;
+						clothColor = &bootColor.color1;
+						bootColor.color2.r = r2;
+						bootColor.color2.g = g2;
+						bootColor.color2.b = b2;
+						clothColor2 = &bootColor.color2;
+						bootColor.color3.r = r3;
+						bootColor.color3.g = g3;
+						bootColor.color3.b = b3;
+						clothColor3 = &bootColor.color3;
+					} else if (i == SLOT_BRACERS) {
+						bracerColor.color1.r = r;
+						bracerColor.color1.g = g;
+						bracerColor.color1.b = b;
+						clothColor = &bracerColor.color1;
+						bracerColor.color2.r = r2;
+						bracerColor.color2.g = g2;
+						bracerColor.color2.b = b2;
+						clothColor2 = &bracerColor.color2;
+						bracerColor.color3.r = r3;
+						bracerColor.color3.g = g3;
+						bracerColor.color3.b = b3;
+						clothColor3 = &bracerColor.color3;
+					}
+				}
+				glContext->addGrannyScene(scene, textures, 0, 0, clothColor, clothColor2, clothColor3, shaderProgram, attachment);
 			}
 		}
 		if (i == SLOT_HELMET) {
@@ -161,6 +334,8 @@ void AppearanceEditorFrame::loadEquipmentData() {
 		}
 	}
 	
+	maleOverrideColor = 0;
+	femaleOverrideColor = 0;
 	generateEquipmentModels();
 }
 
@@ -1365,12 +1540,16 @@ bool AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 	std::string normalFile = normal[index].currentValue(isMale);
 	std::string specularFile = specular[index].currentValue(isMale);
 	std::string maskFile = mask[index].currentValue(isMale);
+	VertexRGB *maleClothColor = 0;
+	VertexRGB *femaleClothColor = 0;
 	if (useOverride) {
 		if (textureDiffuseOverride.size() > 0) {
 			diffuseFile = textureDiffuseOverride;
 			normalFile = textureNormalOverride;
 			specularFile = textureSpecularOverride;
 			maskFile = textureMaskOverride;
+			maleClothColor = maleOverrideColor;
+			femaleClothColor = femaleOverrideColor;
 		}
 	}
 	std::vector<GLuint> modelTextures;
@@ -1480,50 +1659,12 @@ bool AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 		MessageBoxA(0, ss.str().c_str(), 0, 0);
 	}
 	
-//	nv_dds::CDDSImage image9;
-//	GLuint texobj9;
-//	std::string nmDdsPath = "C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + textureFile + "_NM.dds";
-//	boost::filesystem::path nmPath(nmDdsPath);
-//	if (boost::filesystem::exists(nmPath)) {
-//		boost::filesystem::ifstream stream9(
-//					nmDdsPath,
-//					std::ios_base::binary);
-//		image9.load(stream9, false);
-//		glGenTextures(1, &texobj9);
-//		glEnable(GL_TEXTURE_2D);
-//		glBindTexture(GL_TEXTURE_2D, texobj9);
-//		image9.upload_texture2D();
-//	}
-	
-//	nv_dds::CDDSImage image10;
-//	GLuint texobj10;
-//	std::string smDdsPath = "C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + textureFile + "_SM.dds";
-//	boost::filesystem::path smPath(smDdsPath);
-//	if (boost::filesystem::exists(smPath)) {
-//		boost::filesystem::ifstream stream10(
-//					smDdsPath,
-//					std::ios_base::binary);
-//		image10.load(stream10, false);
-//	} else {
-//		boost::filesystem::ifstream stream10(
-//					"C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Divinity - Original Sin\\Data\\out\\Public\\Main\\Assets\\Textures\\Characters\\Player\\" + textureFile + "_MSK.dds",
-//					std::ios_base::binary);
-//		image10.load(stream10, false);
-//	}
-//	glGenTextures(1, &texobj10);
-//	glEnable(GL_TEXTURE_2D);
-//	glBindTexture(GL_TEXTURE_2D, texobj10);
-//	image10.upload_texture2D();
-	
 	if (current != 0) {
 		glContext->cleanupScene(current);
 		delete current;
 	}
-//	modelTextures.push_back(texobj3);
-//	modelTextures.push_back(texobj9);
-//	modelTextures.push_back(texobj10);
+
 	unsigned long fSize;
-	//std::string extractPath = "Public/Main/Assets/Characters/Players/" + modelFile + ".GR2";
 	std::string extractPath = modelFile;
 	fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", extractPath, gameDataPath, false, &fSize);
 	if (fileBytes == 0) {
@@ -1536,7 +1677,7 @@ bool AppearanceEditorFrame::updateToCurrentModel(ZGrannyScene *&current, std::ve
 	if (fileBytes != 0) {
 		delete[] fileBytes;
 	}
-	glContext->addGrannyScene(current, modelTextures, foreColor, backColor, shaderProgram, 0);
+	glContext->addGrannyScene(current, modelTextures, foreColor, backColor, maleClothColor, 0, femaleClothColor, shaderProgram, 0);
 	modelTextures.clear();
 	return true;
 }

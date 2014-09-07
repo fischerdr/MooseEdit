@@ -7,6 +7,7 @@
 #include "PakReader.h"
 #include "EquipmentHandler.h"
 #include "GameCharacter.h"
+#include "GenStatsReader.h"
 
 #define TEXT_INVALID	" (Invalid)"
 
@@ -39,6 +40,12 @@ typedef struct {
 	std::vector<GLuint> textures;
 	MeshAttachmentPoint *attachmentPoint;
 } equippedItemData_t;
+
+struct itemColor {
+	VertexRGB color1;
+	VertexRGB color2;
+	VertexRGB color3;
+};
 
 class AppearanceChangeCallback {
 public:
@@ -142,6 +149,8 @@ private:
 	std::string textureNormalOverride;
 	std::string textureSpecularOverride;
 	std::string textureMaskOverride;
+	VertexRGB *maleOverrideColor = 0;
+	VertexRGB *femaleOverrideColor = 0;
 	
 	std::vector<fieldValue_t> henchHeads;
 	std::vector<fieldValue_t> henchHeadDiffuse;
@@ -194,6 +203,16 @@ private:
 	VertexRGB *hairColor = 0;
 	VertexRGB *underwearColor = 0;
 	
+	itemColor helmColor;
+	itemColor breastColor;
+	itemColor breastColor2;
+	itemColor breastColor3;
+	itemColor bootColor;
+	itemColor bracerColor;
+	itemColor garmentColor;
+	
+	static std::vector<StatsContainer *> itemColorStats;
+	
 	LsbObject *weaponsResourceBankObject = 0;
 	LsbObject *armorsPlayerResourceBankObject = 0;
 	LsbObject *playerMaleResourceBankObject = 0;
@@ -209,6 +228,11 @@ private:
 	void loadEquipmentData();
 	void updateAllFields();
 	void initIndexesToCustomData();
+	std::string getItemStatText(GameItem *item, std::string statName);
+	std::string getModStatText(GameItem *item, std::string statName);
+	std::string getPermBoostStatText(GameItem *item, std::string statName);
+	std::string getFinalItemStatText(GameItem *item, std::string statName);
+	unsigned long hexToNumber(std::string hex);
 	void generateEquipmentModels();
 	std::string getGR2(LsbObject *resourceBankObject, std::string &visualTemplate);
 	std::string getTextureFromTextureTemplate(LsbObject *resourceBankObject, std::string &textureTemplate);

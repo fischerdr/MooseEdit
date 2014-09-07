@@ -314,8 +314,20 @@ void GlContextWidget::paintGL() {
 				color2 = glm::vec4(c2->r/255.0, c2->g/255.0, c2->b/255.0, 0.0);
 			}
 			glm::vec4 color3 = glm::vec4(0.573159, 0.00837312, 0.000107187, 0);
+			VertexRGB *c3 = vertexRGB3s[i];
+			if (c3 != 0) {
+				color3 = glm::vec4(c3->r/255.0, c3->g/255.0, c3->b/255.0, 0.0);
+			}
 			glm::vec4 color4 = glm::vec4(0.573159, 0.00837312, 0.000107187, 0);
+			VertexRGB *c4 = vertexRGB4s[i];
+			if (c4 != 0) {
+				color4 = glm::vec4(c4->r/255.0, c4->g/255.0, c4->b/255.0, 0.0);
+			}
 			glm::vec4 color5 = glm::vec4(0.447871, 0.00552174, 0.00552174, 0);
+			VertexRGB *c5 = vertexRGB5s[i];
+			if (c5 != 0) {
+				color5 = glm::vec4(c5->r/255.0, c5->g/255.0, c5->b/255.0, 0.0);
+			}
 			renderInfo.color1 = &color1;
 			renderInfo.color2 = &color2;
 			renderInfo.color3 = &color3;
@@ -436,16 +448,20 @@ void GlContextWidget::resumeRendering()
 
 void GlContextWidget::addGrannyScene(ZGrannyScene *scene, std::vector<GLuint> &textures)
 {
-	addGrannyScene(scene, textures, 0, 0, 0, 0);
+	addGrannyScene(scene, textures, 0, 0, 0, 0, 0, 0, 0);
 }
 
 void GlContextWidget::addGrannyScene(ZGrannyScene *scene, std::vector<GLuint > &textures, 
-									 VertexRGB *vertexRgb, VertexRGB *vertexRgb2, GlShaderProgram *shaderProgram, MeshAttachmentPoint *attachment)
+									 VertexRGB *vertexRgb, VertexRGB *vertexRgb2, VertexRGB *vertexRgb3, VertexRGB *vertexRgb4, VertexRGB *vertexRgb5, 
+									 GlShaderProgram *shaderProgram, MeshAttachmentPoint *attachment)
 {
 	grannyScenes.push_back(scene);
 	textureIds.push_back(textures);
 	vertexRGBs.push_back(vertexRgb);
 	vertexRGB2s.push_back(vertexRgb2);
+	vertexRGB3s.push_back(vertexRgb3);
+	vertexRGB4s.push_back(vertexRgb4);
+	vertexRGB5s.push_back(vertexRgb5);
 	shaderPrograms.push_back(shaderProgram);
 	attachments.push_back(attachment);
 }
@@ -461,6 +477,9 @@ bool GlContextWidget::removeGrannyScene(ZGrannyScene *scene) {
 			textureIds.erase(textureIds.begin() + i);
 			vertexRGBs.erase(vertexRGBs.begin() + i);
 			vertexRGB2s.erase(vertexRGB2s.begin() + i);
+			vertexRGB3s.erase(vertexRGB3s.begin() + i);
+			vertexRGB4s.erase(vertexRGB4s.begin() + i);
+			vertexRGB5s.erase(vertexRGB5s.begin() + i);
 			shaderPrograms.erase(shaderPrograms.begin() + i);
 			attachments.erase(attachments.begin() + i);
 			return true;

@@ -105,7 +105,7 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 				if (baseObject != 0) {
 					statsText = baseObject->getData();
 				}
-				item->getBoosts().clear();
+				item->getMods().clear();
 				for (int i=0; i<boostObjects.size(); ++i) {
 					LsbObject *boostObject = boostObjects[i]->lookupByUniquePath("Object");
 					if (boostObject != 0) {
@@ -265,8 +265,8 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 			}
 			std::string prefix = "";
 			std::string suffix = "";
-			for (int i=0; i<item->getBoosts().size(); ++i) {
-				StatsContainer *boostStats = item->getBoosts()[i];
+			for (int i=0; i<item->getMods().size(); ++i) {
+				StatsContainer *boostStats = item->getMods()[i];
 				
 				if (boostStats != 0) {
 					long itemRandom = item->getGenerationRandom();

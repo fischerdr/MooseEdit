@@ -165,11 +165,15 @@ public:
 		}
 		else {
 			std::string name = selectedItem->text(0).toStdString();
+			
+			bool useTextValue = false;
+			std::string textValue;
 			long value = 0;
 			try {
 				value = boost::lexical_cast<long>(selectedItem->getData());
 			} catch (const boost::bad_lexical_cast& e) {
-				
+				useTextValue = true;
+				textValue = selectedItem->getData();
 			}
 			
 			LsbObject *itemObject = itemEditFrame->item->getObject();
@@ -211,10 +215,14 @@ public:
 						newPermBoost->addChild(newAbilitiesObject);
 						statsDirectory->addChild(newPermBoost);
 					}
-					LsbObject *newBoostObject = new LsbObject(false, newBoostTag->index, newBoostTag->tag, 0x04, newPermBoost, itemEditFrame->tagList);
-					//LsbObject *newBoostObject = new LsbObject(false, newBoostTag->index, newBoostTag->tag, 0x16, newPermBoost, itemEditFrame->tagList);
-					//newBoostObject->setData(value.c_str(), value.length() + 1);
-					newBoostObject->setData((char *)&value, sizeof(long));
+					LsbObject *newBoostObject = 0;
+					if (useTextValue) {
+						newBoostObject = new LsbObject(false, newBoostTag->index, newBoostTag->tag, 0x16, newPermBoost, itemEditFrame->tagList);
+						newBoostObject->setData(textValue.c_str(), textValue.length() + 1);
+					} else {
+						newBoostObject = new LsbObject(false, newBoostTag->index, newBoostTag->tag, 0x04, newPermBoost, itemEditFrame->tagList);
+						newBoostObject->setData((char *)&value, sizeof(long));
+					}
 					newPermBoostObjects.push_back(newBoostObject);
 					
 					newPermBoost->addChild(newBoostObject);
@@ -471,7 +479,7 @@ void ItemEditFrame::refreshViewData() {
 	
 	modsView->clearTree();
 	if (item->getItemStats() != 0) {
-		std::vector<StatsContainer *> boosts = item->getBoosts();
+		std::vector<StatsContainer *> boosts = item->getMods();
 		modsView->addToTree(boosts);
 		modsView->resizeTree();
 	}
@@ -507,16 +515,21 @@ void ItemEditFrame::onEdit(DataContainerTreeItem *&selectedItem, QTreeWidget *st
 		LsbObject *permBoostObject = statsDirectory->lookupByUniquePath("PermanentBoost");
 		if (childIndex < permBoostObject->getChildren().size()) {
 			LsbObject *targetPermBoost = permBoostObject->getChildren()[childIndex];
-			//TODO: verify this is the correct node
-			long value = 0;
-			try {
-				value = boost::lexical_cast<long>(selectedItem->getData());
+			if (targetPermBoost->getType() == 0x04) {
+				//TODO: verify this is the correct node
+				long value = 0;
+				try {
+					value = boost::lexical_cast<long>(selectedItem->getData());
+				}
+				catch (const boost::bad_lexical_cast& e) {
+					
+				}
+	
+				targetPermBoost->setData((char *)&value, sizeof(long));
+			} else if (targetPermBoost->getType() == 0x16) {
+				std::string textValue = selectedItem->getData();
+				targetPermBoost->setData(textValue.c_str(), textValue.length() + 1);
 			}
-			catch (const boost::bad_lexical_cast& e) {
-				
-			}
-
-			targetPermBoost->setData((char *)&value, sizeof(long));
 		}
 	}
 	this->redraw();
