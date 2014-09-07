@@ -307,6 +307,7 @@ bool LsbReader::readTagData(std::istream& input, long readSize, std::stack<LsbOb
 						object->setChildId(currentDirectory->getChildrenCount() - currentDirectory->getTotalNodesRemaining());
 						object->setTagList(&tagList);
 						delete []readBuf;
+						++readCount;
 						
 						if (!currentNodeIsDirectory && type == 0x1C) {
 							long strSize;
@@ -383,6 +384,11 @@ void LsbReader::cleanup() {
 		}
 	}
 	tagList.clear();
+	readCount = 0;
+}
+int LsbReader::getReadCount() const
+{
+	return readCount;
 }
 
 std::vector<LsbObject *> LsbReader::loadFile(std::istream& input) {

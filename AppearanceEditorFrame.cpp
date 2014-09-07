@@ -134,7 +134,7 @@ void AppearanceEditorFrame::cleanupEquipmentData() {
 void AppearanceEditorFrame::loadEquipmentData() {
 	cleanupEquipmentData();
 	
-	{
+	if (weaponsResourceBankObject == 0) {
 		std::string extractPath = "Public/Main/Content/Assets/Items/Equipment/[PAK]_Weapons/Weapons.lsb";
 		unsigned long fileSize;
 		char *fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", extractPath, gameDataPath, false, &fileSize);
@@ -147,7 +147,7 @@ void AppearanceEditorFrame::loadEquipmentData() {
 			delete[] fileBytes;
 		}
 	}
-	{
+	if (armorsPlayerResourceBankObject == 0) {
 		std::string extractPath = "Public/Main/Content/Assets/Items/Armors/[PAK]_Armors_Player/Armors_Player.lsb";
 		unsigned long fileSize;
 		char *fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", extractPath, gameDataPath, false, &fileSize);
@@ -820,6 +820,14 @@ ZGrannyScene *AppearanceEditorFrame::createModelForItem(GameItem *item, std::vec
 						ZGrannyScene *scene = zGrannyCreateSceneFromMemory(fileBytes, fileSize, textures);
 						delete[] fileBytes;
 						if (!armorLookup) {
+							GLuint *allTextures = new GLuint[textures.size()];
+							for (int i=0; i<textures.size(); ++i) {
+								GLuint texture = textures[i];
+								allTextures[i] = texture;
+							}
+							glDeleteTextures(textures.size(), allTextures);
+							delete[] allTextures;
+							textures.clear();
 							scene->shouldTranslate = true;
 							zGrannyShutdownScene(scene);
 							delete scene;

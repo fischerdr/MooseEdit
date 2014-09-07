@@ -34,6 +34,7 @@ class LsbReader
 	TAG_LSB * getTagByIndex(long &index, std::vector<TAG_LSB *>& tagList);
 	void readDataHeader(std::istream& input, int& bytesLeft, char *alloc);
 	void cleanup();
+	int readCount;
 public:
 	~LsbReader() {
 		cleanup();
@@ -56,6 +57,7 @@ public:
 	}
 	std::vector<LsbObject *> loadFile(std::istream& input);
 	HEADER_LSB *getHeader();
+	int getReadCount() const;
 };
 
 #endif // LSBREADER_H
