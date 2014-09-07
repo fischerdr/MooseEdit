@@ -18,7 +18,7 @@
 #include "EditorSettings.h"
 #include "CharacterLoader.h"
 
-#define PRG_VERSION	"alpha23"
+#define PRG_VERSION	"alpha24"
 
 namespace Ui {
 class MainWindow;
