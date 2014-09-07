@@ -415,105 +415,6 @@ void AppearanceEditorFrame::generateFields() {
 		populateFieldValuesForTemplate("3ec36a84-93a1-409f-83d6-4b7b17745df6", "Arms", "Henchman Hair", henchHairs, henchHairDiffuse, henchHairNormal, henchHairSpecular, henchHairMask, false);
 		populateFieldValuesForTemplate("3ec36a84-93a1-409f-83d6-4b7b17745df6", "Bodies", "Henchman Underwear", henchUnderwears, henchUnderwearDiffuse, henchUnderwearNormal, henchUnderwearSpecular, henchUnderwearMask, false);
 		
-//		for (int i=0; i<NUM_HEADS; ++i) {
-//			std::ostringstream ss;
-//			ss<<"Head "<<(i + 1);
-//			heads.push_back({ss.str(), "", ""});
-//			headDiffuse.push_back({ss.str(), "", ""});
-//		}
-//		heads[0].maleValue = "PL_M_Head_A";
-//		headDiffuse[0].maleValue = "PL_M_Head_A";
-//		heads[1].maleValue = "PL_M_Head_B";
-//		headDiffuse[1].maleValue = "PL_M_Head_B";
-//		heads[2].maleValue = "PL_M_Head_C";
-//		headDiffuse[2].maleValue = "PL_M_Head_C";
-//		heads[3].maleValue = "PL_M_Head_D";
-//		headDiffuse[3].maleValue = "PL_M_Head_D";
-//		heads[4].maleValue = "PL_M_Head_E";
-//		headDiffuse[4].maleValue = "PL_M_Head_E";
-//		heads[5].maleValue = "PL_M_Head_F";
-//		headDiffuse[5].maleValue = "PL_M_Head_F";
-//		heads[6].maleValue = "PL_M_Head_A";
-//		headDiffuse[6].maleValue = "PL_M_Head_G";
-//		heads[7].maleValue = "PL_M_Head_A";
-//		headDiffuse[7].maleValue = "PL_M_Head_H";
-//		heads[8].maleValue = "PL_M_Head_I";
-//		headDiffuse[8].maleValue = "PL_M_Head_I";
-//		heads[9].maleValue = "PL_M_Head_A";
-//		headDiffuse[9].maleValue = "PL_M_Head_L";
-//		heads[10].maleValue = "PL_M_Head_A";
-//		headDiffuse[10].maleValue = "PL_M_Head_M";
-//		heads[11].maleValue = "PL_M_Head_N";
-//		headDiffuse[11].maleValue = "PL_M_Head_N";
-//		heads[12].maleValue = "PL_M_Head_O";
-//		headDiffuse[12].maleValue = "PL_M_Head_O";
-//		heads[13].maleValue = "PL_M_Head_I";
-//		headDiffuse[13].maleValue = "PL_M_Head_J";
-//		heads[14].maleValue = "PL_M_Head_I";
-//		headDiffuse[14].maleValue = "PL_M_Head_K";
-		
-//		for (int i=0; i<NUM_HEADS; ++i) {
-//			heads[i].femaleValue = "PL_F_Head_A";
-//			headDiffuse[i].femaleValue = "PL_F_Head_A";
-//		}
-		
-//		for (int i=0; i<NUM_HAIRS; ++i) {
-//			std::ostringstream ss;
-//			ss<<"Hair "<<(i + 1);
-//			hairs.push_back({ss.str(), "", ""});
-//		}
-//		hairs[0].maleValue = "PL_M_Hair_A";
-//		hairs[1].maleValue = "PL_M_Hair_H";
-//		hairs[2].maleValue = "PL_M_Hair_J";
-//		hairs[3].maleValue = "PL_M_Hair_O";
-//		hairs[4].maleValue = "PL_M_Hair_F";
-//		hairs[5].maleValue = "PL_M_Hair_G";
-//		hairs[6].maleValue = "PL_M_Hair_C";
-//		hairs[7].maleValue = "PL_M_Hair_B";
-//		hairs[8].maleValue = "PL_M_Hair_L";
-//		hairs[9].maleValue = "PL_M_Hair_M";
-//		hairs[10].maleValue = "PL_M_Hair_N";
-//		hairs[11].maleValue = "PL_M_Hair_D";
-//		hairs[12].maleValue = "PL_M_Hair_K";
-//		hairs[13].maleValue = "PL_M_Hair_I";
-//		hairs[14].maleValue = "PL_M_Hair_E";
-		
-//		hairs[0].femaleValue = "PL_F_Hair_A";
-//		hairs[1].femaleValue = "PL_F_Hair_B";
-//		hairs[2].femaleValue = "PL_F_Hair_C";
-//		hairs[3].femaleValue = "PL_F_Hair_D";
-//		hairs[4].femaleValue = "PL_F_Hair_E";
-//		hairs[5].femaleValue = "PL_F_Hair_F";
-//		hairs[6].femaleValue = "PL_F_Hair_G";
-//		hairs[7].femaleValue = "PL_F_Hair_H";
-//		hairs[8].femaleValue = "PL_F_Hair_I";
-//		hairs[9].femaleValue = "PL_F_Hair_J";
-//		hairs[10].femaleValue = "PL_F_Hair_K";
-//		hairs[11].femaleValue = "PL_F_Hair_L";
-//		hairs[12].femaleValue = "PL_F_Hair_M";
-//		hairs[13].femaleValue = "PL_F_Hair_N";
-//		hairs[14].femaleValue = "PL_F_Hair_O";
-		
-//		for (int i=0; i<NUM_UNDERWEARS; ++i) {
-//			std::ostringstream ss;
-//			ss<<"Underwear "<<(i + 1);
-//			underwears.push_back({ss.str(), "", ""});
-//			underwearTextures.push_back({ss.str(), "", ""});
-//		}
-//		underwears[0].maleValue = "PL_M_Body_A";
-//		underwearTextures[0].maleValue = "PL_M_Body_A";
-//		underwears[1].maleValue = "PL_M_Body_A";
-//		underwearTextures[1].maleValue = "PL_M_Body_B";
-//		underwears[2].maleValue = "PL_M_Body_A";
-//		underwearTextures[2].maleValue = "PL_M_Body_C";
-		
-//		underwears[0].femaleValue = "PL_F_Body_A";
-//		underwearTextures[0].femaleValue = "PL_F_Body_A";
-//		underwears[1].femaleValue = "PL_F_Body_A";
-//		underwearTextures[1].femaleValue = "PL_F_Body_B";
-//		underwears[2].femaleValue = "PL_F_Body_A";
-//		underwearTextures[2].femaleValue = "PL_F_Body_C";
-		
 		{
 			LsbObject *hairColorsObject = LsbObject::lookupByUniquePath(objects, "CharacterCreationProperties/root/HairColors");
 			std::vector<LsbObject *> colorDescObjects = LsbObject::lookupAllEntitiesWithName(hairColorsObject, "ColorDesc");
@@ -1118,43 +1019,43 @@ void AppearanceEditorFrame::setup() {
 	}
 	
 	
-	std::vector<GlShader> allShaders2;
-	QFile vertexShader2(":/equip_vertex.shd");
-	if(!vertexShader2.open(QFile::ReadOnly | QFile::Text)){
-		MessageBoxA(0, "failed to open equip_vertex", 0, 0);
-	}
-	{
-		QTextStream in(&vertexShader2);
-		mText = in.readAll();
-		std::stringstream ss1(mText.toStdString());
-		vertexShader2.close();
-		allShaders2.push_back(GlShader(GL_VERTEX_SHADER, ss1));
-		GlShader& shader = allShaders2.back();
-		if (!shader.compile()) {
-			MessageBoxA(0, shader.getLastError().c_str(), 0, 0);
-		}
-	}
+//	std::vector<GlShader> allShaders2;
+//	QFile vertexShader2(":/equip_vertex.shd");
+//	if(!vertexShader2.open(QFile::ReadOnly | QFile::Text)){
+//		MessageBoxA(0, "failed to open equip_vertex", 0, 0);
+//	}
+//	{
+//		QTextStream in(&vertexShader2);
+//		mText = in.readAll();
+//		std::stringstream ss1(mText.toStdString());
+//		vertexShader2.close();
+//		allShaders2.push_back(GlShader(GL_VERTEX_SHADER, ss1));
+//		GlShader& shader = allShaders2.back();
+//		if (!shader.compile()) {
+//			MessageBoxA(0, shader.getLastError().c_str(), 0, 0);
+//		}
+//	}
 	
-	QFile fragmentShader2(":/player_fragment.shd");
-	if(!fragmentShader2.open(QFile::ReadOnly | QFile::Text)){
-		MessageBoxA(0, "failed to open equip_fragment", 0, 0);
-	}
-	{
-		QTextStream in(&fragmentShader2);
-		mText = in.readAll();
-		std::stringstream ss1(mText.toStdString());
-		fragmentShader2.close();
-		allShaders2.push_back(GlShader(GL_FRAGMENT_SHADER, ss1));
-		GlShader& shader = allShaders2.back();
-		if (!shader.compile()) {
-			MessageBoxA(0, shader.getLastError().c_str(), 0, 0);
-		}
-	}
+//	QFile fragmentShader2(":/player_fragment.shd");
+//	if(!fragmentShader2.open(QFile::ReadOnly | QFile::Text)){
+//		MessageBoxA(0, "failed to open equip_fragment", 0, 0);
+//	}
+//	{
+//		QTextStream in(&fragmentShader2);
+//		mText = in.readAll();
+//		std::stringstream ss1(mText.toStdString());
+//		fragmentShader2.close();
+//		allShaders2.push_back(GlShader(GL_FRAGMENT_SHADER, ss1));
+//		GlShader& shader = allShaders2.back();
+//		if (!shader.compile()) {
+//			MessageBoxA(0, shader.getLastError().c_str(), 0, 0);
+//		}
+//	}
 	
-	equipmentShaderProgram = new GlShaderProgram(allShaders2);
-	if (!equipmentShaderProgram->link()) {
-		MessageBoxA(0, equipmentShaderProgram->getLastError().c_str(), 0, 0);
-	}
+//	equipmentShaderProgram = new GlShaderProgram(allShaders2);
+//	if (!equipmentShaderProgram->link()) {
+//		MessageBoxA(0, equipmentShaderProgram->getLastError().c_str(), 0, 0);
+//	}
 
 	if ((err = glGetError()) != GL_NO_ERROR) {
 		std::ostringstream ss;
@@ -1162,7 +1063,7 @@ void AppearanceEditorFrame::setup() {
 		MessageBoxA(0, ss.str().c_str(), 0, 0);
 	}
 	
-	{
+	if (playerMaleResourceBankObject == 0) {
 		std::string extractPath = "Public/Main/Content/Assets/Characters/[PAK]_Player_Male/Player_Male.lsb";
 		unsigned long fileSize;
 		char *fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", extractPath, gameDataPath, false, &fileSize);
@@ -1175,7 +1076,8 @@ void AppearanceEditorFrame::setup() {
 			delete[] fileBytes;
 		}
 	}
-	{
+	
+	if (playerFemaleResourceBankObject == 0) {
 		std::string extractPath = "Public/Main/Content/Assets/Characters/[PAK]_Player_Female/Player_Female.lsb";
 		unsigned long fileSize;
 		char *fileBytes = mainPak.extractFileIntoMemory(gameDataPath + L"Main.pak", extractPath, gameDataPath, false, &fileSize);
@@ -1191,7 +1093,6 @@ void AppearanceEditorFrame::setup() {
 	
 	generateFields();
 	initIndexesToCustomData();
-	//loadEquipmentData();
 	updateAllFields();
 }
 
@@ -1239,22 +1140,6 @@ void AppearanceEditorFrame::updatePortraitImage() {
 			portraitLabel->setPixmap(QPixmap::fromImage(image));
 		}
 	}
-//	QLabel *portraitLabel = this->findChild<QLabel *>("portraitLabel");
-//	if (playerCustomDataObject != 0) {
-//		LsbObject *iconObject = playerCustomDataObject->lookupByUniquePath("Icon");
-//		if (iconObject != 0) {
-//			std::string icon = iconObject->getData();
-//			if (gamePakData != 0) {
-//				QImage image;
-//				bool success = gamePakData->getPortraitAtlas().getNamedTexture(icon.c_str(), &image);
-//				if (success) {
-//					if (portraitLabel != 0) {
-//						portraitLabel->setPixmap(QPixmap::fromImage(image));
-//					}
-//				}
-//			}
-//		}
-//	}
 }
 
 void AppearanceEditorFrame::updatePortraitData() {

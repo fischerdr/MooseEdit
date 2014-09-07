@@ -29,6 +29,11 @@ bool GlShaderProgram::link() {
 	}
 	glLinkProgram(program);
 	
+	for (int i=0; i<shaders.size(); ++i) {
+		GlShader &shader = shaders[i];
+		glDeleteShader(shader.getShaderId());
+	}
+	
 	GLint program_ok;
 	glGetProgramiv(program, GL_LINK_STATUS, &program_ok);
 	if (!program_ok) {
