@@ -107,6 +107,8 @@ private slots:
 	
 	void on_appearanceButton_released();
 	
+	void on_expEdit_textEdited(const QString &text);
+	
 protected:
 	void showEvent(QShowEvent *);
 
@@ -138,6 +140,7 @@ private:
 	int lastWidth = 0;
 	void addWidgetsToLayout(QWidget *widget, QLayout *layout);
 	long levelFromExperience(long experience);
+	void modifyExp(long experience);
 	bool populateTalentsView();
 	bool populateAbilitiesView();
 	bool populateTraitsView();

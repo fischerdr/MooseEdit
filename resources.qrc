@@ -51,9 +51,9 @@
         <file>appearance-button-male-deactivated.png</file>
         <file>portraitBorder.png</file>
         <file>charsheet.png</file>
-        <file>player_fragment.shd</file>
         <file>player_vertex.shd</file>
         <file>equip_fragment.shd</file>
         <file>equip_vertex.shd</file>
+        <file>player_fragment.shd</file>
     </qresource>
 </RCC>

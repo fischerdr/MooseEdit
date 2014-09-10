@@ -885,6 +885,15 @@ void MainWindow::on_treeWidget_itemChanged(QTreeWidgetItem *item, int column)
 			}
 
 			editable->object->setData((char *)&value, sizeof(unsigned long));
+		} else if (type == 0x06) {
+			float value = 0;
+			try {
+				value = boost::lexical_cast<float>(text);
+			} catch (const boost::bad_lexical_cast& e) {
+				
+			}
+
+			editable->object->setData((char *)&value, sizeof(float));
 		} else if (type == 0x07) {
 			double value = 0;
 			try {

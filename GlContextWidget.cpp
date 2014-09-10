@@ -356,14 +356,14 @@ void GlContextWidget::paintGL() {
 			glm::vec4 itemColor = glm::vec4(1.0, 1.0, 1.0, 0.0);
 			renderInfo.itemColor = &itemColor;
 			
-			for (int i=0; i<BONE_MATRICES_COUNT; ++i) {
-				if (i < boneMatrices.size()) {
-					renderInfo.boneMatrices[i] = &boneMatrices[i];
+			for (int j=0; j<BONE_MATRICES_COUNT; ++j) {
+				if (j < boneMatrices.size()) {
+					renderInfo.boneMatrices[j] = &boneMatrices[j];
 				} else {
-					renderInfo.boneMatrices[i] = 0;
+					renderInfo.boneMatrices[j] = 0;
 				}
 			}
-			
+
 			zGrannyRenderScene(grannyScenes[i], textureIds[i], vertexRGBs[i], vertexRGB2s[i], shaderPrograms[i], worldPos, &renderInfo);
 			//zGrannyRenderSkeleton(grannyScenes[i]->models[0].skeleton, grannyScenes[i]->models[0].worldPose);
 		}

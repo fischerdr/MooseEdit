@@ -33,6 +33,7 @@ long characterTab::levelFromExperience(long experience) {
 			return i;
 		}
 	}
+	return 0;
 }
 
 bool characterTab::loadExperienceData() {	
@@ -290,6 +291,27 @@ void characterTab::setCharacter(GameCharacter *character) {
 		std::ostringstream ss;
 		ss<<level;
 		levelEdit->setText(ss.str().c_str());
+	}
+	
+	QLabel *nextLevelLabel = this->findChild<QLabel *>("nextLevelLabel");
+	QLineEdit *expEdit = this->findChild<QLineEdit *>("expEdit");
+	if (experienceObject != 0) {
+		long exp = *((long *)experienceObject->getData());
+		std::ostringstream ss;
+		ss<<exp;
+		expEdit->setText(ss.str().c_str());
+		
+		long level = levelFromExperience(exp);
+		if (level > 0) {
+			--level;
+			if ((level + 1) < experienceRequired.size()) {
+				long expReq = experienceRequired[level + 1];
+				expReq -= exp;
+				std::stringstream ss;
+				ss<<expReq;
+				nextLevelLabel->setText(ss.str().c_str());
+			}
+		}
 	}
 	
 	appearanceEditorFrame = new AppearanceEditorFrame(gameDataPath, character);
@@ -806,19 +828,22 @@ void characterTab::on_statsAvailableEdit_textEdited(const QString &text)
 
 void characterTab::on_levelEdit_textEdited(const QString &text)
 {
+	bool valid = true;
+	QLineEdit *expEdit = this->findChild<QLineEdit *>("expEdit");
 	long value = 1;
 	try {
 		value = boost::lexical_cast<long>(text.toStdString());
 	} catch (const boost::bad_lexical_cast& e) {
-		;
+		valid = false;
 	}
-	LsbObject *characterObject = this->getCharacter()->getObject();
-	LsbObject *experienceObject = characterObject->lookupByUniquePath("Stats/Experience");
-	if (experienceObject != 0) {
-		--value;
-		if (value >= 0 && value < experienceRequired.size()) {
-			long exp = experienceRequired[value];
-			experienceObject->setData((char *)&exp, sizeof(exp));
+	--value;
+	if (value >= 0 && value < experienceRequired.size()) {
+		long exp = experienceRequired[value];
+		if (valid) {
+			modifyExp(exp);
+			std::ostringstream ss;
+			ss<<exp;
+			expEdit->setText(ss.str().c_str());
 		}
 	}
 }
@@ -849,5 +874,45 @@ void characterTab::on_appearanceButton_released()
 			msg.setText(errorMessage.c_str());
 			msg.exec();
 		}
+	}
+}
+
+void characterTab::modifyExp(long experience) {
+	QLabel *nextLevelLabel = this->findChild<QLabel *>("nextLevelLabel");
+	LsbObject *characterObject = this->getCharacter()->getObject();
+	LsbObject *experienceObject = characterObject->lookupByUniquePath("Stats/Experience");
+	if (experienceObject != 0) {
+		experienceObject->setData((char *)&experience, sizeof(experience));
+		long level = levelFromExperience(experience);
+		if (level > 0) {
+			--level;
+			if ((level + 1) < experienceRequired.size()) {
+				long expReq = experienceRequired[level + 1];
+				expReq -= experience;
+				std::stringstream ss;
+				ss<<expReq;
+				nextLevelLabel->setText(ss.str().c_str());
+			}
+		}
+	}
+}
+
+void characterTab::on_expEdit_textEdited(const QString &text)
+{
+	QLineEdit *levelEdit = this->findChild<QLineEdit *>("levelEdit");
+	bool valid = true;
+	long value = 0;
+	try {
+		value = boost::lexical_cast<long>(text.toStdString());
+	} catch (const boost::bad_lexical_cast& e) {
+		valid = false;
+	}
+	if (valid) {
+		modifyExp(value);
+		
+		unsigned long level = levelFromExperience(value);
+		std::ostringstream ss;
+		ss<<level;
+		levelEdit->setText(ss.str().c_str());
 	}
 }

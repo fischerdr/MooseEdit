@@ -909,9 +909,6 @@ ZGrannyScene *AppearanceEditorFrame::createModelForItem(GameItem *item, std::vec
 							delete scene;
 							scene = 0;
 						}
-						if (customBodyMaterial.size() > 0) {
-							
-						}
 						return scene;
 					}
 				}

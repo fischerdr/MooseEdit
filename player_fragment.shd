@@ -95,7 +95,7 @@ void CalculateMatEmissive(vec3 in_0,
 	float Local18 = Local15.z;
 	float Local19 = Local15.w;
 	vec4 Local20 = (Vector4Parameter_Color1 * Local19);
-	vec4 Local21 = texture(Texture2DParameter_MSK, in_1);
+	vec4 Local21 = texture(Texture2DParameter_MSK, mod(in_1, 1.0f));
 	//[Local21] Get needed components
 	float Local22 = Local21.x;
 	float Local23 = Local21.y;
@@ -175,7 +175,7 @@ void CalculateMatDiffuse(vec2 in_0,
 	float Local3 = Local0.z;
 	float Local4 = Local0.w;
 	vec4 Local5 = (Vector4Parameter_Color1 * Local4);
-	vec4 Local6 = texture(Texture2DParameter_MSK, in_0);
+	vec4 Local6 = texture(Texture2DParameter_MSK, mod(in_0, 1.0f));
 	//[Local6] Get needed components
 	float Local7 = Local6.x;
 	float Local8 = Local6.y;
@@ -250,7 +250,7 @@ void CalculateMatSpecular(vec2 in_0,
 	float Local3 = Local0.z;
 	float Local4 = Local0.w;
 	vec4 Local5 = (Vector4Parameter_Color1_Specular * Local4);
-	vec4 Local6 = texture(Texture2DParameter_MSK, in_0);
+	vec4 Local6 = texture(Texture2DParameter_MSK, mod(in_0, 1.0f));
 	//[Local6] Get needed components
 	float Local7 = Local6.x;
 	float Local8 = Local6.y;
