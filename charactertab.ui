@@ -1391,7 +1391,7 @@ color: rgb(116, 109, 101);</string>
      </font>
     </property>
     <property name="toolTip">
-     <string>Strength</string>
+     <string>Experience</string>
     </property>
     <property name="styleSheet">
      <string notr="true">background: transparent;
