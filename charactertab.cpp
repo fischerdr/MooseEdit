@@ -787,6 +787,7 @@ void characterTab::on_talentList_customContextMenuRequested(const QPoint &pos)
 				item->setCheckState(Qt::Unchecked);
 			}
 			talentList->setSortingEnabled(true);
+			talentList->sortItems();
 		}
 	}
 }
