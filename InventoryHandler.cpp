@@ -270,11 +270,13 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 				
 				if (boostStats != 0) {
 					long itemRandom = item->getGenerationRandom();
+					if (itemRandom >= randTable.size())
+						itemRandom = 0;
 					if (boostStats->getPrefixList().size() > 0 && prefix.size() == 0) {
-						prefix = boostStats->getPrefixList()[itemRandom % boostStats->getPrefixList().size()];
+						prefix = boostStats->getPrefixList()[randTable[itemRandom] % boostStats->getPrefixList().size()];
 					}
 					else if (boostStats->getSuffixList().size() > 0 && suffix.size() == 0) {
-						suffix = boostStats->getSuffixList()[itemRandom % boostStats->getSuffixList().size()];
+						suffix = boostStats->getSuffixList()[randTable[itemRandom] % boostStats->getSuffixList().size()];
 					}
 				}
 			}
@@ -338,9 +340,9 @@ GameItem *InventoryHandler::getItemAtPoint(const QPoint &pt)
 
 InventoryHandler::InventoryHandler(QImage emptySlotImage, std::vector<LsbObject *>& stats, 
 								   std::vector<LsbObject *> &rootTemplates, std::vector<LsbObject *> &modTemplates, TextureAtlas& iconAtlas, std::vector<StatsContainer *> &itemStats,
-								   std::map<std::string, std::string> &nameMappings, std::map<std::string, LsbObject *> &rootTemplateMap, std::map<std::string, LsbObject *> &modTemplateMap) : 
+								   std::map<std::string, std::string> &nameMappings, std::map<std::string, LsbObject *> &rootTemplateMap, std::map<std::string, LsbObject *> &modTemplateMap, std::vector<short> &randTable) : 
 	stats(stats), rootTemplates(rootTemplates), iconAtlas(iconAtlas), modTemplates(modTemplates), itemStats(itemStats), nameMappings(nameMappings),
-	rootTemplateMap(rootTemplateMap), modTemplateMap(modTemplateMap)
+	rootTemplateMap(rootTemplateMap), modTemplateMap(modTemplateMap), randTable(randTable)
 {
 	this->emptySlotImage = emptySlotImage;
 }

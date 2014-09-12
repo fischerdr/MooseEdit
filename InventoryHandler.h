@@ -28,6 +28,7 @@ class InventoryHandler
 	std::map<std::string, std::string> &nameMappings;
 	std::map<std::string, LsbObject *> &rootTemplateMap;
 	std::map<std::string, LsbObject *> &modTemplateMap;
+	std::vector<short> &randTable;
 	
 	void buildNameMappings();
 	long itemsPerRow = 10;
@@ -70,7 +71,7 @@ public:
 	~InventoryHandler();
 	InventoryHandler(QImage emptySlotImage, std::vector<LsbObject *>& stats, std::vector<LsbObject *>& rootTemplates, 
 					 std::vector<LsbObject *>& modTemplates, TextureAtlas& iconAtlas, std::vector<StatsContainer *>& itemStats, std::map<std::string, std::string>& nameMappings,
-					 std::map<std::string, LsbObject *> &rootTemplateMap, std::map<std::string, LsbObject *> &modTemplateMap);
+					 std::map<std::string, LsbObject *> &rootTemplateMap, std::map<std::string, LsbObject *> &modTemplateMap, std::vector<short> &randTable);
 	void draw(QWidget *parent, QWidget *mainWindow, bool drawBackground);
 	GameItem *getItemAtPoint(const QPoint& pt);
 };

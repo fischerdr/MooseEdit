@@ -61,6 +61,10 @@ public:
 		delete itemEditFrame;
 	}
 	
+	void setRandTable(std::vector<short> &randTable) {
+		this->randTable = &randTable;
+	}
+	
 	GamePakData *getGamePakData() const;
 	void setGamePakData(GamePakData *value);
 	void onAppearanceChange(LsbObject *oldPlayerCustomDataObject, LsbObject *newPlayerCustomDataObject);
@@ -132,6 +136,7 @@ private:
 	std::vector<StatsContainer *> talents;
 	std::vector<StatsContainer *> abilities;
 	std::vector<StatsContainer *> traits;
+	std::vector<short> *randTable;
 	std::map<std::string, std::string> *nameMappings = 0;
 	RelativePositionLayout *relPosLayout = 0;
 	SkillEditFrame *skillEditFrame = 0;

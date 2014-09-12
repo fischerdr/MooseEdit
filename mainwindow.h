@@ -108,6 +108,11 @@ private:
 	bool openPakFileToList(std::wstring &fileName);
 	GamePakData *gamePakData = 0;
 	std::vector<TAG_LSB *> openFileButtonTagList;
+	
+	long randSeed;
+	long randSize;
+	std::vector<short> randTable;
+	void populateRandTable(long randSeed);
 };
 
 #endif // MAINWINDOW_H

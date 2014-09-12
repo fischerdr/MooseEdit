@@ -40,6 +40,7 @@ private:
 	std::vector<TAG_LSB *>& tagList;
 	std::map<std::string, LsbObject *> &rootTemplateMap;
 	std::map<std::string, LsbObject *> &modTemplateMap;
+	std::vector<short> &randTable;
 	void initInventoryHandlers();
 	QWidget *parentWidget;
 	QWidget *mainWindow;
@@ -56,7 +57,7 @@ public:
 					 std::vector<LsbObject *>& modTemplates, TextureAtlas& iconAtlas, std::vector<StatsContainer *>& itemStats,
 					 std::map<std::string, std::string>& nameMappings, QWidget *parentWidget, QWidget *mainWindow, std::vector<StatsContainer *>& itemLinks,
 					 std::vector<TAG_LSB *>& tagList, LsbObject *itemsObject, GameCharacter *character,
-					 std::map<std::string, LsbObject *> &rootTemplateMap, std::map<std::string, LsbObject *> &modTemplateMap, StatTemplateMap &statToTemplateMap);
+					 std::map<std::string, LsbObject *> &rootTemplateMap, std::map<std::string, LsbObject *> &modTemplateMap, StatTemplateMap &statToTemplateMap, std::vector<short> &randTable);
 	void addItem(GameItem *item);
 	void drawAll();
 	void onItemEdited(GameItem *newItem, GameItem *oldItem);

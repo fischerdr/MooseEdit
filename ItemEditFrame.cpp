@@ -323,10 +323,10 @@ void ItemEditFrame::redraw() {
 }
 
 ItemEditFrame::ItemEditFrame(std::vector<StatsContainer *> &allItemStats, std::vector<StatsContainer *> &itemLinks, GameItem *originalItem, InventoryHandler *itemEditHandler, 
-							 ItemEditCallback *itemEditCallback, std::vector<TAG_LSB *> *tagList, std::map<std::string, std::string> &nameMappings, StatTemplateMap &statToTemplateMap,
+							 ItemEditCallback *itemEditCallback, std::vector<TAG_LSB *> *tagList, std::map<std::string, std::string> &nameMappings, StatTemplateMap &statToTemplateMap, std::vector<short> &randTable,
 							 QWidget *parent) :
 	QFrame(parent), allItemStats(allItemStats), itemLinks(itemLinks), oldItem(originalItem), itemEditHandler(itemEditHandler), itemEditCallback(itemEditCallback),
-	tagList(tagList), nameMappings(nameMappings), statToTemplateMap(statToTemplateMap),
+	tagList(tagList), nameMappings(nameMappings), statToTemplateMap(statToTemplateMap), randTable(randTable),
 	ui(new Ui::ItemEditFrame)
 {
 	this->item = new GameItem(*originalItem); //make a copy of the item
@@ -684,6 +684,17 @@ void ItemEditFrame::on_importButton_released()
 					if (importedObject->isEntity()) {
 						LsbObject *importedItem = importedObject->lookupByUniquePath("Item");
 						if (importedItem != 0) {
+							LsbObject *randomObject = importedItem->lookupByUniquePath("Generation/Random");
+							if (randomObject != 0) {
+								long itemRandom = *((long *)randomObject->getData());
+								if (randTable.size() == 0) {
+									itemRandom = 0;
+								} else if (itemRandom >= randTable.size()) {
+									itemRandom = itemRandom % randTable.size();
+								}
+								randomObject->setData((char *)&itemRandom, sizeof(itemRandom));
+							}
+							
 							LsbObject *oldItem = this->item->getObject();
 							LsbObject *oldParentObject = oldItem->lookupByUniquePath("Parent");
 							LsbObject *oldOwnerObject = oldItem->lookupByUniquePath("owner");

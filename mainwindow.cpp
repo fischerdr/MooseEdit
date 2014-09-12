@@ -306,6 +306,17 @@ void MainWindow::unload() {
 	globalTagList.clear();
 }
 
+void MainWindow::populateRandTable(long randSeed) {
+	randTable.clear();
+	
+	long seed = randSeed;
+	for (int i=0; i<randSize; ++i) {
+		seed = seed * 0x343FD + 0x269EC3;
+		short value = (short)((seed >> 0x10) & 0x7FFF);
+		randTable.push_back(value);
+	}
+}
+
 void MainWindow::handleLoadButton() {
 	unload();
 	
@@ -345,6 +356,8 @@ void MainWindow::handleLoadButton() {
 			globalTagList = reader.getTagList();
 			fin.close();
 			
+			populateRandTable(randSeed);
+			
 			characterLoader = new CharacterLoader();
 			characterLoader->load(globals, this->getGameDataLocation(), &globalTagList, this);
 			
@@ -365,14 +378,14 @@ void MainWindow::handleLoadButton() {
 			if (gamePakData->getInventoryCellImg() != 0) {
 				editItemHandler = new InventoryHandler(*gamePakData->getInventoryCellImg(), gamePakData->getStats(), gamePakData->getRootTemplates(), 
 													   gamePakData->getModTemplates(), gamePakData->getIconAtlas(), gamePakData->getItemStats(), gamePakData->getNameMappings(),
-													   gamePakData->getRootTemplateMap(), gamePakData->getModTemplateMap());
+													   gamePakData->getRootTemplateMap(), gamePakData->getModTemplateMap(), randTable);
 				for (int i=0; i<characterLoader->getCharacterGroup().getCharacters().size(); ++i) {
 					GameCharacter *character = characterLoader->getCharacterGroup().getCharacters()[i];
 					//if (i != 0)
 						//continue;
 					InventoryHandler *handlerPtr = new InventoryHandler(*gamePakData->getInventoryCellImg(), gamePakData->getStats(), gamePakData->getRootTemplates(), 
 																		gamePakData->getModTemplates(), gamePakData->getIconAtlas(), gamePakData->getItemStats(), gamePakData->getNameMappings(),
-																		gamePakData->getRootTemplateMap(), gamePakData->getModTemplateMap());
+																		gamePakData->getRootTemplateMap(), gamePakData->getModTemplateMap(), randTable);
 					InventoryHandler& inventoryHandler = *handlerPtr;
 					for (int j=0; j<character->getInventory().getItems().size(); ++j) {
 						inventoryHandler.getItems()->addItem(character->getInventory().getItems()[j]);
@@ -384,6 +397,7 @@ void MainWindow::handleLoadButton() {
 					character->setInventoryHandler(handlerPtr);
 					
 					characterTab *charTab = (characterTab *)character->getWidget();
+					charTab->setRandTable(randTable);
 					charTab->setNameMappings(&gamePakData->getNameMappings());
 					charTab->setItemLinks(gamePakData->getItemLinks());
 					charTab->setAllItemStats(gamePakData->getItemStats());
@@ -397,7 +411,7 @@ void MainWindow::handleLoadButton() {
 							new EquipmentHandler(*gamePakData->getInventoryCellImg(), gamePakData->getStats(), gamePakData->getRootTemplates(), 
 												gamePakData->getModTemplates(), gamePakData->getIconAtlas(), gamePakData->getItemStats(), gamePakData->getNameMappings(),
 												equipmentWidget, this, gamePakData->getItemLinks(), globalTagList, itemsObject, character,
-												 gamePakData->getRootTemplateMap(), gamePakData->getModTemplateMap(), gamePakData->getStatToTemplateMap());
+												 gamePakData->getRootTemplateMap(), gamePakData->getModTemplateMap(), gamePakData->getStatToTemplateMap(), randTable);
 					
 					std::vector<GameItem *> &equipmentSet = characterLoader->getEquipmentSets()[i];
 					for (int j=0; j<equipmentSet.size(); ++j) {
@@ -540,6 +554,12 @@ void MainWindow::on_loadFileWidget_currentItemChanged(QListWidgetItem *current, 
 				LsbObject *metaData = LsbObject::lookupByUniquePath(metaDataList, "MetaData");
 				LsbObject *saveTime = metaData->lookupByUniquePath("root/MetaData/SaveTime");
 				LsbObject *module = metaData->lookupByUniquePath("root/MetaData/ModuleSettings/Mods/ModuleShortDesc");
+				LsbObject *seedObject = metaData->lookupByUniquePath("root/MetaData/Seed");
+				LsbObject *sizeObject = metaData->lookupByUniquePath("root/MetaData/Size");
+				if (seedObject != 0 && sizeObject != 0) {
+					randSeed = *((long *)seedObject->getData());
+					randSize = *((long *)sizeObject->getData());
+				}
 				QLabel *previewPicture = this->findChild<QLabel *>("previewPicture");
 				QImage img = QImage(QString::fromStdWString(bitmapPath));
 				img = img.scaled(previewPicture->size());

@@ -47,7 +47,7 @@ class ItemEditFrame : public QFrame, GeneralEditCallback, TableEditCallback, Tem
 public:
 	explicit ItemEditFrame(std::vector<StatsContainer *> &allItemStats, std::vector<StatsContainer *> &itemLinks, GameItem *item, InventoryHandler *itemEditHandler, 
 						   ItemEditCallback *itemEditCallback, std::vector<TAG_LSB *> *tagList, std::map<std::string, std::string> &nameMappings, 
-						   StatTemplateMap &statToTemplateMap, QWidget *parent = 0);
+						   StatTemplateMap &statToTemplateMap, std::vector<short> &randTable, QWidget *parent = 0);
 	void onEdit();
 	void onEdit(DataContainerTreeItem *&selectedItem, QTreeWidget *statsTree, QTableWidgetItem *editedItem, QTableWidget *table);
 	void onTemplateEdit(std::string &newTemplate);
@@ -105,6 +105,7 @@ private:
 	ModsViewRemoveCallback *modsViewRemoveCallback;
 	ItemEditorCloseCallback *closeCallback = 0;
 	std::map<std::string, std::string> &nameMappings;
+	std::vector<short> &randTable;
 	GameItem *item;
 	GameItem *oldItem;
 	InventoryHandler *itemEditHandler;
