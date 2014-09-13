@@ -696,6 +696,14 @@ void ItemEditFrame::on_importButton_released()
 							}
 							
 							LsbObject *oldItem = this->item->getObject();
+							LsbObject *importedSlotObject = importedItem->lookupByUniquePath("Slot");
+							if (importedSlotObject != 0) {
+								LsbObject *currentSlotObject = oldItem->lookupByUniquePath("Slot");
+								if (currentSlotObject != 0) {
+									importedSlotObject->setData(currentSlotObject->getData(), currentSlotObject->getDataSize());
+								}
+							}
+							
 							LsbObject *oldParentObject = oldItem->lookupByUniquePath("Parent");
 							LsbObject *oldOwnerObject = oldItem->lookupByUniquePath("owner");
 							unsigned long parentId = *((unsigned long *)oldParentObject->getData());
