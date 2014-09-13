@@ -52,8 +52,6 @@ AppearanceEditorFrame::AppearanceEditorFrame(std::wstring gameDataPath, GameChar
 			std::vector<TAG_LSB *> tagList = reader.getTagList();
 			reader.clearTagList(tagList);
 			delete[] fileBytes;
-		} else {
-			MessageBoxA(0, "failed to extract player.lsb", 0, 0);
 		}
 		
 		std::string itemColorStatsPath = "Public/Main/Stats/Generated/Data/ItemColor.txt";
@@ -64,8 +62,6 @@ AppearanceEditorFrame::AppearanceEditorFrame(std::wstring gameDataPath, GameChar
 			GenStatsReader gsr;
 			itemColorStats = gsr.loadFile(ss);
 			delete[] fileBytes;
-		} else {
-			MessageBoxA(0, "failed to extract ItemColor.txt", 0, 0);
 		}
 	}
 	showEquipped = true;
