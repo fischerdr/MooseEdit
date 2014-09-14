@@ -923,6 +923,48 @@ void MainWindow::on_treeWidget_itemChanged(QTreeWidgetItem *item, int column)
 			}
 
 			editable->object->setData((char *)&value, sizeof(double));
+		} else if (type == 0x13) {
+			bool value = false;
+			if (boost::to_lower_copy(text) == "true") {
+				value = true;
+			}
+			editable->object->setData((char *)&value, sizeof(bool));
+		} else if (type == 0x0C) {
+			std::vector<float> floatValues;
+			std::vector<std::string> values;
+			boost::split(values, text, boost::is_any_of(","));
+			for (int i=0; i<values.size(); ++i) {
+				std::string value = values[i];
+				boost::trim(value);
+				bool success = true;
+				float floatValue;
+				try {
+					floatValue = boost::lexical_cast<float>(value);
+				} catch (const boost::bad_lexical_cast& e) {
+					success = false;
+				}
+				if (success) {
+					floatValues.push_back(floatValue);
+				}
+			}
+			if (floatValues.size() == 3) {
+				long newDataLen = sizeof(float) * 3;
+				char *newData = new char[newDataLen];
+				memcpy(newData + sizeof(float) * 0, &floatValues[0], sizeof(float));
+				memcpy(newData + sizeof(float) * 1, &floatValues[1], sizeof(float));
+				memcpy(newData + sizeof(float) * 2, &floatValues[2], sizeof(float));
+				editable->object->setData(newData, newDataLen);
+				delete[] newData;
+			}
+		} else if (type == 0x01) {
+			unsigned char value = 0;
+			try {
+				value = (unsigned char)boost::lexical_cast<unsigned short>(text);
+			} catch (const boost::bad_lexical_cast& e) {
+				
+			}
+
+			editable->object->setData((char *)&value, sizeof(unsigned char));
 		}
 	}
 }
