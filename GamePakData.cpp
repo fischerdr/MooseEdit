@@ -372,11 +372,11 @@ void GamePakData::processExtractQueue(std::queue<GameDataQueueObject>& extractQu
 void GamePakData::load(std::wstring gameDataPath) {
 	std::wstring pakMain(gameDataPath + L"Main.pak");
 	std::wstring pakTextures(gameDataPath + L"Textures.pak");
-	std::string iconLsx("Public/Main/GUI/icons.lsx");
-	std::string portraitLsx("Public/Main/GUI/portraits.lsx");
+	std::string iconLsx("Public/Main/GUI/Items_Icons.lsx");
+	std::string portraitLsx("Public/Main/GUI/Portraits_MainPL_CP_Icons.lsx");
 	
-	std::string iconDds("Public/Main/Assets/Textures/Icons/icons.dds");
-	std::string portraitDds("Public/Main/Assets/Textures/Icons/portraits.dds");
+	std::string iconDds("Public/Main/Assets/Textures/Icons/Items_Icons.dds");
+	std::string portraitDds("Public/Main/Assets/Textures/Icons/Portraits_MainPL_CP_Icons.dds");
 	std::string inventoryCellDds("Public/Main/Assets/Textures/Icons/InventoryCell.dds");
 	
 	std::wstring tempDirectory = QDir::temp().absolutePath().toStdWString();
@@ -447,15 +447,15 @@ void GamePakData::load(std::wstring gameDataPath) {
 	
 	boost::replace_all(tempDirectory, "/", "\\");
 	std::wstring iconsLsxPath = tempDirectory;
-	iconsLsxPath += L"\\icons.lsx";
+	iconsLsxPath += L"\\Items_Icons.lsx";
 	std::wstring portraitsLsxPath = tempDirectory;
-	portraitsLsxPath += L"\\portraits.lsx";
+	portraitsLsxPath += L"\\Portraits_MainPL_CP_Icons.lsx";
 	std::wstring iconsDdsPath = tempDirectory;
-	iconsDdsPath += L"\\icons.dds";
+	iconsDdsPath += L"\\Items_Icons.dds";
 	std::wstring inventoryCellDdsPath = tempDirectory;
 	inventoryCellDdsPath += L"\\inventoryCell.dds";
 	std::wstring portraitsDdsPath = tempDirectory;
-	portraitsDdsPath += L"\\portraits.dds";
+	portraitsDdsPath += L"\\Portraits_MainPL_CP_Icons.dds";
 	
 	boost::filesystem::ifstream iconDdsFin(iconsDdsPath, std::ios::binary);
 	int start = iconDdsFin.tellg();
