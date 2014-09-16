@@ -372,10 +372,14 @@ void GamePakData::processExtractQueue(std::queue<GameDataQueueObject>& extractQu
 void GamePakData::load(std::wstring gameDataPath) {
 	std::wstring pakMain(gameDataPath + L"Main.pak");
 	std::wstring pakTextures(gameDataPath + L"Textures.pak");
-	std::string iconLsx("Public/Main/GUI/Items_Icons.lsx");
+	std::string oldIconLsx("Public/Main/GUI/icons.lsx");
+	std::string itemsIconLsx("Public/Main/GUI/Items_Icons.lsx");
+	std::string oldPortraitLsx("Public/Main/GUI/portraits.lsx");
 	std::string portraitLsx("Public/Main/GUI/Portraits_MainPL_CP_Icons.lsx");
 	
+	std::string oldIconDds("Public/Main/Assets/Textures/Icons/icons.dds");
 	std::string iconDds("Public/Main/Assets/Textures/Icons/Items_Icons.dds");
+	std::string oldPortraitDds("Public/Main/Assets/Textures/Icons/portraits.dds");
 	std::string portraitDds("Public/Main/Assets/Textures/Icons/Portraits_MainPL_CP_Icons.dds");
 	std::string inventoryCellDds("Public/Main/Assets/Textures/Icons/InventoryCell.dds");
 	
@@ -438,9 +442,13 @@ void GamePakData::load(std::wstring gameDataPath) {
 	addModLookupsToStatTemplateMap();
 	
 	pakReader.loadFile(pakMain);
-	pakReader.extractFile(pakMain, iconLsx, tempDirectory, false);
+	pakReader.extractFile(pakMain, oldIconLsx, tempDirectory, false);
+	pakReader.extractFile(pakMain, oldPortraitLsx, tempDirectory, false);
+	pakReader.extractFile(pakMain, itemsIconLsx, tempDirectory, false);
 	pakReader.extractFile(pakMain, portraitLsx, tempDirectory, false);
 	pakReader.loadFile(pakTextures);
+	pakReader.extractFile(pakTextures, oldIconDds, tempDirectory, false);
+	pakReader.extractFile(pakTextures, oldPortraitDds, tempDirectory, false);
 	pakReader.extractFile(pakTextures, iconDds, tempDirectory, false);
 	pakReader.extractFile(pakTextures, portraitDds, tempDirectory, false);
 	pakReader.extractFile(pakTextures, inventoryCellDds, tempDirectory, false);
@@ -448,52 +456,115 @@ void GamePakData::load(std::wstring gameDataPath) {
 	boost::replace_all(tempDirectory, "/", "\\");
 	std::wstring iconsLsxPath = tempDirectory;
 	iconsLsxPath += L"\\Items_Icons.lsx";
+	std::wstring oldIconsLsxPath = tempDirectory;
+	oldIconsLsxPath += L"\\icons.lsx";
 	std::wstring portraitsLsxPath = tempDirectory;
 	portraitsLsxPath += L"\\Portraits_MainPL_CP_Icons.lsx";
+	std::wstring oldPortraitsLsxPath = tempDirectory;
+	oldPortraitsLsxPath += L"\\portraits.lsx";
+	std::wstring oldIconsDdsPath = tempDirectory;
+	oldIconsDdsPath += L"\\icons.dds";
 	std::wstring iconsDdsPath = tempDirectory;
 	iconsDdsPath += L"\\Items_Icons.dds";
 	std::wstring inventoryCellDdsPath = tempDirectory;
 	inventoryCellDdsPath += L"\\inventoryCell.dds";
 	std::wstring portraitsDdsPath = tempDirectory;
 	portraitsDdsPath += L"\\Portraits_MainPL_CP_Icons.dds";
+	std::wstring oldPortraitsDdsPath = tempDirectory;
+	oldPortraitsDdsPath += L"\\portraits.dds";
 	
 	boost::filesystem::ifstream iconDdsFin(iconsDdsPath, std::ios::binary);
-	int start = iconDdsFin.tellg();
-	iconDdsFin.seekg(0, std::ios_base::end);
-	int iconFileLengthDds = iconDdsFin.tellg() - start;
-	iconDdsFin.seekg(0, std::ios_base::beg);
-	char *iconFileBytesDds = new char[iconFileLengthDds];
-	iconDdsFin.read(iconFileBytesDds, iconFileLengthDds);
-	iconDdsFin.close();
+	char *iconFileBytesDds = 0;
+	int iconFileLengthDds = 0;
+	int start;
+	if (iconDdsFin) {
+		start = iconDdsFin.tellg();
+		iconDdsFin.seekg(0, std::ios_base::end);
+		iconFileLengthDds = iconDdsFin.tellg() - start;
+		iconDdsFin.seekg(0, std::ios_base::beg);
+		iconFileBytesDds = new char[iconFileLengthDds];
+		iconDdsFin.read(iconFileBytesDds, iconFileLengthDds);
+		iconDdsFin.close();
+	} else {
+		boost::filesystem::ifstream oldIconDdsFin(oldIconsDdsPath, std::ios::binary);
+		start = oldIconDdsFin.tellg();
+		oldIconDdsFin.seekg(0, std::ios_base::end);
+		iconFileLengthDds = oldIconDdsFin.tellg() - start;
+		oldIconDdsFin.seekg(0, std::ios_base::beg);
+		iconFileBytesDds = new char[iconFileLengthDds];
+		oldIconDdsFin.read(iconFileBytesDds, iconFileLengthDds);
+		oldIconDdsFin.close();
+	}
 	
 	boost::filesystem::ifstream iconLsxFin(iconsLsxPath, std::ios::binary);
-	start = iconLsxFin.tellg();
-	iconLsxFin.seekg(0, std::ios_base::end);
-	int iconFileLengthLsx = iconLsxFin.tellg() - start;
-	iconLsxFin.seekg(0, std::ios_base::beg);
-	char *iconFileBytesLsx = new char[iconFileLengthLsx];
-	iconLsxFin.read(iconFileBytesLsx, iconFileLengthLsx);
-	iconLsxFin.close();
-	std::string iconLsxBytes(iconFileBytesLsx);
+	char *iconFileBytesLsx = 0;
+	std::string iconLsxBytes;
+	if (iconLsxFin) {
+		start = iconLsxFin.tellg();
+		iconLsxFin.seekg(0, std::ios_base::end);
+		int iconFileLengthLsx = iconLsxFin.tellg() - start;
+		iconLsxFin.seekg(0, std::ios_base::beg);
+		iconFileBytesLsx = new char[iconFileLengthLsx];
+		iconLsxFin.read(iconFileBytesLsx, iconFileLengthLsx);
+		iconLsxFin.close();
+		iconLsxBytes = iconFileBytesLsx;
+	} else {
+		boost::filesystem::ifstream oldIconLsxFin(oldIconsLsxPath, std::ios::binary);
+		start = oldIconLsxFin.tellg();
+		oldIconLsxFin.seekg(0, std::ios_base::end);
+		int iconFileLengthLsx = oldIconLsxFin.tellg() - start;
+		oldIconLsxFin.seekg(0, std::ios_base::beg);
+		iconFileBytesLsx = new char[iconFileLengthLsx];
+		oldIconLsxFin.read(iconFileBytesLsx, iconFileLengthLsx);
+		oldIconLsxFin.close();
+		iconLsxBytes = iconFileBytesLsx;
+	}
 	
 	boost::filesystem::ifstream portraitDdsFin(portraitsDdsPath, std::ios::binary);
-	start = portraitDdsFin.tellg();
-	portraitDdsFin.seekg(0, std::ios_base::end);
-	int portraitFileLengthDds = portraitDdsFin.tellg() - start;
-	portraitDdsFin.seekg(0, std::ios_base::beg);
-	char *portraitFileBytesDds = new char[portraitFileLengthDds];
-	portraitDdsFin.read(portraitFileBytesDds, portraitFileLengthDds);
-	portraitDdsFin.close();
+	char *portraitFileBytesDds = 0;
+	int portraitFileLengthDds = 0;
+	if (portraitDdsFin) {
+		start = portraitDdsFin.tellg();
+		portraitDdsFin.seekg(0, std::ios_base::end);
+		portraitFileLengthDds = portraitDdsFin.tellg() - start;
+		portraitDdsFin.seekg(0, std::ios_base::beg);
+		portraitFileBytesDds = new char[portraitFileLengthDds];
+		portraitDdsFin.read(portraitFileBytesDds, portraitFileLengthDds);
+		portraitDdsFin.close();
+	} else {
+		boost::filesystem::ifstream oldPortraitDdsFin(oldPortraitsDdsPath, std::ios::binary);
+		start = oldPortraitDdsFin.tellg();
+		oldPortraitDdsFin.seekg(0, std::ios_base::end);
+		portraitFileLengthDds = oldPortraitDdsFin.tellg() - start;
+		oldPortraitDdsFin.seekg(0, std::ios_base::beg);
+		portraitFileBytesDds = new char[portraitFileLengthDds];
+		oldPortraitDdsFin.read(portraitFileBytesDds, portraitFileLengthDds);
+		oldPortraitDdsFin.close();
+	}
 	
 	boost::filesystem::ifstream portraitLsxFin(portraitsLsxPath, std::ios::binary);
-	start = portraitLsxFin.tellg();
-	portraitLsxFin.seekg(0, std::ios_base::end);
-	int portraitFileLengthLsx = portraitLsxFin.tellg() - start;
-	portraitLsxFin.seekg(0, std::ios_base::beg);
-	char *portraitFileBytesLsx = new char[portraitFileLengthLsx];
-	portraitLsxFin.read(portraitFileBytesLsx, portraitFileLengthLsx);
-	portraitLsxFin.close();
-	std::string portraitLsxBytes(portraitFileBytesLsx);
+	char *portraitFileBytesLsx = 0;
+	std::string portraitLsxBytes;
+	if (portraitLsxFin) {
+		start = portraitLsxFin.tellg();
+		portraitLsxFin.seekg(0, std::ios_base::end);
+		int portraitFileLengthLsx = portraitLsxFin.tellg() - start;
+		portraitLsxFin.seekg(0, std::ios_base::beg);
+		portraitFileBytesLsx = new char[portraitFileLengthLsx];
+		portraitLsxFin.read(portraitFileBytesLsx, portraitFileLengthLsx);
+		portraitLsxFin.close();
+		portraitLsxBytes = portraitFileBytesLsx;
+	} else {
+		boost::filesystem::ifstream oldPortraitLsxFin(oldPortraitsLsxPath, std::ios::binary);
+		start = oldPortraitLsxFin.tellg();
+		oldPortraitLsxFin.seekg(0, std::ios_base::end);
+		int portraitFileLengthLsx = oldPortraitLsxFin.tellg() - start;
+		oldPortraitLsxFin.seekg(0, std::ios_base::beg);
+		portraitFileBytesLsx = new char[portraitFileLengthLsx];
+		oldPortraitLsxFin.read(portraitFileBytesLsx, portraitFileLengthLsx);
+		oldPortraitLsxFin.close();
+		portraitLsxBytes = portraitFileBytesLsx;
+	}
 	
 	boost::filesystem::ifstream inventoryCellDdsFin(inventoryCellDdsPath, std::ios::binary);
 	start = inventoryCellDdsFin.tellg();
