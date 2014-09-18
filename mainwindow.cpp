@@ -377,14 +377,14 @@ void MainWindow::handleLoadButton() {
 			
 			if (gamePakData->getInventoryCellImg() != 0) {
 				editItemHandler = new InventoryHandler(*gamePakData->getInventoryCellImg(), gamePakData->getStats(), gamePakData->getRootTemplates(), 
-													   gamePakData->getModTemplates(), gamePakData->getIconAtlas(), gamePakData->getItemStats(), gamePakData->getNameMappings(),
+													   gamePakData->getModTemplates(), gamePakData->getIconAtlas(), gamePakData->getAbilityAtlas(), gamePakData->getItemStats(), gamePakData->getNameMappings(),
 													   gamePakData->getRootTemplateMap(), gamePakData->getModTemplateMap(), randTable);
 				for (int i=0; i<characterLoader->getCharacterGroup().getCharacters().size(); ++i) {
 					GameCharacter *character = characterLoader->getCharacterGroup().getCharacters()[i];
 					//if (i != 0)
 						//continue;
 					InventoryHandler *handlerPtr = new InventoryHandler(*gamePakData->getInventoryCellImg(), gamePakData->getStats(), gamePakData->getRootTemplates(), 
-																		gamePakData->getModTemplates(), gamePakData->getIconAtlas(), gamePakData->getItemStats(), gamePakData->getNameMappings(),
+																		gamePakData->getModTemplates(), gamePakData->getIconAtlas(), gamePakData->getAbilityAtlas(), gamePakData->getItemStats(), gamePakData->getNameMappings(),
 																		gamePakData->getRootTemplateMap(), gamePakData->getModTemplateMap(), randTable);
 					InventoryHandler& inventoryHandler = *handlerPtr;
 					for (int j=0; j<character->getInventory().getItems().size(); ++j) {
@@ -409,7 +409,7 @@ void MainWindow::handleLoadButton() {
 					LsbObject *itemsObject = LsbObject::lookupByUniquePath(globals, "Items/root/ItemFactory/Items");
 					EquipmentHandler *equipHandler = 
 							new EquipmentHandler(*gamePakData->getInventoryCellImg(), gamePakData->getStats(), gamePakData->getRootTemplates(), 
-												gamePakData->getModTemplates(), gamePakData->getIconAtlas(), gamePakData->getItemStats(), gamePakData->getNameMappings(),
+												gamePakData->getModTemplates(), gamePakData->getIconAtlas(), gamePakData->getAbilityAtlas(), gamePakData->getItemStats(), gamePakData->getNameMappings(),
 												equipmentWidget, this, gamePakData->getItemLinks(), globalTagList, itemsObject, character,
 												 gamePakData->getRootTemplateMap(), gamePakData->getModTemplateMap(), gamePakData->getStatToTemplateMap(), randTable);
 					

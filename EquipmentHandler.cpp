@@ -2,11 +2,11 @@
 #include <QMenu>
 
 EquipmentHandler::EquipmentHandler(QImage emptySlotImage, std::vector<LsbObject *> &stats, std::vector<LsbObject *> &rootTemplates, 
-								   std::vector<LsbObject *> &modTemplates, TextureAtlas &iconAtlas, std::vector<StatsContainer *> &itemStats, 
+								   std::vector<LsbObject *> &modTemplates, TextureAtlas &iconAtlas, TextureAtlas &abilityAtlas, std::vector<StatsContainer *> &itemStats, 
 								   std::map<std::string, std::string> &nameMappings, QWidget *parentWidget, QWidget *mainWindow, 
 								   std::vector<StatsContainer *> &itemLinks, std::vector<TAG_LSB *> &tagList,
 								   LsbObject *itemsObject, GameCharacter *character, std::map<std::string, LsbObject *> &rootTemplateMap, std::map<std::string, LsbObject *> &modTemplateMap, StatTemplateMap &statToTemplateMap, std::vector<short> &randTable) :
-	emptySlotImage(emptySlotImage), stats(stats), rootTemplates(rootTemplates), modTemplates(modTemplates), iconAtlas(iconAtlas), itemStats(itemStats),
+	emptySlotImage(emptySlotImage), stats(stats), rootTemplates(rootTemplates), modTemplates(modTemplates), iconAtlas(iconAtlas), abilityAtlas(abilityAtlas), itemStats(itemStats),
 	nameMappings(nameMappings), parentWidget(parentWidget), mainWindow(mainWindow), itemLinks(itemLinks), tagList(tagList), itemsObject(itemsObject), character(character),
 	rootTemplateMap(rootTemplateMap), modTemplateMap(modTemplateMap), statToTemplateMap(statToTemplateMap), randTable(randTable)
 {
@@ -103,7 +103,7 @@ void EquipmentHandler::customContextRequested(const QPoint& pos) {
 				}
 				QAction *result = contextMenu.exec(globalPos);
 				if (result) {
-					InventoryHandler *newHandler = new InventoryHandler(emptySlotImage, stats, rootTemplates, modTemplates, iconAtlas, itemStats, nameMappings,
+					InventoryHandler *newHandler = new InventoryHandler(emptySlotImage, stats, rootTemplates, modTemplates, iconAtlas, abilityAtlas, itemStats, nameMappings,
 																		rootTemplateMap, modTemplateMap, randTable);
 					if (item != 0) {
 						ItemEditFrame *itemEditFrame = new ItemEditFrame(itemStats, itemLinks, item, newHandler,
@@ -162,7 +162,7 @@ void EquipmentHandler::drawAll()
 
 void EquipmentHandler::initInventoryHandlers() {
 	for (int i=0; i<EQUIP_SLOTS; ++i) {
-		equipHandler[i] = new InventoryHandler(emptySlotImage, stats, rootTemplates, modTemplates, iconAtlas, itemStats, nameMappings, rootTemplateMap, modTemplateMap, randTable);
+		equipHandler[i] = new InventoryHandler(emptySlotImage, stats, rootTemplates, modTemplates, iconAtlas, abilityAtlas, itemStats, nameMappings, rootTemplateMap, modTemplateMap, randTable);
 		equipHandler[i]->setMinSlots(1);
 		equipHandler[i]->setMaxSlots(1);
 		equipHandler[i]->setIconsPerRow(1);

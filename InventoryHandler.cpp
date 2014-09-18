@@ -43,6 +43,7 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 	slotsToDisplay = std::max(minSlots, slotsToDisplay);
 	slotsToDisplay = std::min(maxSlots, slotsToDisplay);
 	iconAtlas.setAbsoluteSize(iconSize);
+	abilityAtlas.setAbsoluteSize(iconSize);
 	//std::cout<<"Root templates = "<<rootTemplates.size()<<'\n';
 	//std::cout<<"Iterating through "<<slotsToDisplay<<" slots"<<'\n';
 	for (int i=0; i<slotsToDisplay; ++i) {
@@ -184,7 +185,7 @@ void InventoryHandler::draw(QWidget *parent, QWidget *mainWindow, bool drawBackg
 				}
 				
 				QImage image;
-				if (iconName != 0 && iconAtlas.getNamedTexture(iconName, &image)) {
+				if (iconName != 0 && (iconAtlas.getNamedTexture(iconName, &image) || abilityAtlas.getNamedTexture(iconName, &image))) {
 					QPixmap result(image.size());
 					if (!drawBackground) {
 						result.fill(Qt::transparent);
@@ -339,9 +340,9 @@ GameItem *InventoryHandler::getItemAtPoint(const QPoint &pt)
 }
 
 InventoryHandler::InventoryHandler(QImage emptySlotImage, std::vector<LsbObject *>& stats, 
-								   std::vector<LsbObject *> &rootTemplates, std::vector<LsbObject *> &modTemplates, TextureAtlas& iconAtlas, std::vector<StatsContainer *> &itemStats,
+								   std::vector<LsbObject *> &rootTemplates, std::vector<LsbObject *> &modTemplates, TextureAtlas& iconAtlas, TextureAtlas &abilityAtlas, std::vector<StatsContainer *> &itemStats,
 								   std::map<std::string, std::string> &nameMappings, std::map<std::string, LsbObject *> &rootTemplateMap, std::map<std::string, LsbObject *> &modTemplateMap, std::vector<short> &randTable) : 
-	stats(stats), rootTemplates(rootTemplates), iconAtlas(iconAtlas), modTemplates(modTemplates), itemStats(itemStats), nameMappings(nameMappings),
+	stats(stats), rootTemplates(rootTemplates), iconAtlas(iconAtlas), abilityAtlas(abilityAtlas), modTemplates(modTemplates), itemStats(itemStats), nameMappings(nameMappings),
 	rootTemplateMap(rootTemplateMap), modTemplateMap(modTemplateMap), randTable(randTable)
 {
 	this->emptySlotImage = emptySlotImage;

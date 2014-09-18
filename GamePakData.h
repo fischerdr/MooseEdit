@@ -39,6 +39,7 @@ class GamePakData
 {
 	ExtractQueueCallback *extractQueueCallback = 0;
 	TextureAtlas iconAtlas;
+	TextureAtlas abilityAtlas;
 	TextureAtlas portraitAtlas;
 	std::vector<LsbObject *> stats;
 	std::map<std::string, LsbObject *> rootTemplateMap;
@@ -117,6 +118,8 @@ public:
 	void setIconAtlas(const TextureAtlas &value);
 	TextureAtlas &getPortraitAtlas();
 	void setPortraitAtlas(const TextureAtlas &value);
+	TextureAtlas &getAbilityAtlas();
+	void setAbilityAtlas(const TextureAtlas &value);
 	std::map<std::string, LsbObject *> &getRootTemplateMap();
 	void setRootTemplateMap(const std::map<std::string, LsbObject *> &value);
 	std::map<std::string, LsbObject *> &getModTemplateMap();

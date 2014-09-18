@@ -34,6 +34,7 @@ private:
 	std::vector<LsbObject *> &rootTemplates;
 	std::vector<LsbObject *> &modTemplates;
 	TextureAtlas &iconAtlas;
+	TextureAtlas &abilityAtlas;
 	std::vector<StatsContainer *> &itemStats;
 	std::map<std::string, std::string> &nameMappings;
 	std::vector<StatsContainer *>& itemLinks;
@@ -54,7 +55,7 @@ public slots:
 public:
 	~EquipmentHandler();
 	EquipmentHandler(QImage emptySlotImage, std::vector<LsbObject *>& stats, std::vector<LsbObject *>& rootTemplates, 
-					 std::vector<LsbObject *>& modTemplates, TextureAtlas& iconAtlas, std::vector<StatsContainer *>& itemStats,
+					 std::vector<LsbObject *>& modTemplates, TextureAtlas& iconAtlas, TextureAtlas& abilityAtlas, std::vector<StatsContainer *>& itemStats,
 					 std::map<std::string, std::string>& nameMappings, QWidget *parentWidget, QWidget *mainWindow, std::vector<StatsContainer *>& itemLinks,
 					 std::vector<TAG_LSB *>& tagList, LsbObject *itemsObject, GameCharacter *character,
 					 std::map<std::string, LsbObject *> &rootTemplateMap, std::map<std::string, LsbObject *> &modTemplateMap, StatTemplateMap &statToTemplateMap, std::vector<short> &randTable);

@@ -99,6 +99,17 @@ void GamePakData::setPortraitAtlas(const TextureAtlas &value)
 	portraitAtlas = value;
 }
 
+TextureAtlas &GamePakData::getAbilityAtlas()
+{
+	return abilityAtlas;
+}
+
+void GamePakData::setAbilityAtlas(const TextureAtlas &value)
+{
+	abilityAtlas = value;
+}
+
+
 void GamePakData::buildNameMappings()
 {
 	LsbObject *stringKeysRoot = LsbObject::lookupByUniquePath(stats, "TranslatedStringKeys/root");
@@ -376,11 +387,13 @@ void GamePakData::load(std::wstring gameDataPath) {
 	std::string itemsIconLsx("Public/Main/GUI/Items_Icons.lsx");
 	std::string oldPortraitLsx("Public/Main/GUI/portraits.lsx");
 	std::string portraitLsx("Public/Main/GUI/Portraits_MainPL_CP_Icons.lsx");
+	std::string abilityLsx("Public/Main/GUI/Ability_Skill_Status_Icons.lsx");
 	
 	std::string oldIconDds("Public/Main/Assets/Textures/Icons/icons.dds");
 	std::string iconDds("Public/Main/Assets/Textures/Icons/Items_Icons.dds");
 	std::string oldPortraitDds("Public/Main/Assets/Textures/Icons/portraits.dds");
 	std::string portraitDds("Public/Main/Assets/Textures/Icons/Portraits_MainPL_CP_Icons.dds");
+	std::string abilityDds("Public/Main/Assets/Textures/Icons/Ability_Skill_Status_Icons.dds");
 	std::string inventoryCellDds("Public/Main/Assets/Textures/Icons/InventoryCell.dds");
 	
 	std::wstring tempDirectory = QDir::temp().absolutePath().toStdWString();
@@ -446,11 +459,13 @@ void GamePakData::load(std::wstring gameDataPath) {
 	pakReader.extractFile(pakMain, oldPortraitLsx, tempDirectory, false);
 	pakReader.extractFile(pakMain, itemsIconLsx, tempDirectory, false);
 	pakReader.extractFile(pakMain, portraitLsx, tempDirectory, false);
+	pakReader.extractFile(pakMain, abilityLsx, tempDirectory, false);
 	pakReader.loadFile(pakTextures);
 	pakReader.extractFile(pakTextures, oldIconDds, tempDirectory, false);
 	pakReader.extractFile(pakTextures, oldPortraitDds, tempDirectory, false);
 	pakReader.extractFile(pakTextures, iconDds, tempDirectory, false);
 	pakReader.extractFile(pakTextures, portraitDds, tempDirectory, false);
+	pakReader.extractFile(pakTextures, abilityDds, tempDirectory, false);
 	pakReader.extractFile(pakTextures, inventoryCellDds, tempDirectory, false);
 	
 	boost::replace_all(tempDirectory, "/", "\\");
@@ -458,21 +473,31 @@ void GamePakData::load(std::wstring gameDataPath) {
 	iconsLsxPath += L"\\Items_Icons.lsx";
 	std::wstring oldIconsLsxPath = tempDirectory;
 	oldIconsLsxPath += L"\\icons.lsx";
+	
 	std::wstring portraitsLsxPath = tempDirectory;
 	portraitsLsxPath += L"\\Portraits_MainPL_CP_Icons.lsx";
 	std::wstring oldPortraitsLsxPath = tempDirectory;
+	
 	oldPortraitsLsxPath += L"\\portraits.lsx";
 	std::wstring oldIconsDdsPath = tempDirectory;
 	oldIconsDdsPath += L"\\icons.dds";
 	std::wstring iconsDdsPath = tempDirectory;
 	iconsDdsPath += L"\\Items_Icons.dds";
+	
 	std::wstring inventoryCellDdsPath = tempDirectory;
 	inventoryCellDdsPath += L"\\inventoryCell.dds";
+	
 	std::wstring portraitsDdsPath = tempDirectory;
 	portraitsDdsPath += L"\\Portraits_MainPL_CP_Icons.dds";
 	std::wstring oldPortraitsDdsPath = tempDirectory;
 	oldPortraitsDdsPath += L"\\portraits.dds";
 	
+	std::wstring abilityLsxPath = tempDirectory;
+	abilityLsxPath += L"\\Ability_Skill_Status_Icons.lsx";
+	std::wstring abilityDdsPath = tempDirectory;
+	abilityDdsPath += L"\\Ability_Skill_Status_Icons.dds";
+	
+	//icons
 	boost::filesystem::ifstream iconDdsFin(iconsDdsPath, std::ios::binary);
 	char *iconFileBytesDds = 0;
 	int iconFileLengthDds = 0;
@@ -520,6 +545,7 @@ void GamePakData::load(std::wstring gameDataPath) {
 		iconLsxBytes = iconFileBytesLsx;
 	}
 	
+	//portraits
 	boost::filesystem::ifstream portraitDdsFin(portraitsDdsPath, std::ios::binary);
 	char *portraitFileBytesDds = 0;
 	int portraitFileLengthDds = 0;
@@ -566,6 +592,35 @@ void GamePakData::load(std::wstring gameDataPath) {
 		portraitLsxBytes = portraitFileBytesLsx;
 	}
 	
+	//abilities
+	boost::filesystem::ifstream abilityDdsFin(abilityDdsPath, std::ios::binary);
+	char *abilityFileBytesDds = 0;
+	int abilityFileLengthDds = 0;
+	if (abilityDdsFin) {
+		start = abilityDdsFin.tellg();
+		abilityDdsFin.seekg(0, std::ios_base::end);
+		abilityFileLengthDds = abilityDdsFin.tellg() - start;
+		abilityDdsFin.seekg(0, std::ios_base::beg);
+		abilityFileBytesDds = new char[abilityFileLengthDds];
+		abilityDdsFin.read(abilityFileBytesDds, abilityFileLengthDds);
+		abilityDdsFin.close();
+	}
+	
+	boost::filesystem::ifstream abilityLsxFin(abilityLsxPath, std::ios::binary);
+	char *abilityFileBytesLsx = 0;
+	std::string abilityLsxBytes;
+	if (abilityLsxFin) {
+		start = abilityLsxFin.tellg();
+		abilityLsxFin.seekg(0, std::ios_base::end);
+		int abilityFileLengthLsx = abilityLsxFin.tellg() - start;
+		abilityLsxFin.seekg(0, std::ios_base::beg);
+		abilityFileBytesLsx = new char[abilityFileLengthLsx];
+		abilityLsxFin.read(abilityFileBytesLsx, abilityFileLengthLsx);
+		abilityLsxFin.close();
+		abilityLsxBytes = abilityFileBytesLsx;
+	}
+	
+	//inventory cell
 	boost::filesystem::ifstream inventoryCellDdsFin(inventoryCellDdsPath, std::ios::binary);
 	start = inventoryCellDdsFin.tellg();
 	inventoryCellDdsFin.seekg(0, std::ios_base::end);
@@ -583,14 +638,25 @@ void GamePakData::load(std::wstring gameDataPath) {
 		MessageBoxA(0, "failed to load portrait Atlas", 0, 0);
 	}
 	
+	if (abilityFileBytesDds != 0) {
+		if (!abilityAtlas.loadTextureAtlas(abilityFileBytesDds, abilityFileLengthDds, abilityLsxBytes)) {
+			MessageBoxA(0, "failed to load ability Atlas", 0, 0);
+		}
+	}
+	
 	if (inventoryCellImg.loadFromData((const uchar *)fileBytesInventoryCell, fileLengthInventoryCellDds, "DDS")) {
 		inventoryCellPtr = &inventoryCellImg;
 	}
 	
+	delete []iconFileBytesLsx;
 	delete []iconFileBytesDds;
 	delete []portraitFileBytesDds;
-	delete []iconFileBytesLsx;
 	delete []portraitFileBytesLsx;
+	if (abilityFileBytesDds != 0) {
+		delete []abilityFileBytesDds;
+		delete []abilityFileBytesLsx;
+	}
+	
 	delete []fileBytesInventoryCell;
 }
 

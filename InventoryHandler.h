@@ -21,6 +21,7 @@ class InventoryHandler
 	std::vector<LsbObject *>& modTemplates;
 	std::vector<StatsContainer *>& itemStats;
 	TextureAtlas& iconAtlas;
+	TextureAtlas& abilityAtlas;
 	QImage emptySlotImage;
 	long getItemX(long slotNumber);
 	long getItemY(long slotNumber);
@@ -70,7 +71,7 @@ public:
 	}
 	~InventoryHandler();
 	InventoryHandler(QImage emptySlotImage, std::vector<LsbObject *>& stats, std::vector<LsbObject *>& rootTemplates, 
-					 std::vector<LsbObject *>& modTemplates, TextureAtlas& iconAtlas, std::vector<StatsContainer *>& itemStats, std::map<std::string, std::string>& nameMappings,
+					 std::vector<LsbObject *>& modTemplates, TextureAtlas& iconAtlas, TextureAtlas& abilityAtlas, std::vector<StatsContainer *>& itemStats, std::map<std::string, std::string>& nameMappings,
 					 std::map<std::string, LsbObject *> &rootTemplateMap, std::map<std::string, LsbObject *> &modTemplateMap, std::vector<short> &randTable);
 	void draw(QWidget *parent, QWidget *mainWindow, bool drawBackground);
 	GameItem *getItemAtPoint(const QPoint& pt);
