@@ -53,6 +53,7 @@ public:
 	void addBoostDirectory(std::string modifierType, std::string text);
 	void addToTree(std::vector<StatsContainer *>& boosts, QTreeWidgetItem *parent = 0);
 	void addToTree(std::vector<LsbObject *>& objects, QTreeWidgetItem *parent = 0);
+	void addIndividualDataItemToTree(std::string dataName, QTreeWidgetItem *parent);
 	void addDataToTree(StatsContainer *stat, QTreeWidgetItem *parent);
 	void selectNodeByName(const char *name);
 	void enableSelectButton(StatsButtonCallback *callback);

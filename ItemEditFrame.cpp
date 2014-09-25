@@ -429,10 +429,13 @@ ItemEditFrame::ItemEditFrame(std::vector<StatsContainer *> &allItemStats, std::v
 		std::vector<StatsContainer *> modifierGroups = GenStatsReader::getContainersByContainerType(allItemStats, "type"); //ghetto way to get modifiers
 		StatsContainer *weaponContainer = GenStatsReader::getContainer(modifierGroups, "Weapon");
 		DataContainerTreeItem *weaponFolder = permBoostPicker->addFolder("Weapon");
+		permBoostPicker->addIndividualDataItemToTree("MinDamage", weaponFolder);
+		permBoostPicker->addIndividualDataItemToTree("MaxDamage", weaponFolder);
 		permBoostPicker->addDataToTree(weaponContainer, weaponFolder);
 		
 		StatsContainer *armorContainer = GenStatsReader::getContainer(modifierGroups, "Armor");
 		DataContainerTreeItem *armorFolder = permBoostPicker->addFolder("Armor");
+		permBoostPicker->addIndividualDataItemToTree("DefenseValue", armorFolder);
 		permBoostPicker->addDataToTree(armorContainer, armorFolder);
 		
 		StatsContainer *shieldContainer = GenStatsReader::getContainer(modifierGroups, "Shield");
@@ -449,6 +452,7 @@ ItemEditFrame::ItemEditFrame(std::vector<StatsContainer *> &allItemStats, std::v
 		
 		StatsContainer *characterContainer = GenStatsReader::getContainer(modifierGroups, "Character");
 		DataContainerTreeItem *characterFolder = permBoostPicker->addFolder("Character");
+		permBoostPicker->addIndividualDataItemToTree("MovementSpeedBoost", characterFolder);
 		permBoostPicker->addDataToTree(characterContainer, characterFolder);
 		
 		StatsContainer *skillDataContainer = GenStatsReader::getContainer(modifierGroups, "SkillData");

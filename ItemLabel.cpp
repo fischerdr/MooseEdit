@@ -5,6 +5,7 @@
 #include <boost/format.hpp>
 #include <QLayout>
 #include <map>
+#include <set>
 #include <QDesktopWidget>
 #include "LsbObject.h"
 
@@ -95,6 +96,11 @@ void ItemLabel::displayItemStats(std::ostringstream &contentHtml) {
 		contentHtml<<"<font color=#188EDE size=2>Range: +"<<range<<"</font><br/>";
 	}
 	
+	long movementBoost = getSummedStat("MovementSpeedBoost");
+	if (movementBoost != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Movement Boost: +"<<movementBoost<<"%</font><br/>";
+	}
+	
 	float movementF = getPermBoostStatValue("Movement")/100.0f + 0.04f*getSummedItemStat("Movement")*item->getItemLevel() + 0.1f;
 	if (getSummedStat("Movement") != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Movement: +"<<boost::format("%.2f") % movementF<<"</font><br/>";
@@ -137,10 +143,23 @@ void ItemLabel::displayItemStats(std::ostringstream &contentHtml) {
 		contentHtml<<"<font color=#188EDE size=2>Charisma: +"<<charisma<<"</font><br/>";
 	}
 	
-	long sneaking = getSummedItemStat("Sneaking");
-	if (sneaking != 0) {
-		contentHtml<<"<font color=#188EDE size=2>Sneaking: +"<<sneaking<<"</font><br/>";
+	long pyro = getSummedItemStat("FireSpecialist");
+	if (pyro != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Pyrokinetic: +"<<pyro<<"</font><br/>";
 	}
+	long hydro = getSummedItemStat("WaterSpecialist");
+	if (hydro != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Hydrosophist: +"<<hydro<<"</font><br/>";
+	}
+	long aero = getSummedItemStat("AirSpecialist");
+	if (aero != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Aerotheurge: +"<<aero<<"</font><br/>";
+	}
+	long geomancer = getSummedItemStat("EarthSpecialist");
+	if (geomancer != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Geomancer: +"<<geomancer<<"</font><br/>";
+	}
+	
 	long singleHanded = getSummedItemStat("SingleHanded");
 	if (singleHanded != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Single-handed: +"<<singleHanded<<"</font><br/>";
@@ -149,13 +168,57 @@ void ItemLabel::displayItemStats(std::ostringstream &contentHtml) {
 	if (twoHanded != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Two-handed: +"<<twoHanded<<"</font><br/>";
 	}
+	long bow = getSummedItemStat("Bow");
+	if (bow != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Bow: +"<<bow<<"</font><br/>";
+	}
+	long crossbow = getSummedItemStat("Crossbow");
+	if (crossbow != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Crossbow: +"<<crossbow<<"</font><br/>";
+	}
 	long shield = getSummedItemStat("Shield");
 	if (shield != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Shield Specialist: +"<<shield<<"</font><br/>";
 	}
+	long armour = getSummedItemStat("ArmorMastery");
+	if (armour != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Armour Specialist: +"<<armour<<"</font><br/>";
+	}
+	long telekinesis = getSummedItemStat("Telekinesis");
+	if (telekinesis != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Telekinesis: +"<<telekinesis<<"</font><br/>";
+	}
+	long blacksmith = getSummedItemStat("Repair");
+	if (blacksmith != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Blacksmithing: +"<<blacksmith<<"</font><br/>";
+	}
+	long sneaking = getSummedItemStat("Sneaking");
+	if (sneaking != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Sneaking: +"<<sneaking<<"</font><br/>";
+	}
+	long pickpocket = getSummedItemStat("PickPocket");
+	if (pickpocket != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Pickpocketing: +"<<pickpocket<<"</font><br/>";
+	}
+	long lockpicking = getSummedItemStat("LockPicking");
+	if (lockpicking != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Lock-picking: +"<<lockpicking<<"</font><br/>";
+	}
 	long crafting = getSummedItemStat("Crafting");
 	if (crafting != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Crafting: +"<<crafting<<"</font><br/>";
+	}
+	long leadership = getSummedItemStat("Leadership");
+	if (leadership != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Leadership: +"<<leadership<<"</font><br/>";
+	}
+	long barter = getSummedItemStat("Barter");
+	if (barter != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Bartering: +"<<barter<<"</font><br/>";
+	}
+	long luckyCharm = getSummedItemStat("Luck");
+	if (luckyCharm != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Lucky Charm: +"<<luckyCharm<<"</font><br/>";
 	}
 	long bodybuilding = getSummedItemStat("BodyBuilding");
 	if (bodybuilding != 0) {
@@ -169,21 +232,30 @@ void ItemLabel::displayItemStats(std::ostringstream &contentHtml) {
 	if (loremaster != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Loremaster: +"<<loremaster<<"</font><br/>";
 	}
-	long leadership = getSummedItemStat("Leadership");
-	if (leadership != 0) {
-		contentHtml<<"<font color=#188EDE size=2>Leadership: +"<<leadership<<"</font><br/>";
+	
+	long fire = getSummedItemStat("Fire") * 5;
+	if (fire != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Fire resistance: +"<<fire<<"%</font><br/>";
 	}
-	long telekinesis = getSummedItemStat("Telekinesis");
-	if (telekinesis != 0) {
-		contentHtml<<"<font color=#188EDE size=2>Telekinesis: +"<<telekinesis<<"</font><br/>";
+	long water = getSummedItemStat("Water") * 5;
+	if (water != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Water resistance: +"<<water<<"%</font><br/>";
 	}
-	long lockpicking = getSummedItemStat("LockPicking");
-	if (lockpicking != 0) {
-		contentHtml<<"<font color=#188EDE size=2>Lock-picking: +"<<lockpicking<<"</font><br/>";
+	long earth = getSummedItemStat("Earth") * 5;
+	if (earth != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Earth resistance: +"<<earth<<"%</font><br/>";
 	}
-	long pickpocket = getSummedItemStat("PickPocket");
-	if (pickpocket != 0) {
-		contentHtml<<"<font color=#188EDE size=2>Pickpocket: +"<<pickpocket<<"</font><br/>";
+	long air = getSummedItemStat("Air") * 5;
+	if (air != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Air resistance: +"<<air<<"%</font><br/>";
+	}
+	long posion = getSummedItemStat("Poison") * 5;
+	if (posion != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Poison resistance: +"<<posion<<"%</font><br/>";
+	}
+	long shadow = getSummedItemStat("Shadow") * 5;
+	if (shadow != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Tenebrium resistance: +"<<shadow<<"%</font><br/>";
 	}
 	
 	long sight = getSummedItemStat("SightBoost") + getSummedStat("Sight");
@@ -197,25 +269,9 @@ void ItemLabel::displayItemStats(std::ostringstream &contentHtml) {
 		contentHtml<<"<font color=#188EDE size=2>Hearing: +"<<boost::format("%.2f") % hearingF<<"</font><br/>";
 	}
 	
-	long fire = getSummedItemStat("Fire") * 5;
-	if (fire != 0) {
-		contentHtml<<"<font color=#188EDE size=2>Fire resistance: +"<<fire<<"%</font><br/>";
-	}
-	long air = getSummedItemStat("Air") * 5;
-	if (air != 0) {
-		contentHtml<<"<font color=#188EDE size=2>Air resistance: +"<<air<<"%</font><br/>";
-	}
-	long water = getSummedItemStat("Water") * 5;
-	if (water != 0) {
-		contentHtml<<"<font color=#188EDE size=2>Water resistance: +"<<water<<"%</font><br/>";
-	}
-	long earth = getSummedItemStat("Earth") * 5;
-	if (earth != 0) {
-		contentHtml<<"<font color=#188EDE size=2>Earth resistance: +"<<earth<<"%</font><br/>";
-	}
-	long posion = getSummedItemStat("Poison") * 5;
-	if (posion != 0) {
-		contentHtml<<"<font color=#188EDE size=2>Poison resistance: +"<<posion<<"%</font><br/>";
+	long apMax = getSummedItemStat("APMaximum");
+	if (apMax != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Maximum Action Points: +"<<apMax<<"</font><br/>";
 	}
 	
 	long vitBoost = 0;
@@ -306,8 +362,8 @@ void ItemLabel::setupTooltip()
 				}
 
 				double dmgMinCalc = this->calculateDamage(parsedDamage, item->getItemLevel(), parsedBoost);
-				long dmgMin = round(dmgMinCalc);
-				long dmgMax = dmgMinCalc + this->calculateDamage(parsedDamageRange, item->getItemLevel(), parsedBoost);
+				long dmgMin = round(dmgMinCalc) + getSummedStat("MinDamage") * (1 + parsedBoost/100.0);
+				long dmgMax = dmgMinCalc + this->calculateDamage(parsedDamageRange, item->getItemLevel(), parsedBoost) + getSummedStat("MaxDamage") * (1 + parsedBoost/100.0);
 				ss<<itemStats->getData("Damage Type")<<": "<<dmgMin<<"-"<<dmgMax;
 				contentHtml<<"<font color=#DBDBDB size=5>"<<ss.str().c_str()<<"</font><br/>";
 				//tooltipEdit->append(ss.str().c_str());
@@ -441,11 +497,26 @@ void ItemLabel::setupTooltip()
 			
 			if (itemStats->getType() == "Armor") {
 				if (getSummedStat("Armor Defense Value") != 0) {
-					contentHtml<<"<font color=#DBDBDB size=5>Armour rating: "<<getSummedStat("Armor Defense Value")<<"</font><br/>";
+					long defenseValue = getSummedStat("DefenseValue");
+					long armour = ceil(item->getItemLevel() * getSummedStat("Armor Defense Value")/2.5 + defenseValue);
+					if (defenseValue > 0) {
+						contentHtml<<"<font color=#188EDE size=5>Armour rating: "<<armour<<"</font><br/>";
+					} else {
+						contentHtml<<"<font color=#DBDBDB size=5>Armour rating: "<<armour<<"</font><br/>";
+					}
+				}
+				
+				bool isUnbreakable = false;
+				if (itemStats->getData("Flags") == "Unbreakable") {
+					isUnbreakable = true;
 				}
 				
 				std::string prefix = "";
 				std::string suffix = "";
+				std::set<std::string> immunitySet;
+				std::set<std::string> inflictSet;
+				static const std::string immunityString = "Immunity";
+				static const std::string contactString = "Contact";
 				for (int i=0; i<boosts.size(); ++i) {
 					StatsContainer *boostStats = boosts[i];
 					
@@ -459,8 +530,17 @@ void ItemLabel::setupTooltip()
 							suffix = boostStats->getSuffixList()[itemRandom % boostStats->getSuffixList().size()];
 						}
 						itemBoost = GenStatsReader::getContainer(allItemStats, boostStats->getBoostName());
+						
+						if (boost::ends_with(itemBoost->getData("Flags"), immunityString)) {
+							immunitySet.insert(itemBoost->getData("Flags"));
+						} else if (boost::ends_with(itemBoost->getData("Flags"), contactString)) {
+							inflictSet.insert(itemBoost->getData("Flags"));
+						} else if (itemBoost->getData("Flags") == "Unbreakable") {
+							isUnbreakable = true;
+						}
 					}
 				}
+				
 				std::string newHeader = "";
 				if (prefix.size() > 0) {
 					newHeader += prefix;
@@ -476,7 +556,23 @@ void ItemLabel::setupTooltip()
 				//bonus stats
 				displayItemStats(contentHtml);
 				
-				contentHtml<<"<font color=#DBDBDB size=2>Durability "<<item->getDurability()<<"/"<<getSummedStat("Durability")<<"0</font><br/>";
+				std::set<std::string>::iterator it;
+				for (it = immunitySet.begin(); it != immunitySet.end(); ++it) {
+					std::string value = *it;
+					value = value.substr(0, value.length() - immunityString.size());
+					contentHtml<<"<font color=#C7A758 size=2>Immunity to "<<value<<"</font><br/>";
+				}
+				for (it = inflictSet.begin(); it != inflictSet.end(); ++it) {
+					std::string value = *it;
+					value = value.substr(0, value.length() - contactString.size());
+					contentHtml<<"<font color=#C7A758 size=2>Inflicts "<<value<<" on contact</font><br/>";
+				}
+				
+				if (isUnbreakable) {
+					contentHtml<<"<font color=#C7A758 size=2>Unbreakable</font><br/>";
+				} else {
+					contentHtml<<"<font color=#DBDBDB size=2>Durability "<<item->getDurability()<<"/"<<getSummedStat("Durability")<<"0</font><br/>";
+				}
 				std::string requirementsText = itemStats->getData("Requirements");
 				if (requirementsText.size() > 0) {
 					contentHtml<<"<font color=#707070 size=2>Requires "<<itemStats->getData("Requirements")<<"</font><br/>";

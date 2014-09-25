@@ -46,21 +46,25 @@ void StatsView::addToTree(std::vector<LsbObject *>& objects, QTreeWidgetItem *pa
 }
 
 void StatsView::addDataToTree(StatsContainer *stat, QTreeWidgetItem *parent) {
-	QTreeWidget *statsTree = this->findChild<QTreeWidget *>("statsTree");
 	std::map<std::string, std::string> baseData = stat->getBaseDataMap();
 	for (std::map<std::string, std::string>::iterator it = baseData.begin(); it != baseData.end(); ++it) {
 		std::string dataName = it->first;
-		DataContainerTreeItem *dataNode;
-		if (parent != 0) {
-			dataNode = new DataContainerTreeItem(parent);
-		}
-		else {
-			dataNode = new DataContainerTreeItem();
-			statsTree->addTopLevelItem(dataNode);
-		}
-		dataNode->setData("");
-		dataNode->setText(0, dataName.c_str());
+		addIndividualDataItemToTree(dataName, parent);
 	}
+}
+
+void StatsView::addIndividualDataItemToTree(std::string dataName, QTreeWidgetItem *parent) {
+	QTreeWidget *statsTree = this->findChild<QTreeWidget *>("statsTree");
+	DataContainerTreeItem *dataNode;
+	if (parent != 0) {
+		dataNode = new DataContainerTreeItem(parent);
+	}
+	else {
+		dataNode = new DataContainerTreeItem();
+		statsTree->addTopLevelItem(dataNode);
+	}
+	dataNode->setData("");
+	dataNode->setText(0, dataName.c_str());
 }
 
 void StatsView::addToTree(std::vector<StatsContainer *>& stats, QTreeWidgetItem *parent) {
