@@ -66,7 +66,7 @@ new entry "Stand Your Ground2"
 data "id" "16"
 data "tip" "Stand Your Ground increases your ability to resist knockdown attacks by 50%."
 
-new entry "Lightning Rod"
+new entry "Lightning Rod2"
 data "id" "17"
 data "tip" "Lightning Rod increases your ability to resist stun attacks by 50%."
 
@@ -123,12 +123,16 @@ data "id" "30"
 data "tip" "Pyromaniac improves your casting ability for fire-based spells."
 
 new entry "Rainman"
-data "id" "32"
+data "id" "31"
 data "tip" "Rainman improves your casting ability for water-based spells.
 
 new entry "Tempest"
-data "id" "33"
+data "id" "32"
 data "tip" "Tempest improves your casting ability for air-based spells."
+
+new entry "Geomancer"
+data "id" "33"
+data "tip" "Geomancer improves your casting ability for earth-based spells.
 
 new entry "Prince Charming"
 data "id" "34"
@@ -222,12 +226,16 @@ new entry "Elemental Ranger"
 data "id" "56"
 data "tip" "Arrows may inflict bonus elemental damage depending on the surface on which your target is standing."
 
-new entry "Politician"
+new entry "Lightning Rod"
 data "id" "57"
+data "tip" "Lightning Rod makes you immune to stun."
+
+new entry "Politician"
+data "id" "58"
 data "tip" "Politician gives you 2 bonus points in Charisma, but you lose a point in Intelligence."
 
 new entry "Weatherproof"
-data "id" "58"
+data "id" "59"
 data "tip" "Weatherproof makes you immune to environmental effects."
 
 new entry "Lone Wolf"
