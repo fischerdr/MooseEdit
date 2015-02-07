@@ -36,6 +36,28 @@
 
 #define realpath(N,R) _fullpath((R),(N),_MAX_PATH)
 
+std::vector<std::wstring> getProfileNamesFromPath(std::wstring fullPath) {
+	std::vector<std::wstring> profileNames;
+	wchar_t cwd[MAX_PATH + 1];
+	_wgetcwd(cwd, MAX_PATH + 1);
+	if (_wchdir(fullPath.c_str()) == 0) {
+		boost::filesystem::path dirPath(fullPath);
+		boost::filesystem::directory_iterator it(dirPath);
+		boost::filesystem::directory_iterator end;
+		for (it; it != end; ++it) {
+			boost::filesystem::path folder = (*it).path();
+			if (boost::filesystem::is_directory(folder)) {
+				std::wstring entName = folder.filename().wstring();
+				if (entName != L"." && entName != L"..") {
+					profileNames.push_back(entName);
+				}
+			}
+		}
+		_wchdir(cwd);
+	}
+	return profileNames;
+}
+
 std::vector<std::wstring> getSaveGameList(std::wstring fullPath, std::wstring profileName) {
 	std::vector<std::wstring> saveList;
 	fullPath += L"\\";
@@ -51,7 +73,7 @@ std::vector<std::wstring> getSaveGameList(std::wstring fullPath, std::wstring pr
 		for (it; it != end; ++it) {
 			boost::filesystem::path folder = (*it).path();
 			if (boost::filesystem::is_directory(folder)) {
-			std::wstring entName = folder.filename().wstring();
+				std::wstring entName = folder.filename().wstring();
 				if (entName != L"." && entName != L"..") {
 					std::wstring saveText = profileName;
 					saveText += L"/";
@@ -536,14 +558,70 @@ void MainWindow::on_loadFileWidget_currentItemChanged(QListWidgetItem *current, 
 			std::wstring bitmapPath = profilesPath;
 			bitmapPath += tokens[1];
 			bitmapPath += L".bmp";
+			std::wstring pngPath = profilesPath;
+			pngPath += tokens[1];
+			pngPath += L".png";
 			std::wstring configPath = profilesPath;
 			configPath += tokens[1];
 			configPath += L".lsb";
+			std::wstring lsvPath = profilesPath;
+			lsvPath += tokens[1];
+			lsvPath += L".lsv";
+			std::wstring lsvBakPath = profilesPath;
+			lsvBakPath += tokens[1];
+			lsvBakPath += L".lsv.bak";
 			std::wstring metaPath = profilesPath;
 			metaPath += L"meta.lsb";
 			boost::filesystem::ifstream fin(configPath,
 				std::ios_base::binary);
 			if (!fin) {
+				fin.open(metaPath,
+						std::ios_base::binary);
+			}
+			if (!fin) {
+				PakReader reader;
+				bool lsvLoaded = reader.loadFile(lsvPath);
+				if (lsvLoaded) {
+					std::vector<std::string> fileList = reader.getFileList();
+					if (fileList.size() > 0) {
+						QProgressDialog decompressProgress("Decompressing...", QString(), 0, fileList.size(), this);
+						decompressProgress.setWindowFlags(decompressProgress.windowFlags() & ~(Qt::WindowCloseButtonHint | Qt::WindowContextHelpButtonHint));
+						decompressProgress.setWindowModality(Qt::WindowModal);
+						decompressProgress.show();
+						QApplication::processEvents();
+						
+						bool success = true;
+						for (int i=0; i<fileList.size(); ++i) {
+							if (!reader.extractFile(lsvPath, fileList[i], profilesPath, true)) {
+								success = false;
+								if (!success) {
+									QMessageBox qmsg;
+									std::ostringstream stream;
+									stream<<"Failed to extract file: "<<fileList[i];
+									qmsg.setText(QString::fromStdString(stream.str()));
+									qmsg.exec();
+								}
+								break;
+							} else {
+								decompressProgress.setValue(i + 1);
+								QApplication::processEvents();
+							}
+						}
+						decompressProgress.hide();
+						if (success) {
+							boost::system::error_code ec;
+							boost::filesystem::rename(boost::filesystem::path(lsvPath), boost::filesystem::path(lsvBakPath), ec);
+							std::string errorMessage = ec.message();
+							if (ec != ec.default_error_condition()) {
+								QMessageBox qmsg;
+								std::ostringstream stream;
+								stream<<"Could not backup LSV archive: "<<errorMessage;
+								qmsg.setText(QString::fromStdString(stream.str()));
+								qmsg.exec();
+							}
+						}
+					}
+				}
 				fin.open(metaPath,
 						std::ios_base::binary);
 			}
@@ -562,6 +640,9 @@ void MainWindow::on_loadFileWidget_currentItemChanged(QListWidgetItem *current, 
 				}
 				QLabel *previewPicture = this->findChild<QLabel *>("previewPicture");
 				QImage img = QImage(QString::fromStdWString(bitmapPath));
+				if (img.isNull()) {
+					img = QImage(QString::fromStdWString(pngPath));
+				}
 				img = img.scaled(previewPicture->size());
 				previewPicture->setPixmap(QPixmap::fromImage(img));
 				QLineEdit *previewName = this->findChild<QLineEdit *>("previewName");
@@ -1042,36 +1123,14 @@ void MainWindow::on_savesFolderEdit_textChanged(const QString &text)
 		stream<<L"/";
 	}
 	std::wstring profilesPath = stream.str();
-	stream<<L"playerprofiles.lsb";
-	std::wstring profileLsbPath = stream.str();
-	boost::filesystem::ifstream fin(profileLsbPath,
-		std::ios_base::binary);
-	if (fin) {
-		LsbReader reader;
-		playerProfiles = reader.loadFile(fin);
-		if (playerProfiles.size() > 0) {
-			LsbObject *profilesDir = LsbObject::lookupByUniquePath(playerProfiles, "UserProfiles/root");
-			std::vector<LsbObject *> profiles = LsbObject::lookupAllEntitiesWithName(profilesDir, "PlayerProfile");
-			std::vector<LsbObject *> profileNames = LsbObject::extractPropertyForEachListItem(profiles, "PlayerProfileName");
-			for (int i=0; i<profileNames.size(); ++i) {
-				wchar_t *data = (wchar_t *)profileNames[i]->getData();
-				//char *data = profileNames[i]->getData();
-				//long dataSize = profileNames[i]->getDataSize();
-				//char *alloc = new char[dataSize / 2];
-				//wcstombs(alloc, (const wchar_t*)data, dataSize);
-				std::vector<std::wstring> saveList = getSaveGameList(profilesPath, data);
-				for (int j=0; j<saveList.size(); ++j) {
-					loadFileWidget->addItem(QString::fromStdWString(saveList[j]));
-				}
-				//delete []alloc;
-			}
-		} else {
-			QMessageBox msgBox;
-			msgBox.setText("Failed to read playerProfiles.lsb contents");
-			msgBox.exec();
+	std::vector<std::wstring> profileNames = getProfileNamesFromPath(profilesPath);
+	for (int i=0; i<profileNames.size(); ++i) {
+		std::wstring &data = profileNames[i];
+		std::vector<std::wstring> saveList = getSaveGameList(profilesPath, data);
+		for (int j=0; j<saveList.size(); ++j) {
+			loadFileWidget->addItem(QString::fromStdWString(saveList[j]));
 		}
 	}
-	fin.close();
 }
 
 bool MainWindow::openPakFileToList(std::wstring &fileName) {
@@ -1099,7 +1158,7 @@ void MainWindow::on_pakOpenButton_released()
 	std::wstringstream stream;
 	stream<<this->getGameDataLocation();
 	QString result = QFileDialog::getOpenFileName(this,
-												  QString("Open PAK"), QString::fromStdWString(stream.str()), QString("PAK Files (*.pak)"));
+												  QString("Open PAK"), QString::fromStdWString(stream.str()), QString("PAK Files (*.pak);;LSV Files (*.lsv)"));
 	if (result.size() != 0) {
 		std::wstring wresult = result.toStdWString();
 		openPakFileToList(wresult);

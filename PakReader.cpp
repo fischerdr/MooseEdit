@@ -37,14 +37,15 @@ std::wstring PakReader::getFileNameByPakNumber(std::wstring& fileName, long pakN
 	return result.str();
 }
 
-HEADER_PAK_FILEINFO *PakReader::getHeaderForFile(std::string& filePath) {
-	for (int i=0; i<fileInfo.size(); ++i) {
-		if (fileInfo[i]->fileName == filePath) {
-			return fileInfo[i].get();
+HEADER_PAK_FILEINFO_LSPK *PakReader::getHeaderForFileLspk(std::string& filePath) {
+	for (int i=0; i<fileInfoLspk.size(); ++i) {
+		if (fileInfoLspk[i]->fileName == filePath) {
+			return fileInfoLspk[i].get();
 		}
 	}
 	return 0;
 }
+
 std::wstring PakReader::getLastExtractPath() const
 {
 	return lastExtractPath;
@@ -52,23 +53,47 @@ std::wstring PakReader::getLastExtractPath() const
 
 
 bool PakReader::loadFile(std::wstring fileName) {
-	fileInfo.clear();
+	fileInfoLspk.clear();
 	boost::filesystem::ifstream input(fileName, std::ios_base::binary);
-	HEADER_PAK pakHeader;
 	if (input) {
-		input.read((char *)&pakHeader, sizeof(HEADER_PAK));
-//		if (pakHeader.version > this->expectedVersion) {
-//			input.close();
-//			return false;
-//		}
-		long dataHeaderSize = sizeof(HEADER_PAK_FILEINFO) * pakHeader.fileCount;
-		long headerEnd = sizeof(HEADER_PAK) + dataHeaderSize;
-		dataStart = getNextBlock(headerEnd);
-		for (int i=0; i<pakHeader.fileCount; ++i) {
-			fileInfo.push_back(boost::shared_ptr<HEADER_PAK_FILEINFO>(new HEADER_PAK_FILEINFO));
-			HEADER_PAK_FILEINFO *currentInfo = fileInfo[fileInfo.size() - 1].get();
+		int magicSampler = 0;
+		input.read((char *)&magicSampler, sizeof(int));
+		input.seekg(0, std::ios_base::beg);
+		if (magicSampler == 0x4B50534C) {
+			isLspk = true;
+		} else {
+			isLspk = false;
+		}
+		long fileCount = 0;
+		if (isLspk) {
+			HEADER_PAK_LSPK pakHeader;
+			input.read((char *)&pakHeader, sizeof(HEADER_PAK_LSPK));
+			dataStart = pakHeader.dataOffset;
+			fileCount = pakHeader.fileCount;
+		} else {
+			HEADER_PAK pakHeader;
+			input.read((char *)&pakHeader, sizeof(HEADER_PAK));
+			long dataHeaderSize = sizeof(HEADER_PAK_FILEINFO) * pakHeader.fileCount;
+			long headerEnd = sizeof(HEADER_PAK) + dataHeaderSize;
+			dataStart = getNextBlock(headerEnd);
+			fileCount = pakHeader.fileCount;
+		}
+		for (int i=0; i<fileCount; ++i) {
+			fileInfoLspk.push_back(boost::shared_ptr<HEADER_PAK_FILEINFO_LSPK>(new HEADER_PAK_FILEINFO_LSPK));
+			HEADER_PAK_FILEINFO_LSPK *currentInfo = fileInfoLspk[fileInfoLspk.size() - 1].get();
 			if (input) {
-				input.read((char *)currentInfo, sizeof(HEADER_PAK_FILEINFO));
+				if (isLspk) {
+					input.read((char *)currentInfo, sizeof(HEADER_PAK_FILEINFO_LSPK));
+				} else {
+					HEADER_PAK_FILEINFO tempInfo;
+					input.read((char *)&tempInfo, sizeof(HEADER_PAK_FILEINFO));
+					strcpy(currentInfo->fileName, tempInfo.fileName);
+					currentInfo->dataSectionOffset = tempInfo.dataSectionOffset;
+					currentInfo->fileSize = tempInfo.fileSize;
+					currentInfo->pakNumber = tempInfo.pakNumber;
+					currentInfo->unknown1 = 0;
+					currentInfo->unknown2 = 0;
+				}
 			}
 			else {
 				input.close();
@@ -84,8 +109,8 @@ bool PakReader::loadFile(std::wstring fileName) {
 
 std::vector<std::string> PakReader::getFileList() {
 	std::vector<std::string> fileList;
-	for (int i=0; i<fileInfo.size(); ++i) {
-		fileList.push_back(fileInfo[i]->fileName);
+	for (int i=0; i<fileInfoLspk.size(); ++i) {
+		fileList.push_back(fileInfoLspk[i]->fileName);
 	}
 	return fileList;
 }
@@ -113,7 +138,7 @@ char *PakReader::extractFileIntoMemory(std::wstring fileName, std::string& fileP
 	if (fileSize == 0) {
 		return 0;
 	}
-	HEADER_PAK_FILEINFO *info = getHeaderForFile(filePath);
+	HEADER_PAK_FILEINFO_LSPK *info = getHeaderForFileLspk(filePath);
 	if (info != 0) {
 		boost::filesystem::ifstream input(getFileNameByPakNumber(fileName, info->pakNumber).c_str(), std::ios_base::binary);
 		long fileStart = dataOffsetToAbsolute(info->dataSectionOffset, info->pakNumber);
@@ -170,7 +195,17 @@ char *PakReader::extractFileIntoMemory(std::wstring fileName, std::string& fileP
 			ss<<lastToken;
 		}
 		lastExtractPath = ss.str();
-		*fileSize = info->fileSize;
+		if (info->decompressedSize > 0) {
+			char *decompressionBuffer = new char[info->decompressedSize];
+			char *result = compressor.decompress((char *)decompressionBuffer, (char *)alloc, info->fileSize, info->decompressedSize);
+			if (result > 0) {
+				*fileSize = info->decompressedSize;
+				delete[] alloc;
+				alloc = decompressionBuffer;
+			}
+		} else {
+			*fileSize = info->fileSize;
+		}
 
 		input.close();
 		_wchdir(cwd);
