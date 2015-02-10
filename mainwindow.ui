@@ -475,6 +475,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="saveAction"/>
+   <addaction name="actionExtract"/>
   </widget>
   <action name="actionE_xit">
    <property name="text">
@@ -496,6 +497,18 @@
    </property>
    <property name="toolTip">
     <string>Save all changes</string>
+   </property>
+  </action>
+  <action name="actionExtract">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/unbox.png</normaloff>:/unbox.png</iconset>
+   </property>
+   <property name="text">
+    <string>Extract</string>
+   </property>
+   <property name="toolTip">
+    <string>Extract all from LSV</string>
    </property>
   </action>
  </widget>

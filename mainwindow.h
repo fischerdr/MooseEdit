@@ -80,6 +80,8 @@ private slots:
 	
 	void on_unloadButton_released();
 	
+	void on_actionExtract_triggered();
+	
 private:
 	CharacterLoader *characterLoader = 0;
 	QTimer characterTabRefreshTimer;
@@ -106,6 +108,7 @@ private:
 	PakReader userPakReader;
 	std::wstring userPakFileName;
 	bool openPakFileToList(std::wstring &fileName);
+	void readMetaInputStream(std::istream& metaInputStream, std::wstring bitmapPath, std::wstring pngPath, std::vector<std::wstring>& tokens);
 	GamePakData *gamePakData = 0;
 	std::vector<TAG_LSB *> openFileButtonTagList;
 	

@@ -361,6 +361,7 @@ void MainWindow::handleLoadButton() {
 		std::wstringstream stream;
 		stream<<this->getSaveLocation();
 		std::wstring profilesPath = stream.str();
+		std::wstring lsvPath = stream.str();
 		std::wstring listText = text.toStdWString();
 		std::vector<std::wstring> tokens;
 		boost::split(tokens, listText, boost::is_any_of(L"/"));
@@ -370,13 +371,52 @@ void MainWindow::handleLoadButton() {
 			profilesPath += L"SaveGames\\";
 			profilesPath += tokens[1];
 			profilesPath += L"\\Globals.lsb";
+			
+			lsvPath += tokens[0];
+			lsvPath += L"\\";
+			lsvPath += L"SaveGames\\";
+			lsvPath += tokens[1];
+			lsvPath += L"\\";
+			lsvPath += tokens[1];
+			lsvPath += L".lsv";
+			
 			boost::filesystem::ifstream fin(profilesPath,
 				std::ios_base::binary);
-			LsbReader reader;
-			reader.registerProgressCallback(this);
-			globals = reader.loadFile(fin);
-			globalTagList = reader.getTagList();
-			fin.close();
+			if (fin) {
+				LsbReader reader;
+				reader.registerProgressCallback(this);
+				globals = reader.loadFile(fin);
+				globalTagList = reader.getTagList();
+				fin.close();
+			} else {
+				PakReader lsvReader;
+				bool loadedLsv = lsvReader.loadFile(lsvPath);
+				if (loadedLsv) {
+					std::string globalsPath = "globals.lsb";
+					std::wstring destPath = L".";
+					unsigned long fileSize;
+					char *globalsAlloc = lsvReader.extractFileIntoMemory(lsvPath, globalsPath, destPath, true, &fileSize);
+					if (globalsAlloc != 0) {
+						LsbReader reader;
+						reader.registerProgressCallback(this);
+						std::istringstream ss;
+						ss.rdbuf()->pubsetbuf(globalsAlloc, fileSize);
+						globals = reader.loadFile(ss);
+						globalTagList = reader.getTagList();
+						delete[] globalsAlloc;
+					} else {
+						QMessageBox msgBox;
+						msgBox.setText("Could not find globals.lsb inside LSV archive");
+						msgBox.exec();
+						return;
+					}
+				} else {
+					QMessageBox msgBox;
+					msgBox.setText("Could not locate save game file (missing LSB and LSV)");
+					msgBox.exec();
+					return;
+				}
+			}
 			
 			populateRandTable(randSeed);
 			
@@ -538,6 +578,53 @@ void MainWindow::on_loadFileWidget_customContextMenuRequested(const QPoint &pos)
 	}
 }
 
+void MainWindow::readMetaInputStream(std::istream& metaInputStream, std::wstring bitmapPath, std::wstring pngPath, std::vector<std::wstring>& tokens) {
+	if (metaInputStream) {
+		LsbReader reader;
+		std::vector<LsbObject *> metaDataList = reader.loadFile(metaInputStream);
+		LsbObject *metaData = LsbObject::lookupByUniquePath(metaDataList, "MetaData");
+		LsbObject *saveTime = metaData->lookupByUniquePath("root/MetaData/SaveTime");
+		LsbObject *module = metaData->lookupByUniquePath("root/MetaData/ModuleSettings/Mods/ModuleShortDesc");
+		LsbObject *seedObject = metaData->lookupByUniquePath("root/MetaData/Seed");
+		LsbObject *sizeObject = metaData->lookupByUniquePath("root/MetaData/Size");
+		if (seedObject != 0 && sizeObject != 0) {
+			randSeed = *((long *)seedObject->getData());
+			randSize = *((long *)sizeObject->getData());
+		}
+		QLabel *previewPicture = this->findChild<QLabel *>("previewPicture");
+		QImage img = QImage(QString::fromStdWString(bitmapPath));
+		if (img.isNull()) {
+			img = QImage(QString::fromStdWString(pngPath));
+		}
+		img = img.scaled(previewPicture->size());
+		previewPicture->setPixmap(QPixmap::fromImage(img));
+		QLineEdit *previewName = this->findChild<QLineEdit *>("previewName");
+		QLineEdit *previewDate = this->findChild<QLineEdit *>("previewDate");
+		long month = saveTime->lookupByUniquePath("Month")->getByteData();
+		long day = saveTime->lookupByUniquePath("Day")->getByteData();
+		long year = 1900 + saveTime->lookupByUniquePath("Year")->getByteData();
+		std::ostringstream ssDate;
+		ssDate<<month<<"/"<<day<<"/"<<year;
+		std::string dateText = ssDate.str();
+		QLineEdit *previewTime = this->findChild<QLineEdit *>("previewTime");
+		std::ostringstream ssTime;
+		long hours24 = saveTime->lookupByUniquePath("Hours")->getByteData();
+		std::string midday = (hours24 >= 12 ? "PM" : "AM");
+		long hours = hours24 % 12;
+		if (hours == 0)
+			hours = 12;
+		long minutes = saveTime->lookupByUniquePath("Minutes")->getByteData();
+		ssTime<<boost::format("%i:%02i %s") % hours % minutes % midday;
+		std::string timeText = ssTime.str();
+		QLineEdit *previewModule = this->findChild<QLineEdit *>("previewModule");
+		std::string moduleText = module->lookupByUniquePath("Name")->getData();
+		previewName->setText(QString::fromStdWString(tokens[1]));
+		previewDate->setText(QString(dateText.c_str()));
+		previewTime->setText(QString(timeText.c_str()));
+		previewModule->setText(QString(moduleText.c_str()));
+	}
+}
+
 void MainWindow::on_loadFileWidget_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
 {
 	QPushButton *loadButton = this->findChild<QPushButton *>("loadButton");
@@ -578,97 +665,29 @@ void MainWindow::on_loadFileWidget_currentItemChanged(QListWidgetItem *current, 
 				fin.open(metaPath,
 						std::ios_base::binary);
 			}
-			if (!fin) {
+			if (fin) {
+				readMetaInputStream(fin, bitmapPath, pngPath, tokens);
+				fin.close();
+			}
+			else {
 				PakReader reader;
-				bool lsvLoaded = reader.loadFile(lsvPath);
+			    bool lsvLoaded = reader.loadFile(lsvPath);
 				if (lsvLoaded) {
-					std::vector<std::string> fileList = reader.getFileList();
-					if (fileList.size() > 0) {
-						QProgressDialog decompressProgress("Decompressing...", QString(), 0, fileList.size(), this);
-						decompressProgress.setWindowFlags(decompressProgress.windowFlags() & ~(Qt::WindowCloseButtonHint | Qt::WindowContextHelpButtonHint));
-						decompressProgress.setWindowModality(Qt::WindowModal);
-						decompressProgress.show();
-						QApplication::processEvents();
-						
-						bool success = true;
-						for (int i=0; i<fileList.size(); ++i) {
-							if (!reader.extractFile(lsvPath, fileList[i], profilesPath, true)) {
-								success = false;
-								if (!success) {
-									QMessageBox qmsg;
-									std::ostringstream stream;
-									stream<<"Failed to extract file: "<<fileList[i];
-									qmsg.setText(QString::fromStdString(stream.str()));
-									qmsg.exec();
-								}
-								break;
-							} else {
-								decompressProgress.setValue(i + 1);
-								QApplication::processEvents();
-							}
-						}
-						decompressProgress.hide();
-						if (success) {
-							boost::system::error_code ec;
-							boost::filesystem::rename(boost::filesystem::path(lsvPath), boost::filesystem::path(lsvBakPath), ec);
-							std::string errorMessage = ec.message();
-							if (ec != ec.default_error_condition()) {
-								QMessageBox qmsg;
-								std::ostringstream stream;
-								stream<<"Could not backup LSV archive: "<<errorMessage;
-								qmsg.setText(QString::fromStdString(stream.str()));
-								qmsg.exec();
-							}
-						}
+					unsigned long fileSize;
+					std::string metaPath = "meta.lsb";
+					std::wstring fileDest = L".";
+					char *metaAlloc = reader.extractFileIntoMemory(lsvPath, metaPath, fileDest, true, &fileSize);
+					if (metaAlloc != 0) {
+						std::istringstream fileByteStream;
+						fileByteStream.rdbuf()->pubsetbuf(metaAlloc, fileSize);
+						readMetaInputStream(fileByteStream, bitmapPath, pngPath, tokens);
+						delete[] metaAlloc;
+					} else {
+						QMessageBox msg;
+						msg.setText("Could not find meta information file");
+						msg.exec();
 					}
 				}
-				fin.open(metaPath,
-						std::ios_base::binary);
-			}
-			if (fin) {
-				LsbReader reader;
-				std::vector<LsbObject *> metaDataList = reader.loadFile(fin);
-				fin.close();
-				LsbObject *metaData = LsbObject::lookupByUniquePath(metaDataList, "MetaData");
-				LsbObject *saveTime = metaData->lookupByUniquePath("root/MetaData/SaveTime");
-				LsbObject *module = metaData->lookupByUniquePath("root/MetaData/ModuleSettings/Mods/ModuleShortDesc");
-				LsbObject *seedObject = metaData->lookupByUniquePath("root/MetaData/Seed");
-				LsbObject *sizeObject = metaData->lookupByUniquePath("root/MetaData/Size");
-				if (seedObject != 0 && sizeObject != 0) {
-					randSeed = *((long *)seedObject->getData());
-					randSize = *((long *)sizeObject->getData());
-				}
-				QLabel *previewPicture = this->findChild<QLabel *>("previewPicture");
-				QImage img = QImage(QString::fromStdWString(bitmapPath));
-				if (img.isNull()) {
-					img = QImage(QString::fromStdWString(pngPath));
-				}
-				img = img.scaled(previewPicture->size());
-				previewPicture->setPixmap(QPixmap::fromImage(img));
-				QLineEdit *previewName = this->findChild<QLineEdit *>("previewName");
-				QLineEdit *previewDate = this->findChild<QLineEdit *>("previewDate");
-				long month = saveTime->lookupByUniquePath("Month")->getByteData();
-				long day = saveTime->lookupByUniquePath("Day")->getByteData();
-				long year = 1900 + saveTime->lookupByUniquePath("Year")->getByteData();
-				std::ostringstream ssDate;
-				ssDate<<month<<"/"<<day<<"/"<<year;
-				std::string dateText = ssDate.str();
-				QLineEdit *previewTime = this->findChild<QLineEdit *>("previewTime");
-				std::ostringstream ssTime;
-				long hours24 = saveTime->lookupByUniquePath("Hours")->getByteData();
-				std::string midday = (hours24 >= 12 ? "PM" : "AM");
-				long hours = hours24 % 12;
-				if (hours == 0)
-					hours = 12;
-				long minutes = saveTime->lookupByUniquePath("Minutes")->getByteData();
-				ssTime<<boost::format("%i:%02i %s") % hours % minutes % midday;
-				std::string timeText = ssTime.str();
-				QLineEdit *previewModule = this->findChild<QLineEdit *>("previewModule");
-				std::string moduleText = module->lookupByUniquePath("Name")->getData();
-				previewName->setText(QString::fromStdWString(tokens[1]));
-				previewDate->setText(QString(dateText.c_str()));
-				previewTime->setText(QString(timeText.c_str()));
-				previewModule->setText(QString(moduleText.c_str()));
 			}
 		}
 	}
@@ -917,6 +936,7 @@ void MainWindow::on_saveAction_triggered()
 	std::wstringstream stream;
 	stream<<this->getSaveLocation();
 	std::wstring profilesPath = stream.str();
+	std::wstring lsvPath = stream.str();
 	QLineEdit *currentlyLoadedEdit = this->findChild<QLineEdit *>("currentlyLoadedEdit");
 	std::wstring listText = currentlyLoadedEdit->text().toStdWString();
 	std::vector<std::wstring> tokens;
@@ -928,25 +948,66 @@ void MainWindow::on_saveAction_triggered()
 		profilesPath += tokens[1];
 		profilesPath += L"\\Globals.lsb";
 	
+		lsvPath += tokens[0];
+		lsvPath += L"\\";
+		lsvPath += L"SaveGames\\";
+		lsvPath += tokens[1];
+		lsvPath += L"\\";
+		lsvPath += tokens[1];
+		lsvPath += L".lsv";
+		
 		std::wstring bakPath = profilesPath;
 		bakPath += L".bak";
 		
-		//create backup
-		boost::filesystem::ifstream src(profilesPath, std::ios::binary);
-		boost::filesystem::ifstream dstExists(bakPath, std::ios::binary);
-		if (!dstExists) {
-			boost::filesystem::ofstream dst(bakPath, std::ios::binary);
-			dst << src.rdbuf();
-			dst.close();
-		}
-		dstExists.close();
-		src.close();
+		std::wstring lsvBakPath = lsvPath;
+		lsvBakPath += L".bak";
 		
-		LsbWriter writer;
-		writer.registerProgressCallback(this);
-		boost::filesystem::ofstream fout(profilesPath, std::ios::binary);
-		bool result = writer.writeFile(globals, globalTagList, fout);
-		fout.close();
+		bool isLsb = false;
+		
+		//create LSB backup
+		{
+			boost::filesystem::ifstream src(profilesPath, std::ios::binary);
+			if (src) {
+				isLsb = true;
+			}
+			boost::filesystem::ifstream dstExists(bakPath, std::ios::binary);
+			if (src && !dstExists) {
+				boost::filesystem::ofstream dst(bakPath, std::ios::binary);
+				dst << src.rdbuf();
+				dst.close();
+			}
+			dstExists.close();
+			src.close();
+		}
+		
+		//create LSV backup
+		{
+			boost::filesystem::ifstream src(lsvPath, std::ios::binary);
+			boost::filesystem::ifstream dstExists(lsvBakPath, std::ios::binary);
+			if (src && !dstExists) {
+				boost::filesystem::ofstream dst(lsvBakPath, std::ios::binary);
+				dst << src.rdbuf();
+				dst.close();
+			}
+			dstExists.close();
+			src.close();
+		}
+		
+		bool result;
+		if (isLsb) {
+			LsbWriter writer;
+			writer.registerProgressCallback(this);
+			boost::filesystem::ofstream fout(profilesPath, std::ios::binary);
+			result = writer.writeFile(globals, globalTagList, fout);
+			fout.close();
+		} else {
+			//verify lsv.bak exists
+			//create new PAK
+			//extract all files from bak (except globals)
+			//generate new globals
+			//add all files to new PAK
+			//close file
+		}
 		
 		QMessageBox msg;
 		if (result) {
@@ -1240,4 +1301,83 @@ void MainWindow::on_unloadButton_released()
     this->unload();
 	unloadButton->setEnabled(false);
 	loadButton->setEnabled(true);
+}
+
+void MainWindow::on_actionExtract_triggered()
+{
+	std::wstringstream stream;
+	stream<<this->getSaveLocation();
+	std::wstring folderPath = stream.str();
+	QLineEdit *currentlyLoadedEdit = this->findChild<QLineEdit *>("currentlyLoadedEdit");
+	std::wstring listText = currentlyLoadedEdit->text().toStdWString();
+	std::vector<std::wstring> tokens;
+	boost::split(tokens, listText, boost::is_any_of(L"/"));
+	if (tokens.size() == 2) {
+		folderPath += tokens[0];
+		folderPath += L"\\";
+		folderPath += L"SaveGames\\";
+		folderPath += tokens[1];
+		folderPath += L"\\";
+		
+		std::wstring lsvPath = folderPath;
+		lsvPath += tokens[1];
+		lsvPath += L".lsv";
+		
+		if (boost::filesystem::exists(boost::filesystem::path(lsvPath))) {
+			QMessageBox::StandardButton reply;
+			  reply = QMessageBox::question(this, "Extract", "Are you sure you want to extract all files?",
+			                                QMessageBox::Yes|QMessageBox::No);
+			  if (reply == QMessageBox::Yes) {
+				  PakReader reader;
+				  bool lsvLoaded = reader.loadFile(lsvPath);
+				  if (lsvLoaded) {
+					  std::vector<std::string> fileList = reader.getFileList();
+					  if (fileList.size() > 0) {
+						  QProgressDialog decompressProgress("Decompressing...", QString(), 0, fileList.size(), this);
+						  decompressProgress.setWindowFlags(decompressProgress.windowFlags() & ~(Qt::WindowCloseButtonHint | Qt::WindowContextHelpButtonHint));
+						  decompressProgress.setWindowModality(Qt::WindowModal);
+						  decompressProgress.show();
+						  QApplication::processEvents();
+						  
+						  bool success = true;
+						  for (int i=0; i<fileList.size(); ++i) {
+							  if (!reader.extractFile(lsvPath, fileList[i], folderPath, true)) {
+								  success = false;
+								  if (!success) {
+									  QMessageBox qmsg;
+									  std::ostringstream stream;
+									  stream<<"Failed to extract file: "<<fileList[i];
+									  qmsg.setText(QString::fromStdString(stream.str()));
+									  qmsg.exec();
+								  }
+								  break;
+							  } else {
+								  decompressProgress.setValue(i + 1);
+								  QApplication::processEvents();
+							  }
+						  }
+						  decompressProgress.hide();
+						  if (success) {
+							  QMessageBox qmsg;
+							  std::ostringstream stream;
+							  stream<<"Success";
+							  qmsg.setText(QString::fromStdString(stream.str()));
+							  qmsg.exec();
+							  
+//							  boost::system::error_code ec;
+//							  boost::filesystem::rename(boost::filesystem::path(lsvPath), boost::filesystem::path(lsvBakPath), ec);
+//							  std::string errorMessage = ec.message();
+//							  if (ec != ec.default_error_condition()) {
+//								  QMessageBox qmsg;
+//								  std::ostringstream stream;
+//								  stream<<"Could not backup LSV archive: "<<errorMessage;
+//								  qmsg.setText(QString::fromStdString(stream.str()));
+//								  qmsg.exec();
+//							  }
+						  }
+					  }
+				  }
+			}
+		}
+	}
 }

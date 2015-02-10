@@ -67,7 +67,8 @@ SOURCES += main.cpp\
     GlShader.cpp \
     GlShaderProgram.cpp \
     glew.c \
-    PakCompressor.cpp
+    PakCompressor.cpp \
+    lz4.cpp
 
 HEADERS  += mainwindow.h \
     LsbReader.h \
@@ -112,9 +113,8 @@ HEADERS  += mainwindow.h \
     LsxWriter.h \
     GlShader.h \
     GlShaderProgram.h \
-    zlib/zconf.h \
-    zlib/zlib.h \
-    PakCompressor.h
+    PakCompressor.h \
+    lz4.h
 
 FORMS    += mainwindow.ui \
     charactertab.ui \

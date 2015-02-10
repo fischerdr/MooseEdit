@@ -93,6 +93,7 @@ bool PakReader::loadFile(std::wstring fileName) {
 					currentInfo->pakNumber = tempInfo.pakNumber;
 					currentInfo->unknown1 = 0;
 					currentInfo->unknown2 = 0;
+					currentInfo->decompressedSize = 0;
 				}
 			}
 			else {
@@ -197,7 +198,7 @@ char *PakReader::extractFileIntoMemory(std::wstring fileName, std::string& fileP
 		lastExtractPath = ss.str();
 		if (info->decompressedSize > 0) {
 			char *decompressionBuffer = new char[info->decompressedSize];
-			char *result = compressor.decompress((char *)decompressionBuffer, (char *)alloc, info->fileSize, info->decompressedSize);
+			int result = compressor.decompress((char *)decompressionBuffer, (char *)alloc, info->fileSize, info->decompressedSize);
 			if (result > 0) {
 				*fileSize = info->decompressedSize;
 				delete[] alloc;

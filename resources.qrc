@@ -55,5 +55,6 @@
         <file>equip_fragment.shd</file>
         <file>equip_vertex.shd</file>
         <file>player_fragment.shd</file>
+        <file>unbox.png</file>
     </qresource>
 </RCC>
