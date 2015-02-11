@@ -39,7 +39,7 @@
  * Select how default compression functions will allocate memory for their hash table,
  * in memory stack (0:default, fastest), or in memory heap (1:requires memory allocation (malloc)).
  */
-#define HEAPMODE 0
+#define HEAPMODE 1
 
 
 /**************************************

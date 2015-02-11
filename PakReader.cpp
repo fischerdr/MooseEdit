@@ -91,7 +91,7 @@ bool PakReader::loadFile(std::wstring fileName) {
 					currentInfo->dataSectionOffset = tempInfo.dataSectionOffset;
 					currentInfo->fileSize = tempInfo.fileSize;
 					currentInfo->pakNumber = tempInfo.pakNumber;
-					currentInfo->unknown1 = 0;
+					currentInfo->compressionMethod = 0;
 					currentInfo->unknown2 = 0;
 					currentInfo->decompressedSize = 0;
 				}

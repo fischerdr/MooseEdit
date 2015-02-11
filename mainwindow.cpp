@@ -9,6 +9,7 @@
 #include "TextureAtlas.h"
 #include "finddialog.h"
 #include "EquipmentHandler.h"
+#include "PakWriter.h"
 #include <windows.h>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -993,7 +994,7 @@ void MainWindow::on_saveAction_triggered()
 			src.close();
 		}
 		
-		bool result;
+		bool result = false;
 		if (isLsb) {
 			LsbWriter writer;
 			writer.registerProgressCallback(this);
@@ -1001,12 +1002,70 @@ void MainWindow::on_saveAction_triggered()
 			result = writer.writeFile(globals, globalTagList, fout);
 			fout.close();
 		} else {
-			//verify lsv.bak exists
-			//create new PAK
-			//extract all files from bak (except globals)
-			//generate new globals
-			//add all files to new PAK
-			//close file
+			if (boost::filesystem::exists(lsvBakPath)) {
+				//verify lsv.bak exists
+				//create new PAK
+				//extract all files from bak (except globals)
+				//generate new globals
+				//add all files to new PAK
+				//close file
+				PakReader reader;
+				reader.loadFile(lsvBakPath);
+				std::vector<std::string> fileList = reader.getFileList();
+				
+				std::vector<std::string> fileNames;
+				std::vector<char *> fileData;
+				std::vector<unsigned long> fileDataSize;
+				std::wstring dest = L".";
+				bool failure = false;
+				if (fileList.size() == 0) {
+					failure = true;
+				}
+				
+				LsbWriter lsbWriter;
+				lsbWriter.registerProgressCallback(this);
+				std::stringstream globalsStream;
+				result = lsbWriter.writeFile(globals, globalTagList, globalsStream);
+				fileNames.push_back("globals.lsb");
+				const std::string& globalBytes = globalsStream.rdbuf()->str();
+				char *alloc = new char[globalBytes.size()];
+				memcpy(alloc, globalBytes.c_str(), globalBytes.size());
+				globalsStream.str("");
+				fileData.push_back(alloc);
+				fileDataSize.push_back(globalBytes.size());
+				
+				for (int i=0; i<fileList.size(); ++i) {
+					std::string fileName = fileList[i];
+					if (boost::algorithm::to_lower_copy(fileName) == "globals.lsb")
+						continue;
+					unsigned long fileSize;
+					fileNames.push_back(fileName);
+					fileData.push_back(reader.extractFileIntoMemory(lsvBakPath, fileName, dest, false, &fileSize));
+					if (fileData.back() == 0) {
+						failure = true;
+						break;
+					}
+					fileDataSize.push_back(fileSize);
+				}
+				if (!failure) {
+					PakWriter writer;
+					for (int i=0; i<fileData.size(); ++i) {
+						writer.addFile(fileNames[i], fileData[i], fileDataSize[i]);
+					}
+					boost::filesystem::ofstream fout(lsvPath, std::ios::binary);
+					writer.writeFile(fout);
+					fout.close();
+					result = true;
+				}
+				for (int i=0; i<fileData.size(); ++i) {
+					delete[] fileData[i];
+				}
+			} else {
+				QMessageBox msg;
+				msg.setText("Could not find lsv .BAK file");
+				msg.exec();
+				result = false;
+			}
 		}
 		
 		QMessageBox msg;
