@@ -1440,3 +1440,10 @@ void MainWindow::on_actionExtract_triggered()
 		}
 	}
 }
+
+void MainWindow::on_action_About_triggered()
+{
+	const std::string aboutName = "About";
+	const std::string aboutText = "MooseEdit version " + std::string(PRG_VERSION);
+    QMessageBox::about(this, QString::fromStdString(aboutName), QString::fromStdString(aboutText));
+}

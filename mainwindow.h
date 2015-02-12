@@ -82,6 +82,8 @@ private slots:
 	
 	void on_actionExtract_triggered();
 	
+	void on_action_About_triggered();
+	
 private:
 	CharacterLoader *characterLoader = 0;
 	QTimer characterTabRefreshTimer;

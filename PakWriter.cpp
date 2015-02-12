@@ -67,6 +67,6 @@ PakWriter::PakWriter()
 	lspkHeader.version = 0x0A;
 	lspkHeader.fileCount = 0;
 	lspkHeader.fileInfoSectionSize = 0;
-	lspkHeader.unknown2 = 0;
+	lspkHeader.unknown2 = 1;
 	lspkHeader.pakCount = 1;
 }
