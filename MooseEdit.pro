@@ -69,7 +69,9 @@ SOURCES += main.cpp\
     glew.c \
     PakCompressor.cpp \
     lz4.cpp \
-    PakWriter.cpp
+    PakWriter.cpp \
+    md5.cpp \
+    SanityHash.cpp
 
 HEADERS  += mainwindow.h \
     LsbReader.h \
@@ -117,7 +119,9 @@ HEADERS  += mainwindow.h \
     PakCompressor.h \
     lz4.h \
     PakWriter.h \
-    PakInfo.h
+    PakInfo.h \
+    SanityHash.h \
+    md5.h
 
 FORMS    += mainwindow.ui \
     charactertab.ui \

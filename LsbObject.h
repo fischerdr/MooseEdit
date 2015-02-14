@@ -33,7 +33,7 @@ struct TAG_LSB {
 	long index;
 	
 	TAG_LSB() {
-		;
+		tagLength = -1;
 	}
 	
 	~TAG_LSB() {
@@ -42,10 +42,12 @@ struct TAG_LSB {
 	
 	TAG_LSB(const TAG_LSB& other) {
 		this->tagLength = other.tagLength;
-		long strLen = strlen(other.tag);
-		this->tag = new char[strLen + 1];
-		strcpy(this->tag, other.tag);
-		this->index = other.index;
+		if (other.tagLength >= 0) {
+			long strLen = strlen(other.tag);
+			this->tag = new char[strLen + 1];
+			strcpy(this->tag, other.tag);
+			this->index = other.index;
+		}
 	}
 };
 

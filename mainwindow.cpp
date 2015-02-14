@@ -10,6 +10,7 @@
 #include "finddialog.h"
 #include "EquipmentHandler.h"
 #include "PakWriter.h"
+#include "SanityHash.h"
 #include <windows.h>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -1022,6 +1023,8 @@ void MainWindow::on_saveAction_triggered()
 					failure = true;
 				}
 				
+				SanityHash sanity;
+				
 				LsbWriter lsbWriter;
 				lsbWriter.registerProgressCallback(this);
 				std::stringstream globalsStream;
@@ -1033,10 +1036,13 @@ void MainWindow::on_saveAction_triggered()
 				globalsStream.str("");
 				fileData.push_back(alloc);
 				fileDataSize.push_back(globalBytes.size());
+				sanity.addFile((unsigned char *)fileData.back(), fileDataSize.back());
 				
 				for (int i=0; i<fileList.size(); ++i) {
 					std::string fileName = fileList[i];
 					if (boost::algorithm::to_lower_copy(fileName) == "globals.lsb")
+						continue;
+					if (boost::algorithm::to_lower_copy(fileName) == "sanity.lsb")
 						continue;
 					unsigned long fileSize;
 					fileNames.push_back(fileName);
@@ -1046,7 +1052,24 @@ void MainWindow::on_saveAction_triggered()
 						break;
 					}
 					fileDataSize.push_back(fileSize);
+					sanity.addFile((unsigned char *)fileData[i], fileDataSize[i]);
 				}
+				
+				//create sanity.lsb
+				std::vector<TAG_LSB *> sanityTags;
+				std::vector<LsbObject *> sanityObjects;
+				sanity.generateLsb(sanityTags, sanityObjects);
+				LsbWriter sanityWriter;
+				std::stringstream sanityStream;
+				sanityWriter.writeFile(sanityObjects, sanityTags, sanityStream);
+				fileNames.push_back("sanity.lsb");
+				const std::string& sanityBytes = sanityStream.rdbuf()->str();
+				char *alloc2 = new char[sanityBytes.size()];
+				memcpy(alloc2, sanityBytes.c_str(), sanityBytes.size());
+				sanityStream.str("");
+				fileData.push_back(alloc2);
+				fileDataSize.push_back(sanityBytes.size());
+				
 				if (!failure) {
 					PakWriter writer;
 					for (int i=0; i<fileData.size(); ++i) {
