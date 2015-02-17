@@ -2,10 +2,31 @@
 #include <cstring>
 #include <cstdlib>
 
+bool PakWriter::getShouldCompress() const
+{
+	return compressor.getShouldCompress();
+}
+
+void PakWriter::setShouldCompress(bool value)
+{
+	compressor.setShouldCompress(value);
+}
+
+bool PakWriter::getHighCompressionMode() const
+{
+	return compressor.getHighCompressionMode();
+}
+
+void PakWriter::setHighCompressionMode(bool value)
+{
+	compressor.setHighCompressionMode(value);
+}
+
 void PakWriter::addFile(std::string &fileName, char *buffer, unsigned long bufferSize) {
 	lspkFileData.push_back(LSPK_FILE_DATA());
 	LSPK_FILE_DATA &back = lspkFileData.back();
 	char *alloc = new char[bufferSize];
+	bool shouldCompress = compressor.getShouldCompress();
 	int compressedSize = compressor.compress(buffer, alloc, bufferSize);
 	void *temp = realloc(alloc, compressedSize);
 	if (temp != alloc) {
@@ -13,13 +34,19 @@ void PakWriter::addFile(std::string &fileName, char *buffer, unsigned long buffe
 		alloc = (char *)temp;
 	}
 	back.buffer = alloc;
-	back.isCompressed = true;
+	back.isCompressed = shouldCompress;
 	strncpy(back.fileInfo.fileName, fileName.c_str(), sizeof(back.fileInfo.fileName));
 	
-	back.fileInfo.decompressedSize = bufferSize;
-	back.fileInfo.fileSize = compressedSize;
+	if (shouldCompress) {
+		back.fileInfo.decompressedSize = bufferSize;
+		back.fileInfo.fileSize = compressedSize;
+		back.fileInfo.compressionMethod = COMPRESSION_METHOD_LZ4;
+	} else {
+		back.fileInfo.decompressedSize = 0;
+		back.fileInfo.fileSize = bufferSize;
+		back.fileInfo.compressionMethod = 0;
+	}
 	back.fileInfo.pakNumber = 0;
-	back.fileInfo.compressionMethod = COMPRESSION_METHOD_LZ4;
 	back.fileInfo.unknown2 = 0;
 	
 	++lspkHeader.fileCount;

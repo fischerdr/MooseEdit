@@ -18,6 +18,10 @@ class PakWriter
 	HEADER_PAK_LSPK lspkHeader;
 	std::vector<LSPK_FILE_DATA> lspkFileData;
 public:
+	bool getShouldCompress() const;
+	void setShouldCompress(bool value);
+	bool getHighCompressionMode() const;
+	void setHighCompressionMode(bool value);
 	PakWriter();
 	~PakWriter();
 	void writeFile(std::ostream &file);

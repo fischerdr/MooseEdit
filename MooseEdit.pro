@@ -71,7 +71,8 @@ SOURCES += main.cpp\
     lz4.cpp \
     PakWriter.cpp \
     md5.cpp \
-    SanityHash.cpp
+    SanityHash.cpp \
+    lz4hc.cpp
 
 HEADERS  += mainwindow.h \
     LsbReader.h \
@@ -121,7 +122,8 @@ HEADERS  += mainwindow.h \
     PakWriter.h \
     PakInfo.h \
     SanityHash.h \
-    md5.h
+    md5.h \
+    lz4hc.h
 
 FORMS    += mainwindow.ui \
     charactertab.ui \

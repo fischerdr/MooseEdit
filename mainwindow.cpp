@@ -354,6 +354,12 @@ void MainWindow::handleLoadButton() {
 		
 		settings.setProperty(L"savePath", this->getSaveLocation());
 		settings.setProperty(L"dataPath", this->getGameDataLocation());
+		if (settings.getProperty(L"highCompressionMode").length() == 0) {
+			settings.setProperty(L"highCompressionMode", L"1");
+		}
+		if (settings.getProperty(L"useCompression").length() == 0) {
+			settings.setProperty(L"useCompression", L"1");
+		}
 		settings.saveFile(PRG_VERSION);
 		
 		QString text = item->text();
@@ -1004,12 +1010,6 @@ void MainWindow::on_saveAction_triggered()
 			fout.close();
 		} else {
 			if (boost::filesystem::exists(lsvBakPath)) {
-				//verify lsv.bak exists
-				//create new PAK
-				//extract all files from bak (except globals)
-				//generate new globals
-				//add all files to new PAK
-				//close file
 				PakReader reader;
 				reader.loadFile(lsvBakPath);
 				std::vector<std::string> fileList = reader.getFileList();
@@ -1071,9 +1071,26 @@ void MainWindow::on_saveAction_triggered()
 				fileDataSize.push_back(sanityBytes.size());
 				
 				if (!failure) {
+					bool useCompression = (settings.getProperty(L"useCompression") == L"1" ? true : false);
+					bool highCompressionMode = (settings.getProperty(L"highCompressionMode") == L"1" ? true : false);
+					QProgressDialog compressProgress("Compressing...", QString(), 0, fileData.size(), this);
+					compressProgress.setWindowFlags(compressProgress.windowFlags() & ~(Qt::WindowCloseButtonHint | Qt::WindowContextHelpButtonHint));
+					compressProgress.setWindowModality(Qt::WindowModal);
+					if (useCompression) {
+						compressProgress.show();
+					}
+					QApplication::processEvents();
+					
 					PakWriter writer;
+					writer.setShouldCompress(useCompression);
+					writer.setHighCompressionMode(highCompressionMode);
 					for (int i=0; i<fileData.size(); ++i) {
 						writer.addFile(fileNames[i], fileData[i], fileDataSize[i]);
+						compressProgress.setValue(i + 1);
+						QApplication::processEvents();
+					}
+					if (useCompression) {
+						compressProgress.hide();
 					}
 					boost::filesystem::ofstream fout(lsvPath, std::ios::binary);
 					writer.writeFile(fout);
