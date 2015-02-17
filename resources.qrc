@@ -56,5 +56,6 @@
         <file>equip_vertex.shd</file>
         <file>player_fragment.shd</file>
         <file>unbox.png</file>
+        <file>wrench_icon.png</file>
     </qresource>
 </RCC>

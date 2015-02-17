@@ -476,6 +476,7 @@
    </attribute>
    <addaction name="saveAction"/>
    <addaction name="actionExtract"/>
+   <addaction name="actionSettings"/>
   </widget>
   <action name="actionE_xit">
    <property name="text">
@@ -509,6 +510,18 @@
    </property>
    <property name="toolTip">
     <string>Extract all from LSV</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/wrench_icon.png</normaloff>:/wrench_icon.png</iconset>
+   </property>
+   <property name="text">
+    <string>settings</string>
+   </property>
+   <property name="toolTip">
+    <string>Configure editor settings</string>
    </property>
   </action>
  </widget>

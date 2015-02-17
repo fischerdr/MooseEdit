@@ -11,6 +11,7 @@
 #include "EquipmentHandler.h"
 #include "PakWriter.h"
 #include "SanityHash.h"
+#include "SettingsDialog.h"
 #include <windows.h>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -211,6 +212,14 @@ MainWindow::MainWindow(std::wstring argument, QWidget *parent) :
 			}
 		}
 	}
+	
+	if (settings.getProperty(L"highCompressionMode").length() == 0) {
+		settings.setProperty(L"highCompressionMode", L"1");
+	}
+	if (settings.getProperty(L"useCompression").length() == 0) {
+		settings.setProperty(L"useCompression", L"1");
+	}
+	settings.saveFile(PRG_VERSION);
 }
 
 std::wstring MainWindow::getSteamPathFromRegistry() {
@@ -354,12 +363,6 @@ void MainWindow::handleLoadButton() {
 		
 		settings.setProperty(L"savePath", this->getSaveLocation());
 		settings.setProperty(L"dataPath", this->getGameDataLocation());
-		if (settings.getProperty(L"highCompressionMode").length() == 0) {
-			settings.setProperty(L"highCompressionMode", L"1");
-		}
-		if (settings.getProperty(L"useCompression").length() == 0) {
-			settings.setProperty(L"useCompression", L"1");
-		}
 		settings.saveFile(PRG_VERSION);
 		
 		QString text = item->text();
@@ -1486,4 +1489,13 @@ void MainWindow::on_action_About_triggered()
 	const std::string aboutName = "About";
 	const std::string aboutText = "MooseEdit version " + std::string(PRG_VERSION);
     QMessageBox::about(this, QString::fromStdString(aboutName), QString::fromStdString(aboutText));
+}
+
+void MainWindow::on_actionSettings_triggered()
+{
+    SettingsDialog *settingsDialog = new SettingsDialog(&settings, this);
+	if (settingsDialog->exec() == 1) {
+		settings.saveFile(PRG_VERSION);
+	}
+	delete settingsDialog;
 }

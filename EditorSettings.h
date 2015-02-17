@@ -12,6 +12,13 @@ class EditorSettings
 	PropertyMap propertyMap;
 public:
 	EditorSettings(std::wstring fileName);
+	EditorSettings(const EditorSettings& other) {
+		this->fileName = other.fileName;
+		for (PropertyMap::const_iterator it = other.propertyMap.begin(); it != other.propertyMap.end(); ++it) {
+			this->setProperty(it->first, it->second);
+		}
+	}
+
 	std::wstring getProperty(std::wstring key) {
 		if (propertyMap.find(key) != propertyMap.end()) {
 			return propertyMap[key];
