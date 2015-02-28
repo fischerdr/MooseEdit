@@ -363,11 +363,6 @@ void ItemLabel::setupTooltip()
 			ss.str("");
 			
 			long itemValue = getSummedStat("Value");
-			long itemLevel = item->getItemLevel();
-			if (itemLevel <= 0) {
-				itemLevel = 1;
-			}
-			itemValue = std::max((weightValue * itemValue - 2)*10, 0.0f) + itemValue * itemLevel*22.86f; //this calculation is made up
 			itemValue *= item->getItemAmount();
 			ss<<itemValue;
 			goldLabel->setText(ss.str().c_str());
