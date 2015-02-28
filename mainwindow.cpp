@@ -12,6 +12,7 @@
 #include "PakWriter.h"
 #include "SanityHash.h"
 #include "SettingsDialog.h"
+#include "AddNodeDialog.h"
 #include <windows.h>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -845,14 +846,17 @@ void MainWindow::treeFindAction() {
 	QLineEdit *findEdit = dialog->findChild<QLineEdit *>("findEdit");
 	QTreeWidget *treeWidget = this->findChild<QTreeWidget *>("treeWidget");
 	QTreeWidgetItem *item = treeWidget->currentItem();
-	findEdit->setText(item->text(column));
-	int result = dialog->exec();
-	if (result == 1) {
-		QTreeWidgetItem *findResult = findInTree(treeWidget->invisibleRootItem(), findEdit->text(), 1, item, true);
-		if (findResult != 0) {
-			treeWidget->setCurrentItem(findResult);
+	if (item != 0 && findEdit != 0 && treeWidget != 0) {
+		findEdit->setText(item->text(column));
+		int result = dialog->exec();
+		if (result == 1) {
+			QTreeWidgetItem *findResult = findInTree(treeWidget->invisibleRootItem(), findEdit->text(), 1, item, true);
+			if (findResult != 0) {
+				treeWidget->setCurrentItem(findResult);
+			}
 		}
 	}
+	delete dialog;
 }
 
 void MainWindow::recursiveExpandAll(QTreeWidgetItem *item) {
@@ -876,9 +880,14 @@ void MainWindow::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 		contextMenu.addAction("&Copy Text");
 		contextMenu.addAction("Copy &Path");
 		contextMenu.addAction("Copy &Type");
-		contextMenu.addAction("Copy &Child Number");
+		contextMenu.addAction("Copy Child &Number");
 		contextMenu.addAction("&Expand All");
 		QAction *findAction = contextMenu.addAction("&Find");
+		EditableTreeWidgetItem *currentNode = (EditableTreeWidgetItem *)item;
+		if (currentNode->object->isDirectory()) {
+			contextMenu.addAction("&Add Node");
+		}
+		contextMenu.addAction("&Delete Node");
 		findAction->setShortcut(QKeySequence::Find);
 		QAction *result = contextMenu.exec(treeWidget->viewport()->mapToGlobal(pos));
 		if (result) {
@@ -916,7 +925,7 @@ void MainWindow::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 				long type = editable->object->getType();
 				clipboard->setText((boost::format("0x%02X") % type).str().c_str());
 			}
-			if (result->text() == "Copy &Child Number") {
+			if (result->text() == "Copy Child &Number") {
 				QClipboard *clipboard = QApplication::clipboard();
 				EditableTreeWidgetItem *editable = (EditableTreeWidgetItem *)item;
 				std::vector<LsbObject *> objects = editable->object->getParent()->getChildren();
@@ -937,6 +946,44 @@ void MainWindow::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 			}
 			if (result->text() == "&Find") {
 				treeFindAction();
+			}
+			if (result->text() == "&Delete Node") {
+				QMessageBox::StandardButton reply;
+				reply = QMessageBox::question(this, "Delete", "Are you sure you want to delete this node?",
+											QMessageBox::Yes|QMessageBox::No);
+				if (reply == QMessageBox::Yes) {
+					EditableTreeWidgetItem *editable = (EditableTreeWidgetItem *)item;
+					LsbObject *lsbParent = editable->object->getParent();
+					if (lsbParent != 0) {
+						lsbParent->removeChild(editable->object);
+					} else {
+						delete editable->object;
+					}
+					delete editable;
+				}
+			}
+			if (result->text() == "&Add Node") {
+				EditableTreeWidgetItem *editable = (EditableTreeWidgetItem *)item;
+				LsbObject *parentObject = editable->object;
+				if (parentObject != 0) {
+					AddNodeDialog *addNodeDialog = new AddNodeDialog(parentObject, &openFileButtonTagList, this);
+					if (addNodeDialog->exec() == 1) {
+						LsbObject *newNode = addNodeDialog->getNewLsbObject();
+						if (newNode != 0) {
+							parentObject->addChild(newNode);
+							EditableTreeWidgetItem *treeItem = new EditableTreeWidgetItem();
+							std::string output = newNode->getName();
+							treeItem->setFlags(treeItem->flags() | Qt::ItemIsEditable);
+							treeItem->object = newNode;
+							treeItem->setText(0, QString(output.c_str()));
+							editable->addChild(treeItem);
+							if (!newNode->isDirectory()) {
+								output = newNode->toString();
+								treeItem->setText(1, QString(output.c_str()));
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -1125,91 +1172,9 @@ void MainWindow::on_saveAction_triggered()
 void MainWindow::on_treeWidget_itemChanged(QTreeWidgetItem *item, int column)
 {
     EditableTreeWidgetItem *editable = (EditableTreeWidgetItem *)item;
-	std::string text = editable->text(column).toStdString();;
+	std::string text = editable->text(column).toStdString();
 	if (editable->object != 0) {
-		long type = editable->object->getType();
-		if (type >= 0x14 && type <= 0x19) {
-			editable->object->setData(text.c_str(), text.length() + 1);
-		} else if (type == 0x04) {
-			long value = 0;
-			try {
-				value = boost::lexical_cast<long>(text);
-			} catch (const boost::bad_lexical_cast& e) {
-				
-			}
-
-			editable->object->setData((char *)&value, sizeof(long));
-		} else if (type == 0x05) {
-			unsigned long value = 0;
-			try {
-				value = boost::lexical_cast<unsigned long>(text);
-			}
-			catch (const boost::bad_lexical_cast& e) {
-				;
-			}
-
-			editable->object->setData((char *)&value, sizeof(unsigned long));
-		} else if (type == 0x06) {
-			float value = 0;
-			try {
-				value = boost::lexical_cast<float>(text);
-			} catch (const boost::bad_lexical_cast& e) {
-				
-			}
-
-			editable->object->setData((char *)&value, sizeof(float));
-		} else if (type == 0x07) {
-			double value = 0;
-			try {
-				value = boost::lexical_cast<double>(text);
-			} catch (const boost::bad_lexical_cast& e) {
-				
-			}
-
-			editable->object->setData((char *)&value, sizeof(double));
-		} else if (type == 0x13) {
-			bool value = false;
-			if (boost::to_lower_copy(text) == "true") {
-				value = true;
-			}
-			editable->object->setData((char *)&value, sizeof(bool));
-		} else if (type == 0x0C) {
-			std::vector<float> floatValues;
-			std::vector<std::string> values;
-			boost::split(values, text, boost::is_any_of(","));
-			for (int i=0; i<values.size(); ++i) {
-				std::string value = values[i];
-				boost::trim(value);
-				bool success = true;
-				float floatValue;
-				try {
-					floatValue = boost::lexical_cast<float>(value);
-				} catch (const boost::bad_lexical_cast& e) {
-					success = false;
-				}
-				if (success) {
-					floatValues.push_back(floatValue);
-				}
-			}
-			if (floatValues.size() == 3) {
-				long newDataLen = sizeof(float) * 3;
-				char *newData = new char[newDataLen];
-				memcpy(newData + sizeof(float) * 0, &floatValues[0], sizeof(float));
-				memcpy(newData + sizeof(float) * 1, &floatValues[1], sizeof(float));
-				memcpy(newData + sizeof(float) * 2, &floatValues[2], sizeof(float));
-				editable->object->setData(newData, newDataLen);
-				delete[] newData;
-			}
-		} else if (type == 0x01) {
-			unsigned char value = 0;
-			try {
-				value = (unsigned char)boost::lexical_cast<unsigned short>(text);
-			} catch (const boost::bad_lexical_cast& e) {
-				
-			}
-
-			editable->object->setData((char *)&value, sizeof(unsigned char));
-		}
+		editable->object->fromString(text);
 	}
 }
 
@@ -1427,58 +1392,58 @@ void MainWindow::on_actionExtract_triggered()
 		
 		if (boost::filesystem::exists(boost::filesystem::path(lsvPath))) {
 			QMessageBox::StandardButton reply;
-			  reply = QMessageBox::question(this, "Extract", "Are you sure you want to extract all files?",
-			                                QMessageBox::Yes|QMessageBox::No);
-			  if (reply == QMessageBox::Yes) {
-				  PakReader reader;
-				  bool lsvLoaded = reader.loadFile(lsvPath);
-				  if (lsvLoaded) {
-					  std::vector<std::string> fileList = reader.getFileList();
-					  if (fileList.size() > 0) {
-						  QProgressDialog decompressProgress("Decompressing...", QString(), 0, fileList.size(), this);
-						  decompressProgress.setWindowFlags(decompressProgress.windowFlags() & ~(Qt::WindowCloseButtonHint | Qt::WindowContextHelpButtonHint));
-						  decompressProgress.setWindowModality(Qt::WindowModal);
-						  decompressProgress.show();
-						  QApplication::processEvents();
-						  
-						  bool success = true;
-						  for (int i=0; i<fileList.size(); ++i) {
-							  if (!reader.extractFile(lsvPath, fileList[i], folderPath, true)) {
-								  success = false;
-								  if (!success) {
-									  QMessageBox qmsg;
-									  std::ostringstream stream;
-									  stream<<"Failed to extract file: "<<fileList[i];
-									  qmsg.setText(QString::fromStdString(stream.str()));
-									  qmsg.exec();
-								  }
-								  break;
-							  } else {
-								  decompressProgress.setValue(i + 1);
-								  QApplication::processEvents();
-							  }
-						  }
-						  decompressProgress.hide();
-						  if (success) {
-							  QMessageBox qmsg;
-							  std::ostringstream stream;
-							  stream<<"Success";
-							  qmsg.setText(QString::fromStdString(stream.str()));
-							  qmsg.exec();
-							  
-//							  boost::system::error_code ec;
-//							  boost::filesystem::rename(boost::filesystem::path(lsvPath), boost::filesystem::path(lsvBakPath), ec);
-//							  std::string errorMessage = ec.message();
-//							  if (ec != ec.default_error_condition()) {
-//								  QMessageBox qmsg;
-//								  std::ostringstream stream;
-//								  stream<<"Could not backup LSV archive: "<<errorMessage;
-//								  qmsg.setText(QString::fromStdString(stream.str()));
-//								  qmsg.exec();
-//							  }
-						  }
-					  }
-				  }
+			reply = QMessageBox::question(this, "Extract", "Are you sure you want to extract all files?",
+			                              QMessageBox::Yes|QMessageBox::No);
+			if (reply == QMessageBox::Yes) {
+				PakReader reader;
+				bool lsvLoaded = reader.loadFile(lsvPath);
+				if (lsvLoaded) {
+					std::vector<std::string> fileList = reader.getFileList();
+					if (fileList.size() > 0) {
+						QProgressDialog decompressProgress("Decompressing...", QString(), 0, fileList.size(), this);
+						decompressProgress.setWindowFlags(decompressProgress.windowFlags() & ~(Qt::WindowCloseButtonHint | Qt::WindowContextHelpButtonHint));
+						decompressProgress.setWindowModality(Qt::WindowModal);
+						decompressProgress.show();
+						QApplication::processEvents();
+						
+						bool success = true;
+						for (int i=0; i<fileList.size(); ++i) {
+							if (!reader.extractFile(lsvPath, fileList[i], folderPath, true)) {
+								success = false;
+								 if (!success) {
+									QMessageBox qmsg;
+									std::ostringstream stream;
+									stream<<"Failed to extract file: "<<fileList[i];
+									qmsg.setText(QString::fromStdString(stream.str()));
+									qmsg.exec();
+								 }
+								 break;
+							} else {
+								decompressProgress.setValue(i + 1);
+								QApplication::processEvents();
+							}
+						}
+						decompressProgress.hide();
+						if (success) {
+							QMessageBox qmsg;
+							std::ostringstream stream;
+							stream<<"Success";
+							qmsg.setText(QString::fromStdString(stream.str()));
+							qmsg.exec();
+							
+//							boost::system::error_code ec;
+//							boost::filesystem::rename(boost::filesystem::path(lsvPath), boost::filesystem::path(lsvBakPath), ec);
+//							std::string errorMessage = ec.message();
+//							if (ec != ec.default_error_condition()) {
+//								QMessageBox qmsg;
+//								std::ostringstream stream;
+//								stream<<"Could not backup LSV archive: "<<errorMessage;
+//								qmsg.setText(QString::fromStdString(stream.str()));
+//								qmsg.exec();
+//							}
+						}
+					}
+				}
 			}
 		}
 	}

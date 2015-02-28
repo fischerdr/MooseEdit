@@ -1,6 +1,7 @@
 #include "StatsView.h"
 #include "ui_StatsView.h"
 #include <typeinfo>
+#include <boost/algorithm/string.hpp>
 
 StatsView::StatsView(std::vector<StatsContainer *> &allItemStats, std::map<std::string, std::string> &nameMappings, QWidget *parent) :
 	QWidget(parent), allItemStats(allItemStats), nameMappings(nameMappings),
@@ -149,6 +150,26 @@ void StatsView::addStatsDirectory(std::string name, std::string text, QTreeWidge
 	}
 	boostFolder->setText(0, text.c_str());
 	addToTree(boosts, boostFolder);
+}
+
+void StatsView::addStatsDirectoryByPrefix(std::string prefix, std::string text, QTreeWidgetItem *parent) {
+	QTreeWidget *statsTree = this->findChild<QTreeWidget *>("statsTree");
+	std::vector<StatsContainer *> toAdd;
+	for (int i=0; i<allItemStats.size(); ++i) {
+		StatsContainer *container = allItemStats[i];
+		if (boost::starts_with(container->getArg(0), prefix) && container->getUsing() == 0) {
+			toAdd.push_back(container);
+		}
+	}
+	DataContainerTreeItem *boostFolder;
+	if (parent != 0) {
+		boostFolder = new DataContainerTreeItem(parent);
+	}
+	else {
+		boostFolder = new DataContainerTreeItem(statsTree);
+	}
+	boostFolder->setText(0, text.c_str());
+	addToTree(toAdd, boostFolder);
 }
 
 void StatsView::addBoostDirectory(std::string modifierType, std::string text) {

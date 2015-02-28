@@ -50,6 +50,7 @@ class StatsView : public QWidget
 public:
 	explicit StatsView(std::vector<StatsContainer *> &allItemStats, std::map<std::string, std::string> &nameMappings, QWidget *parent = 0);
 	void addStatsDirectory(std::string name, std::string text, QTreeWidgetItem *parent = 0);
+	void addStatsDirectoryByPrefix(std::string prefix, std::string text, QTreeWidgetItem *parent = 0);
 	void addBoostDirectory(std::string modifierType, std::string text);
 	void addToTree(std::vector<StatsContainer *>& boosts, QTreeWidgetItem *parent = 0);
 	void addToTree(std::vector<LsbObject *>& objects, QTreeWidgetItem *parent = 0);

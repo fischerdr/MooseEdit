@@ -379,7 +379,7 @@ ItemEditFrame::ItemEditFrame(std::vector<StatsContainer *> &allItemStats, std::v
 	DataContainerTreeItem *objectFolder = baseStatsView->addFolder("Objects");
 	baseStatsView->addStatsDirectory("Gold", "Gold", objectFolder);
 	baseStatsView->addStatsDirectory("_Generics", "Generic", objectFolder);
-	//baseStatsView->addStatsDirectory("_TreasureMap", "Treasure Maps", objectFolder);
+	baseStatsView->addStatsDirectoryByPrefix("BOOK_", "Treasure Maps", objectFolder);
 	baseStatsView->addStatsDirectory("_Arrows", "Arrows", objectFolder);
 	baseStatsView->addStatsDirectory("_OrbCharms", "Orb Charms", objectFolder);
 	baseStatsView->addStatsDirectory("_TrapObjects", "Trap Objects", objectFolder);

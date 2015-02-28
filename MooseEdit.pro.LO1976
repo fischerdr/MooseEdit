@@ -73,8 +73,7 @@ SOURCES += main.cpp\
     md5.cpp \
     SanityHash.cpp \
     lz4hc.cpp \
-    SettingsDialog.cpp \
-    AddNodeDialog.cpp
+    SettingsDialog.cpp
 
 HEADERS  += mainwindow.h \
     LsbReader.h \

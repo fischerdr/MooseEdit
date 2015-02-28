@@ -22,8 +22,14 @@ long ItemLabel::getItemStatValue(std::string statName) {
 		value = boost::lexical_cast<long>(data);
 	}
 	catch (const boost::bad_lexical_cast& e) {
-		
+		try {
+			value = (long)boost::lexical_cast<float>(data);
+		}
+		catch (const boost::bad_lexical_cast& e2) {
+			
+		}
 	}
+	
 	return value;
 }
 
@@ -98,12 +104,17 @@ void ItemLabel::displayItemStats(std::ostringstream &contentHtml) {
 	
 	long movementBoost = getSummedStat("MovementSpeedBoost");
 	if (movementBoost != 0) {
-		contentHtml<<"<font color=#188EDE size=2>Movement Boost: +"<<movementBoost<<"%</font><br/>";
+		contentHtml<<"<font color=#188EDE size=2>Movement Boost: "<<(movementBoost > 0 ? "+" : "")<<movementBoost<<"%</font><br/>";
 	}
 	
 	float movementF = getPermBoostStatValue("Movement")/100.0f + 0.04f*getSummedItemStat("Movement")*item->getItemLevel() + 0.1f;
+	movementF -= 0.2f;
 	if (getSummedStat("Movement") != 0) {
-		contentHtml<<"<font color=#188EDE size=2>Movement: +"<<boost::format("%.2f") % movementF<<"</font><br/>";
+		if (getSummedStat("Movement") > getItemStatValue("Movement")) {
+			contentHtml<<"<font color=#188EDE size=2>Movement: "<<(movementF > 0 ? "+" : "")<<boost::format("%.2f") % movementF<<"</font><br/>";
+		} else {
+			contentHtml<<"<font color=#DBDBDB size=2>Movement: "<<(movementF > 0 ? "+" : "")<<boost::format("%.2f") % movementF<<"</font><br/>";
+		}
 	}
 	long initiative = getSummedStat("Initiative");
 	if (initiative != 0) {
@@ -261,7 +272,7 @@ void ItemLabel::displayItemStats(std::ostringstream &contentHtml) {
 	long sight = getSummedItemStat("SightBoost") + getSummedStat("Sight");
 	float sightF = sight / 100.0f;
 	if (sight != 0) {
-		contentHtml<<"<font color=#188EDE size=2>Sight: +"<<boost::format("%.2f") % sightF<<"</font><br/>";
+		contentHtml<<"<font color=#188EDE size=2>Sight: "<<(sightF > 0 ? "+" : "")<<boost::format("%.2f") % sightF<<"</font><br/>";
 	}
 	long hearing = getSummedItemStat("HearingBoost") + getSummedStat("Hearing");
 	float hearingF = hearing / 100.0f;
@@ -269,9 +280,17 @@ void ItemLabel::displayItemStats(std::ostringstream &contentHtml) {
 		contentHtml<<"<font color=#188EDE size=2>Hearing: +"<<boost::format("%.2f") % hearingF<<"</font><br/>";
 	}
 	
-	long apMax = getSummedItemStat("APMaximum");
+	long apMax = getSummedStat("APMaximum");
 	if (apMax != 0) {
 		contentHtml<<"<font color=#188EDE size=2>Maximum Action Points: +"<<apMax<<"</font><br/>";
+	}
+	long apRecovery = getSummedStat("APStart");
+	if (apRecovery != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Start Action Points: +"<<apRecovery<<"</font><br/>";
+	}
+	long apStart = getSummedStat("APRecovery");
+	if (apStart != 0) {
+		contentHtml<<"<font color=#188EDE size=2>Turn Action Points: +"<<apStart<<"</font><br/>";
 	}
 	
 	long vitBoost = 0;
@@ -334,16 +353,23 @@ void ItemLabel::setupTooltip()
 		if (itemStats != 0) {
 			std::ostringstream ss;
 			
-			long weight = getSummedStat("Weight");
-			float weightValue = weight /= 1000;
-			ss<<boost::format("%.2g") % weightValue;
+			long weight = getSummedItemStat("Weight");
+			float weightValue = weight / 1000.0f;
+			float finalWeight = weightValue * item->getItemAmount();
+			ss<<boost::format("%.2g") % finalWeight;
 			
 			weightLabel->setText(ss.str().c_str());
 			ss.clear();
 			ss.str("");
 			
-			ss<<getSummedStat("Value");
-			//multiply by count
+			long itemValue = getSummedStat("Value");
+			long itemLevel = item->getItemLevel();
+			if (itemLevel <= 0) {
+				itemLevel = 1;
+			}
+			itemValue = std::max((weightValue * itemValue - 2)*10, 0.0f) + itemValue * itemLevel*22.86f; //this calculation is made up
+			itemValue *= item->getItemAmount();
+			ss<<itemValue;
 			goldLabel->setText(ss.str().c_str());
 			ss.clear();
 			ss.str("");

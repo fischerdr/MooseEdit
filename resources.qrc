@@ -57,5 +57,6 @@
         <file>player_fragment.shd</file>
         <file>unbox.png</file>
         <file>wrench_icon.png</file>
+        <file>sanity.png</file>
     </qresource>
 </RCC>
