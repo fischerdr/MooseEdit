@@ -49,11 +49,11 @@ void PakWriter::addFile(std::string &fileName, char *buffer, unsigned long buffe
 	back.fileInfo.pakNumber = 0;
 	back.fileInfo.unknown2 = 0;
 	
-	++lspkHeader.fileCount;
+    ++lspkHeader.pakCount;
 }
 
 void PakWriter::writeFile(std::ostream &file) {
-	lspkHeader.fileCount = lspkFileData.size();
+    lspkHeader.pakCount = lspkFileData.size();
 	lspkHeader.fileInfoSectionSize = sizeof(HEADER_PAK_FILEINFO_LSPK)*lspkFileData.size() + 4;
 	unsigned long *offsets = new unsigned long[lspkFileData.size()];
 	file.write((char *)&lspkHeader, sizeof(lspkHeader));
@@ -90,10 +90,8 @@ PakWriter::~PakWriter() {
 
 PakWriter::PakWriter()
 {
-	lspkHeader.magic = 0x4B50534C;
 	lspkHeader.version = 0x0A;
-	lspkHeader.fileCount = 0;
+    lspkHeader.pakCount = 0;
 	lspkHeader.fileInfoSectionSize = 0;
 	lspkHeader.unknown2 = 1;
-	lspkHeader.pakCount = 1;
 }

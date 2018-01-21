@@ -1,0 +1,15 @@
+Compile Notes
+
+need following libs
+boost-1-55
+glew-1.11
+glm (latest?)
+
+compile boost-1-55
+	*) bootstrap.bat gcc
+	*) b2 -a -q toolset=gcc threading=multi
+	*) b2 -a -q toolset=gcc threading=multi link=shared runtime-link=shared
+compile glew-1.11
+	*) VS c++
+
+correct library paths in MooseEdit.pro

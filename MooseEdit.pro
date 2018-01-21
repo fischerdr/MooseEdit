@@ -11,15 +11,13 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = MooseEdit
 TEMPLATE = app
 
-INCLUDEPATH += C:\boost\boost_1_55_0
+INCLUDEPATH += C:\boost_1_55_0
 INCLUDEPATH += C:\glew-1.11.0\include\
 INCLUDEPATH += C:\glm
 
-LIBS += "-LC:\boost\boost_1_55_0\stage\lib"
-LIBS += "-LC:\boost\stage\lib" -lboost_filesystem-mgw48-mt-1_55
-LIBS += "-LC:\boost\stage\lib" -lboost_system-mgw48-mt-1_55
-LIBS += "-LC:\Users\Jason\MooseEdit\granny\lib\win32"
-LIBS += "-lgranny2"
+LIBS += "-LC:\boost_1_55_0\stage\lib"  -lboost_filesystem-mgw53-mt-1_55 -lboost_system-mgw53-mt-1_55
+LIBS += "-LC:\git\MooseEdit\granny\lib\win32" -lgranny2
+LIBS += -lopengl32 -lglu32
 
 win32:RC_ICONS += cogMoose.ico
 

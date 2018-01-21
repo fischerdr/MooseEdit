@@ -11,7 +11,7 @@ EditorSettings::EditorSettings(std::wstring fileName) {
 bool EditorSettings::saveFile(std::string version) {
 	boost::filesystem::ofstream fout(fileName, std::ios_base::binary);
 	if (fout) {
-		char fileBOM[] = { 0xFF, 0xFE };
+        char fileBOM[] = { (char) 0xFF, (char) 0xFE };
 		fout.write(fileBOM, sizeof(fileBOM));
 		
 		long allocSize = version.length() + 1;

@@ -67,7 +67,7 @@ std::vector<std::wstring> getSaveGameList(std::wstring fullPath, std::wstring pr
 	fullPath += L"\\";
 	fullPath += profileName;
 	fullPath += L"\\";
-	fullPath += L"SaveGames";
+    fullPath += L"Savegames_patch";
 	wchar_t cwd[MAX_PATH + 1];
 	_wgetcwd(cwd, MAX_PATH + 1);
 	if (_wchdir(fullPath.c_str()) == 0) {
@@ -154,7 +154,7 @@ MainWindow::MainWindow(std::wstring argument, QWidget *parent) :
 			if (!boost::ends_with(saveFolderPath, L"\\")) {
 				saveFolderPath += L"\\";
 			}
-			saveFolderPath += L"Larian Studios\\Divinity Original Sin\\PlayerProfiles\\";
+            saveFolderPath += L"Larian Studios\\Divinity Original Sin Enhanced Edition\\PlayerProfiles\\";
 			savesFolderEdit->setText(QString::fromStdWString(saveFolderPath));
 		} else {
 			std::vector<std::wstring> splitVector;
@@ -177,7 +177,7 @@ MainWindow::MainWindow(std::wstring argument, QWidget *parent) :
 							wUsername = alloc;
 						}
 						saveFolderPath += wUsername;
-						saveFolderPath += L"\\Documents\\Larian Studios\\Divinity Original Sin\\PlayerProfiles\\";
+                        saveFolderPath += L"\\Documents\\Larian Studios\\Divinity Original Sin Enhanced Edition\\PlayerProfiles\\";
 						savesFolderEdit->setText(QString::fromStdWString(saveFolderPath));
 					}
 				}
@@ -228,7 +228,7 @@ std::wstring MainWindow::getSteamPathFromRegistry() {
 	#ifdef _WIN32
 	HKEY hKey;
 	unsigned long returnVal;
-	if ((returnVal = RegOpenKeyExA(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 230230",
+    if ((returnVal = RegOpenKeyExA(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 373420",
 				  0, KEY_READ, &hKey)) == ERROR_SUCCESS) {
 		unsigned long dataSize = MAX_PATH + 1;
 		wchar_t buf[dataSize];
@@ -651,7 +651,7 @@ void MainWindow::on_loadFileWidget_currentItemChanged(QListWidgetItem *current, 
 		if (tokens.size() == 2) {
 			profilesPath += tokens[0];
 			profilesPath += L"\\";
-			profilesPath += L"SaveGames\\";
+            profilesPath += L"Savegames_patch\\";
 			profilesPath += tokens[1];
 			profilesPath += L"\\";
 			std::wstring bitmapPath = profilesPath;

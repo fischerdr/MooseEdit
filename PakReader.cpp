@@ -57,8 +57,11 @@ bool PakReader::loadFile(std::wstring fileName) {
 	boost::filesystem::ifstream input(fileName, std::ios_base::binary);
 	if (input) {
 		int magicSampler = 0;
+        int headerSize = 0;
+        input.seekg(-8,std::ios_base::end );
+        input.read( (char *)&headerSize,sizeof(int));
 		input.read((char *)&magicSampler, sizeof(int));
-		input.seekg(0, std::ios_base::beg);
+        input.seekg(-headerSize, std::ios_base::end);
 		if (magicSampler == 0x4B50534C) {
 			isLspk = true;
 		} else {
@@ -69,7 +72,7 @@ bool PakReader::loadFile(std::wstring fileName) {
 			HEADER_PAK_LSPK pakHeader;
 			input.read((char *)&pakHeader, sizeof(HEADER_PAK_LSPK));
 			dataStart = pakHeader.dataOffset;
-			fileCount = pakHeader.fileCount;
+            fileCount = pakHeader.pakCount;
 		} else {
 			HEADER_PAK pakHeader;
 			input.read((char *)&pakHeader, sizeof(HEADER_PAK));

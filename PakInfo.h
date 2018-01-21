@@ -13,15 +13,25 @@ struct HEADER_PAK {
 	long fileCount;
 };
 
+//struct HEADER_PAK_LSPK {
+//	long magic;
+//	long version;
+//	long dataOffset;
+//	long fileInfoSectionSize;
+//	short pakCount;
+//	short unknown2;
+//	long fileCount;
+//};
+//New header v13
 struct HEADER_PAK_LSPK {
-	long magic;
-	long version;
-	long dataOffset;
-	long fileInfoSectionSize;
-	short pakCount;
-	short unknown2;
-	long fileCount;
+    long version;
+    long dataOffset;
+    long fileInfoSectionSize;
+    short pakCount;
+    short unknown2;
 };
+
+
 
 struct HEADER_PAK_FILEINFO {
 	char fileName[0x100];
